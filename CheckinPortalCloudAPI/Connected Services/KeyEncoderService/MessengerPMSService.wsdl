@@ -1,0 +1,1742 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:tns="http://tempuri.org" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:s4="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:s1="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:s2="http://microsoft.com/wsdl/types/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:s3="http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous" targetNamespace="http://tempuri.org" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org">
+      <s:import namespace="http://schemas.xmlsoap.org/ws/2004/08/addressing" />
+      <s:import namespace="http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous" />
+      <s:import namespace="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" />
+      <s:element name="HelloWorldTest">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="s1" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="i1" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="HelloWorldTestResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="HelloWorldTestResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AuthHeader" type="tns:AuthHeader" />
+      <s:complexType name="AuthHeader">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" ref="s1:Action" />
+          <s:element minOccurs="0" maxOccurs="1" ref="s1:From" />
+          <s:element minOccurs="1" maxOccurs="1" ref="s1:MessageID" />
+          <s:element minOccurs="0" maxOccurs="1" ref="s3:ReplyTo" />
+          <s:element minOccurs="0" maxOccurs="1" ref="s1:To" />
+          <s:element minOccurs="0" maxOccurs="1" name="Security" type="tns:SecurityHeader" />
+        </s:sequence>
+        <s:anyAttribute />
+      </s:complexType>
+      <s:complexType name="SecurityHeader">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" ref="s4:Timestamp" />
+          <s:element minOccurs="0" maxOccurs="1" ref="s4:UsernameToken" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="PublishResponseComplexTypes">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="DummyResponse" type="tns:CMessengerResponse" />
+            <s:element minOccurs="0" maxOccurs="1" name="DummyFault" type="tns:Fault" />
+            <s:element minOccurs="1" maxOccurs="1" name="aReason" type="tns:eMainFaultReasons" />
+            <s:element minOccurs="1" maxOccurs="1" name="aDetailReason" type="tns:eDetailEncoderFaultReasons" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="CMessengerResponse">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:CMessengerBaseResponse">
+            <s:sequence>
+              <s:element minOccurs="0" maxOccurs="1" name="retAccessKey" type="s:string" />
+            </s:sequence>
+          </s:extension>
+        </s:complexContent>
+      </s:complexType>
+      <s:complexType name="CMessengerBaseResponse">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="bSuccess" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="ResponseCode" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="ResponseMessage" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="Fault">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="faultcode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="faultstring" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="detailInfo" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:simpleType name="eMainFaultReasons">
+        <s:restriction base="s:string">
+          <s:enumeration value="EncoderMsg" />
+          <s:enumeration value="UserCredentialsNotProvided" />
+          <s:enumeration value="MessengerPMSServiceNoResponse" />
+          <s:enumeration value="InvalidWSParameter" />
+          <s:enumeration value="ExceptionRequestFailed" />
+          <s:enumeration value="NoCallerID" />
+          <s:enumeration value="NoRequestMsg" />
+          <s:enumeration value="BusyProcessingPreviousRequest" />
+          <s:enumeration value="CallerRequestWasLost" />
+          <s:enumeration value="CallerRequestNotTheSame" />
+          <s:enumeration value="RoomNumberNotFound" />
+          <s:enumeration value="MaxSharedReached" />
+          <s:enumeration value="FailedSetReservation" />
+          <s:enumeration value="UnableToRegisterSessionForPMSTerminalID" />
+          <s:enumeration value="UnableToSetPMSOperationNoInDB" />
+          <s:enumeration value="ReservationNoInvalid" />
+          <s:enumeration value="ReservationNoSuspended" />
+          <s:enumeration value="UnassignDuplicateToNoneExistingReservation" />
+          <s:enumeration value="MaxUnassignReached" />
+          <s:enumeration value="SharedWithMustHaveExistingStay" />
+          <s:enumeration value="GuestLevelNotAvailableInAllRooms" />
+          <s:enumeration value="ReservationNotFound" />
+          <s:enumeration value="RoomMoveMustHaveSameStay" />
+          <s:enumeration value="NoActionRequired" />
+          <s:enumeration value="ReservationHasExpired" />
+          <s:enumeration value="UnableToChangeReservationInfo" />
+          <s:enumeration value="UnableToChangeReservationKeyInfo" />
+          <s:enumeration value="RequestTimeoutNoResponse" />
+          <s:enumeration value="RoomNameNotSet" />
+          <s:enumeration value="UnableToCompleteReservation" />
+          <s:enumeration value="AuthHeaderNotRecognized" />
+          <s:enumeration value="NoSharewithForSuites" />
+          <s:enumeration value="ReservationCheckedOut" />
+          <s:enumeration value="RoomMustHaveSameStay" />
+          <s:enumeration value="CannotCreateKeyForThisRoomType" />
+          <s:enumeration value="KeyInstanceNotFound" />
+          <s:enumeration value="InvalidVIPRequestInfo" />
+          <s:enumeration value="UnableToSendMessageToLock" />
+          <s:enumeration value="RoomOFFLine" />
+          <s:enumeration value="IRSConnectionLost" />
+          <s:enumeration value="KABALodginInterfaceExceptionRaised" />
+          <s:enumeration value="KABALodgingInterfaceOperationNotSupported" />
+          <s:enumeration value="SecuredKeyProductLineNotSupported" />
+          <s:enumeration value="SecuredKeyDeviceUIDEmpty" />
+          <s:enumeration value="SecuredKeyDeviceUIDLengthInvalid" />
+          <s:enumeration value="SecuredKeyDeviceUIDZeroOnly" />
+          <s:enumeration value="InvalidHexValue" />
+          <s:enumeration value="EmptyPhoneNumber" />
+          <s:enumeration value="PhoneNumberTooSmall" />
+          <s:enumeration value="UnableToDeliverToPhone" />
+          <s:enumeration value="ExceptionFault" />
+          <s:enumeration value="UndefinedFault" />
+          <s:enumeration value="NoFault" />
+        </s:restriction>
+      </s:simpleType>
+      <s:simpleType name="eDetailEncoderFaultReasons">
+        <s:restriction base="s:string">
+          <s:enumeration value="Success" />
+          <s:enumeration value="NotApplicable" />
+          <s:enumeration value="EncoderResponse" />
+          <s:enumeration value="GeneralSystemError" />
+          <s:enumeration value="Undefined" />
+          <s:enumeration value="ConfirmKeyCancel" />
+          <s:enumeration value="ConfirmKeyDuplicate" />
+          <s:enumeration value="ConfirmExpireBeforeCheckout" />
+          <s:enumeration value="MaxDuplicatesMadeReached" />
+          <s:enumeration value="ConfirmCheckBackIn" />
+          <s:enumeration value="EncoderNotOnlineOrNotExist" />
+          <s:enumeration value="EncoderNotResponding" />
+          <s:enumeration value="InvalidEncoderNumber" />
+          <s:enumeration value="EncoderMemoryError" />
+          <s:enumeration value="EncoderBusy" />
+          <s:enumeration value="TransactionTypeNotAvailable" />
+          <s:enumeration value="TransactionNotSupportKeyLevel" />
+          <s:enumeration value="InternalSoftwareErrorCompatibility" />
+          <s:enumeration value="TransactionTypeInvalid" />
+          <s:enumeration value="InsufficientPasswordLength" />
+          <s:enumeration value="PasswordInvalid" />
+          <s:enumeration value="TransactionUnauthorized" />
+          <s:enumeration value="InternalSoftwareErrorDataFiles" />
+          <s:enumeration value="TransactionKeyLevelNotAavailable" />
+          <s:enumeration value="InternalSoftwareErrorKeyFiles" />
+          <s:enumeration value="InternalSoftwareBusyArchiving" />
+          <s:enumeration value="TransactionKeyNumberNotAavailable" />
+          <s:enumeration value="TransactionKeyNumberIncorrectFormat" />
+          <s:enumeration value="TransactionUnauthorizedKey" />
+          <s:enumeration value="InvalidTransactionRequest" />
+          <s:enumeration value="InvalidPMSTerminalNumber" />
+          <s:enumeration value="TransactionKeyNumberOutOfRange" />
+          <s:enumeration value="TransactionKeyNumberNotNumeric" />
+          <s:enumeration value="TransactionKeyNumberNULL" />
+          <s:enumeration value="InvalidPMSRequestDate" />
+          <s:enumeration value="InvalidPMSRequestTime" />
+          <s:enumeration value="TransactionEncoderNumberOutOfRange" />
+          <s:enumeration value="TransactionKeyNumberOfKeysZERO" />
+          <s:enumeration value="InvalidPMSResponse" />
+          <s:enumeration value="UnableToProcessRequest" />
+          <s:enumeration value="UnableToProcessLostRequest" />
+          <s:enumeration value="TimeoutWaitingResponse" />
+          <s:enumeration value="TimeoutGeneralComError" />
+          <s:enumeration value="InvalidEncoderReqTerminated" />
+          <s:enumeration value="ErrorNotOverridenReqTerminated" />
+          <s:enumeration value="IncompatiblePMSInterface" />
+          <s:enumeration value="TransactionKeyNotValid" />
+          <s:enumeration value="TransactionKeyAndLevelNotValid" />
+          <s:enumeration value="TransactionRequestWasLost" />
+          <s:enumeration value="InvalidTransactionTypeReceived" />
+          <s:enumeration value="InvalidGRCCode" />
+          <s:enumeration value="InvalidPassOption" />
+          <s:enumeration value="InvalidPassNumber" />
+          <s:enumeration value="InvalidNumberOfSeconds" />
+          <s:enumeration value="InvalidDestinationTerminalNumber" />
+          <s:enumeration value="InvalidNumericField" />
+          <s:enumeration value="SystemErrorFailed" />
+          <s:enumeration value="InternalMemoryTimeoutError" />
+          <s:enumeration value="InternalSyncTimeoutError" />
+          <s:enumeration value="TransactionLockKeyInaccessible" />
+          <s:enumeration value="TransactionKeyInaccessible" />
+          <s:enumeration value="RequestWasAborted" />
+          <s:enumeration value="TimeoutWaitingKey" />
+          <s:enumeration value="KeyJammed" />
+          <s:enumeration value="KeyNotFaceUp" />
+          <s:enumeration value="KeyMaybeDamaged" />
+          <s:enumeration value="EncoderNoResponse" />
+          <s:enumeration value="KeyNotPreRegistered" />
+          <s:enumeration value="CheckoutDateLessThanSystemDate" />
+          <s:enumeration value="KeyExpirationInFuture" />
+          <s:enumeration value="KeyExpirationInPast" />
+          <s:enumeration value="MustProvidePassLevelNo" />
+          <s:enumeration value="PassNumberIsInvalid" />
+          <s:enumeration value="UnableToCreateKeyNewSequenceRequired" />
+          <s:enumeration value="UnableToProcessVerifyGuestKey" />
+          <s:enumeration value="InternalPollingError" />
+          <s:enumeration value="InternalOnlineError" />
+          <s:enumeration value="InternalKeyDataFilesCorrupted" />
+          <s:enumeration value="InternalSystemResponseError" />
+          <s:enumeration value="InternalSystemStartupBusy" />
+          <s:enumeration value="InternalSystemBusyClearing" />
+          <s:enumeration value="InternalSystemExecError" />
+          <s:enumeration value="InternalSystemErrorUnableToProcessRequests" />
+          <s:enumeration value="InternalSystemErrorDriveAccessProblem" />
+          <s:enumeration value="InternalSystemErrorTimeoutToProcessRequests" />
+          <s:enumeration value="InternalSystemErrorFileDeletion" />
+          <s:enumeration value="InternalSystemErrorFileCorrupted" />
+          <s:enumeration value="InternalSystemErrorMemoryProblem" />
+          <s:enumeration value="InternalSystemErrorClockProblem" />
+          <s:enumeration value="InternalSystemErrorOverflowProblem" />
+          <s:enumeration value="InternalSystemFilePointerProblem" />
+          <s:enumeration value="InternalSystemOutOfDiskSpaceProblem" />
+          <s:enumeration value="InternalSystemFileWriteProblem" />
+          <s:enumeration value="InternalSystemFileNotFoundProblem" />
+          <s:enumeration value="InternalSystemFileNotReadableProblem" />
+          <s:enumeration value="VIP_None" />
+          <s:enumeration value="VIP_Success" />
+          <s:enumeration value="VIP_CREATE_LOGFILE_FAILED" />
+          <s:enumeration value="VIP_INVALID_COMMAND" />
+          <s:enumeration value="VIP_INITIALIZATION_FAILED" />
+          <s:enumeration value="VIP_REQUEST_STATUS_FAILED" />
+          <s:enumeration value="VIP_WRITE_ERROR" />
+          <s:enumeration value="VIP_WRITE_TIMEOUT" />
+          <s:enumeration value="VIP_READ_ERROR" />
+          <s:enumeration value="VIP_CARD_AUTH_FAILED" />
+          <s:enumeration value="VIP_READ_TIMEOUT" />
+          <s:enumeration value="VIP_UNKNOWN_CARD_FORMAT" />
+          <s:enumeration value="VIP_INVALID_SECTOR" />
+          <s:enumeration value="VIP_CARD_NOT_FORMATED" />
+          <s:enumeration value="VIP_ENCODER_FAILURE" />
+          <s:enumeration value="VIP_ENCODER_CONNECT_FAILED" />
+          <s:enumeration value="VIP_ENCODER_DISCONNECT_FAILED" />
+          <s:enumeration value="VIP_NOT_SAFLOK_PUBLISHER" />
+          <s:enumeration value="VIP_NO_CARD_PRESENT" />
+          <s:enumeration value="VIP_TOO_MUCH_CARDS" />
+          <s:enumeration value="VIP_NO_FREE_SECTORS" />
+          <s:enumeration value="VIP_NO_TAGS_FOUND" />
+          <s:enumeration value="VIP_RequestConfirmationToOverwriteKey" />
+          <s:enumeration value="VIP_FatalErrorWithEViewer" />
+          <s:enumeration value="VIP_DataNotFound" />
+          <s:enumeration value="VIP_EncoderBusy" />
+          <s:enumeration value="VIP_Failed" />
+          <s:enumeration value="IncorrectVIPNumberFormat" />
+          <s:enumeration value="VIPNumberFailedToBuild" />
+          <s:enumeration value="VIPExceptionRaised" />
+          <s:enumeration value="VIP_EROR_KeyConfigData" />
+          <s:enumeration value="OperationNotSupported" />
+          <s:enumeration value="KABALodgingInterfaceTranslationError" />
+          <s:enumeration value="KABALodgingInterfaceWSURLError" />
+          <s:enumeration value="KABALodgingInterfaceCredentialError" />
+          <s:enumeration value="KABALodgingInterfaceExceptionRaised" />
+          <s:enumeration value="ATLASExceptionRaised" />
+          <s:enumeration value="ATLASIllegalCmdRcv" />
+          <s:enumeration value="ATLASIllegalField" />
+          <s:enumeration value="ATLASEncoderError" />
+          <s:enumeration value="ATLASReaderError" />
+          <s:enumeration value="ATLASInsufficientData" />
+          <s:enumeration value="ATLASTooMuchData" />
+          <s:enumeration value="ATLASInvalidRoomNo" />
+          <s:enumeration value="ATLASInvalidAuthorization" />
+          <s:enumeration value="ATLASCardNotInserted" />
+          <s:enumeration value="ATLASCheckInOutOfRange" />
+          <s:enumeration value="ATLASCheckInLargerCheckOut" />
+          <s:enumeration value="ATLASCheckInSmallerCreation" />
+          <s:enumeration value="ATLASNoInnerDoorsSelected" />
+          <s:enumeration value="ATLASInvalidExpiry" />
+          <s:enumeration value="ATLASNotGuestCard" />
+          <s:enumeration value="ATLASFailed" />
+          <s:enumeration value="ATLASHigherAuthorizarionNeeded" />
+          <s:enumeration value="ATLASRoomNoOutOfRange" />
+          <s:enumeration value="ATLASDisabledFunction" />
+          <s:enumeration value="ATLASInvalidDeviceAddress" />
+          <s:enumeration value="ATLASDeviceBusy" />
+          <s:enumeration value="ATLASDeviceInactive" />
+          <s:enumeration value="ATLASCommFailure" />
+          <s:enumeration value="ATLASDecodingError" />
+          <s:enumeration value="ATLASCardNotSupported" />
+          <s:enumeration value="ATLASInvalidCreation" />
+          <s:enumeration value="ATLASInvalidCheckIn" />
+          <s:enumeration value="ATLASInvalidCoercivity" />
+          <s:enumeration value="ATLASUnsupportedCoercivity" />
+          <s:enumeration value="KDSFail" />
+        </s:restriction>
+      </s:simpleType>
+      <s:element name="PublishResponseComplexTypesResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="PublishResponseComplexTypesResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="PublishFaultList">
+        <s:complexType />
+      </s:element>
+      <s:element name="PublishFaultListResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="PublishFaultListResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CreateNewBooking">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ReservationID" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="SiteName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PMSTerminalID" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="EncoderID" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="CheckIn" type="s:dateTime" />
+            <s:element minOccurs="1" maxOccurs="1" name="CheckOut" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" ref="s4:GuestName" />
+            <s:element minOccurs="0" maxOccurs="1" name="MainRoomNo" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="bGrantAccessPredefinedSuiteDoors" type="s:boolean" />
+            <s:element minOccurs="0" maxOccurs="1" name="VariableRoomList" type="tns:ArrayOfString" />
+            <s:element minOccurs="0" maxOccurs="1" name="CommonAreaList" type="tns:ArrayOfCCommonAreas" />
+            <s:element minOccurs="0" maxOccurs="1" name="TrackIIFolioNo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="TrackIGuestNo" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="KeyCount" type="s:unsignedInt" />
+            <s:element minOccurs="1" maxOccurs="1" name="KeySize" type="s:unsignedInt" />
+            <s:element minOccurs="0" maxOccurs="1" name="UID" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="ArrayOfString">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="string" nillable="true" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfCCommonAreas">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="CCommonAreas" nillable="true" type="tns:CCommonAreas" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="CCommonAreas">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="PassLevelNo" type="s:unsignedInt" />
+          <s:element minOccurs="1" maxOccurs="1" name="eMode" type="tns:eCommonAreaSelMode" />
+        </s:sequence>
+      </s:complexType>
+      <s:simpleType name="eCommonAreaSelMode">
+        <s:restriction base="s:string">
+          <s:enumeration value="DefaultConfiguredAccess" />
+          <s:enumeration value="GrantAccess" />
+          <s:enumeration value="DenyAccess" />
+        </s:restriction>
+      </s:simpleType>
+      <s:element name="CreateNewBookingResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="CreateNewBookingResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddSharedGuest">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ReservationID" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="SiteName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PMSTerminalID" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="EncoderID" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="CheckIn" type="s:dateTime" />
+            <s:element minOccurs="1" maxOccurs="1" name="CheckOut" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" ref="s4:GuestName" />
+            <s:element minOccurs="0" maxOccurs="1" name="MainRoomNo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="VariableRoomList" type="tns:ArrayOfString" />
+            <s:element minOccurs="0" maxOccurs="1" name="CommonAreaList" type="tns:ArrayOfCCommonAreas" />
+            <s:element minOccurs="0" maxOccurs="1" name="TrackIIFolioNo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="TrackIGuestNo" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="KeyCount" type="s:unsignedInt" />
+            <s:element minOccurs="1" maxOccurs="1" name="KeySize" type="s:unsignedInt" />
+            <s:element minOccurs="0" maxOccurs="1" name="UID" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddSharedGuestResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="AddSharedGuestResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="MakeDuplicateKey">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="ReservationID" nillable="true" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="SiteName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PMSTerminalID" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="EncoderID" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="KeyCount" type="s:unsignedInt" />
+            <s:element minOccurs="1" maxOccurs="1" name="KeySize" type="s:unsignedInt" />
+            <s:element minOccurs="0" maxOccurs="1" name="UID" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="GuestName" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="MakeDuplicateKeyResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="MakeDuplicateKeyResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ChangeKeyAccess">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ReservationID" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="SiteName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PMSTerminalID" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="EncoderID" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="CheckIn" type="s:dateTime" />
+            <s:element minOccurs="1" maxOccurs="1" name="CheckOut" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" ref="s4:GuestName" />
+            <s:element minOccurs="0" maxOccurs="1" name="VariableRoomList" type="tns:ArrayOfString" />
+            <s:element minOccurs="0" maxOccurs="1" name="CommonAreaList" type="tns:ArrayOfCCommonAreas" />
+            <s:element minOccurs="0" maxOccurs="1" name="TrackIIFolioNo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="TrackIGuestNo" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="KeyCount" type="s:unsignedInt" />
+            <s:element minOccurs="1" maxOccurs="1" name="KeySize" type="s:unsignedInt" />
+            <s:element minOccurs="0" maxOccurs="1" name="UID" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ChangeKeyAccessResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ChangeKeyAccessResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ExtendCheckOut">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ReservationID" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="SiteName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PMSTerminalID" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="CheckOut" type="s:dateTime" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ExtendCheckOutResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ExtendCheckOutResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CheckOutGuest">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ReservationID" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="SiteName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PMSTerminalID" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CheckOutGuestResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="CheckOutGuestResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="MakeUnassignedBooking">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ReservationID" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="SiteName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PMSTerminalID" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="EncoderID" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="CheckIn" type="s:dateTime" />
+            <s:element minOccurs="1" maxOccurs="1" name="CheckOut" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" ref="s4:GuestName" />
+            <s:element minOccurs="0" maxOccurs="1" name="CommonAreaList" type="tns:ArrayOfCCommonAreas" />
+            <s:element minOccurs="0" maxOccurs="1" name="TrackIIFolioNo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="TrackIGuestNo" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="KeyCount" type="s:unsignedInt" />
+            <s:element minOccurs="1" maxOccurs="1" name="KeySize" type="s:unsignedInt" />
+            <s:element minOccurs="0" maxOccurs="1" name="UID" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="MakeUnassignedBookingResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="MakeUnassignedBookingResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ChangeGuestAccess">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ReservationID" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="SiteName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PMSTerminalID" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="MainRoomNo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="RoomList" type="tns:ArrayOfString" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ChangeGuestAccessResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ChangeGuestAccessResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddGuestAccess">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ReservationID" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="SiteName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PMSTerminalID" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="RoomList" type="tns:ArrayOfString" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddGuestAccessResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="AddGuestAccessResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="DenyAccessToGuest">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ReservationID" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="SiteName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PMSTerminalID" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="DenyAccessToGuestResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="DenyAccessToGuestResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ReEstablishAccessToGuest">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ReservationID" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="SiteName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PMSTerminalID" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ReEstablishAccessToGuestResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ReEstablishAccessToGuestResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CancelGuestsAccessToRoom">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="SiteName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="MainRoomNo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PMSTerminalID" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CancelGuestsAccessToRoomResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="CancelGuestsAccessToRoomResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CancelGuestsMobileAccessToRoom">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="SiteName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReservationID" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="MainRoomNo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="GuestMobileNumber" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PMSTerminalID" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CancelGuestsMobileAccessToRoomResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="CancelGuestsMobileAccessToRoomResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CreateOneShotKey">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="SiteName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PMSTerminalID" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="EncoderID" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="MainRoomNo" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="CheckIn" type="s:dateTime" />
+            <s:element minOccurs="1" maxOccurs="1" name="CheckOut" type="s:dateTime" />
+            <s:element minOccurs="1" maxOccurs="1" name="KeySize" type="s:unsignedInt" />
+            <s:element minOccurs="0" maxOccurs="1" name="UID" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CreateOneShotKeyResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="CreateOneShotKeyResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetDeviceSecKeysRights">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="keyReq" type="tns:CSecKeysRequest" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="CSecKeysRequest">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="ProductLine" type="tns:eKabaProductLine" />
+          <s:element minOccurs="0" maxOccurs="1" name="KeyDeviceUID" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="RFIDEncodingType" type="tns:eRFIDEncodingTypes" />
+          <s:element minOccurs="0" maxOccurs="1" name="SecKeysRightsBuffer" type="tns:ArrayOfString" />
+        </s:sequence>
+      </s:complexType>
+      <s:simpleType name="eKabaProductLine">
+        <s:restriction base="s:string">
+          <s:enumeration value="None" />
+          <s:enumeration value="Atlas" />
+          <s:enumeration value="Saflok" />
+          <s:enumeration value="Eplex" />
+          <s:enumeration value="Oracode" />
+          <s:enumeration value="MultiHousing" />
+          <s:enumeration value="eDATA" />
+        </s:restriction>
+      </s:simpleType>
+      <s:simpleType name="eRFIDEncodingTypes">
+        <s:restriction base="s:string">
+          <s:enumeration value="None" />
+          <s:enumeration value="Legacy" />
+          <s:enumeration value="Type1" />
+          <s:enumeration value="Type2" />
+        </s:restriction>
+      </s:simpleType>
+      <s:element name="GetDeviceSecKeysRightsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetDeviceSecKeysRightsResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+            <s:element minOccurs="0" maxOccurs="1" name="keyReq" type="tns:CSecKeysRequest" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="UpdateKeyTransactionStatus">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="PMSTransactionID" type="s:long" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReservationID" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="EncoderID" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" ref="s4:MainRoomNo" />
+            <s:element minOccurs="1" maxOccurs="1" name="TransactionStatus" type="s:int" />
+            <s:element minOccurs="0" maxOccurs="1" name="ExternalRefNo" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="QualifierRef" type="s:unsignedInt" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReturnedMsg" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="UpdateKeyTransactionStatusResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="UpdateKeyTransactionStatusResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetMobileTransactionHistory">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ReservationID" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="RoomNo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="EncoderID" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="From" nillable="true" type="s:dateTime" />
+            <s:element minOccurs="1" maxOccurs="1" name="To" nillable="true" type="s:dateTime" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetMobileTransactionHistoryResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetMobileTransactionHistoryResult" type="tns:MobileTransactionHistory" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="MobileTransactionHistory">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="RequestStatus">
+            <s:complexType mixed="true">
+              <s:sequence>
+                <s:any />
+              </s:sequence>
+            </s:complexType>
+          </s:element>
+          <s:element minOccurs="0" maxOccurs="1" name="PMStransactionList" type="tns:ArrayOfTransactionStatusHistory" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfTransactionStatusHistory">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="TransactionStatusHistory" nillable="true" type="tns:TransactionStatusHistory" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="TransactionStatusHistory">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="ID" type="s:long" />
+          <s:element minOccurs="1" maxOccurs="1" name="PMSTransactionNo" type="s:long" />
+          <s:element minOccurs="1" maxOccurs="1" name="SystemActivityID" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="SystemActivity" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="ResponseDateTime" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="TransactionStatus" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="TransactionInError" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="GuestInfo" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Message" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="RoomNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="StaInfo" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="SendKey2StaffMobileDevice">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="PMSTerminalID" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="ValidFrom" type="s:dateTime" />
+            <s:element minOccurs="1" maxOccurs="1" name="ValidTo" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="StaffID" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Name" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="MobileNumber" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="KeyName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="KeyData" type="s:base64Binary" />
+            <s:element minOccurs="1" maxOccurs="1" name="SendSMS" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="SendKey2StaffMobileDeviceResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="SendKey2StaffMobileDeviceResult" type="tns:CMessengerGuestCreateResponse" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="CMessengerGuestCreateResponse">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:CMessengerBaseResponse">
+            <s:sequence>
+              <s:element minOccurs="1" maxOccurs="1" name="retPMSTransactionNo" type="s:long" />
+            </s:sequence>
+          </s:extension>
+        </s:complexContent>
+      </s:complexType>
+      <s:element name="UnRegisterStaff">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="StaffID" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="MobileNumber" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="KeyName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="KeyData" type="s:base64Binary" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="UnRegisterStaffResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="UnRegisterStaffResult" type="tns:CMessengerGuestCreateResponse" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+    </s:schema>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://schemas.xmlsoap.org/ws/2004/08/addressing">
+      <s:import namespace="http://microsoft.com/wsdl/types/" />
+      <s:element name="Action" type="s:string" />
+      <s:element name="From" type="s:string" />
+      <s:element name="MessageID" type="s2:guid" />
+      <s:element name="To" type="s:string" />
+    </s:schema>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://microsoft.com/wsdl/types/">
+      <s:simpleType name="guid">
+        <s:restriction base="s:string">
+          <s:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}" />
+        </s:restriction>
+      </s:simpleType>
+    </s:schema>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous">
+      <s:element name="ReplyTo" type="s:string" />
+    </s:schema>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">
+      <s:import namespace="http://microsoft.com/wsdl/types/" />
+      <s:element name="Timestamp" type="s4:CTimestamp" />
+      <s:complexType name="CTimestamp">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="Id" type="s2:guid" />
+          <s:element minOccurs="1" maxOccurs="1" name="Created" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="Expires" type="s:dateTime" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="UsernameToken" type="s4:CUserNameToken" />
+      <s:complexType name="CUserNameToken">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="Id" type="s2:guid" />
+          <s:element minOccurs="0" maxOccurs="1" name="Username" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Password" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Nonce" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="Created" type="s:dateTime" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="GuestName" type="s:string" />
+      <s:element name="MainRoomNo" type="s:string" />
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="HelloWorldTestSoapIn">
+    <wsdl:part name="parameters" element="tns:HelloWorldTest" />
+  </wsdl:message>
+  <wsdl:message name="HelloWorldTestSoapOut">
+    <wsdl:part name="parameters" element="tns:HelloWorldTestResponse" />
+  </wsdl:message>
+  <wsdl:message name="HelloWorldTestAuthHeader">
+    <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
+  </wsdl:message>
+  <wsdl:message name="PublishResponseComplexTypesSoapIn">
+    <wsdl:part name="parameters" element="tns:PublishResponseComplexTypes" />
+  </wsdl:message>
+  <wsdl:message name="PublishResponseComplexTypesSoapOut">
+    <wsdl:part name="parameters" element="tns:PublishResponseComplexTypesResponse" />
+  </wsdl:message>
+  <wsdl:message name="PublishResponseComplexTypesAuthHeader">
+    <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
+  </wsdl:message>
+  <wsdl:message name="PublishFaultListSoapIn">
+    <wsdl:part name="parameters" element="tns:PublishFaultList" />
+  </wsdl:message>
+  <wsdl:message name="PublishFaultListSoapOut">
+    <wsdl:part name="parameters" element="tns:PublishFaultListResponse" />
+  </wsdl:message>
+  <wsdl:message name="PublishFaultListAuthHeader">
+    <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
+  </wsdl:message>
+  <wsdl:message name="CreateNewBookingSoapIn">
+    <wsdl:part name="parameters" element="tns:CreateNewBooking" />
+  </wsdl:message>
+  <wsdl:message name="CreateNewBookingSoapOut">
+    <wsdl:part name="parameters" element="tns:CreateNewBookingResponse" />
+  </wsdl:message>
+  <wsdl:message name="CreateNewBookingAuthHeader">
+    <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
+  </wsdl:message>
+  <wsdl:message name="AddSharedGuestSoapIn">
+    <wsdl:part name="parameters" element="tns:AddSharedGuest" />
+  </wsdl:message>
+  <wsdl:message name="AddSharedGuestSoapOut">
+    <wsdl:part name="parameters" element="tns:AddSharedGuestResponse" />
+  </wsdl:message>
+  <wsdl:message name="AddSharedGuestAuthHeader">
+    <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
+  </wsdl:message>
+  <wsdl:message name="MakeDuplicateKeySoapIn">
+    <wsdl:part name="parameters" element="tns:MakeDuplicateKey" />
+  </wsdl:message>
+  <wsdl:message name="MakeDuplicateKeySoapOut">
+    <wsdl:part name="parameters" element="tns:MakeDuplicateKeyResponse" />
+  </wsdl:message>
+  <wsdl:message name="MakeDuplicateKeyAuthHeader">
+    <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
+  </wsdl:message>
+  <wsdl:message name="ChangeKeyAccessSoapIn">
+    <wsdl:part name="parameters" element="tns:ChangeKeyAccess" />
+  </wsdl:message>
+  <wsdl:message name="ChangeKeyAccessSoapOut">
+    <wsdl:part name="parameters" element="tns:ChangeKeyAccessResponse" />
+  </wsdl:message>
+  <wsdl:message name="ChangeKeyAccessAuthHeader">
+    <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
+  </wsdl:message>
+  <wsdl:message name="ExtendCheckOutSoapIn">
+    <wsdl:part name="parameters" element="tns:ExtendCheckOut" />
+  </wsdl:message>
+  <wsdl:message name="ExtendCheckOutSoapOut">
+    <wsdl:part name="parameters" element="tns:ExtendCheckOutResponse" />
+  </wsdl:message>
+  <wsdl:message name="ExtendCheckOutAuthHeader">
+    <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
+  </wsdl:message>
+  <wsdl:message name="CheckOutGuestSoapIn">
+    <wsdl:part name="parameters" element="tns:CheckOutGuest" />
+  </wsdl:message>
+  <wsdl:message name="CheckOutGuestSoapOut">
+    <wsdl:part name="parameters" element="tns:CheckOutGuestResponse" />
+  </wsdl:message>
+  <wsdl:message name="CheckOutGuestAuthHeader">
+    <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
+  </wsdl:message>
+  <wsdl:message name="MakeUnassignedBookingSoapIn">
+    <wsdl:part name="parameters" element="tns:MakeUnassignedBooking" />
+  </wsdl:message>
+  <wsdl:message name="MakeUnassignedBookingSoapOut">
+    <wsdl:part name="parameters" element="tns:MakeUnassignedBookingResponse" />
+  </wsdl:message>
+  <wsdl:message name="MakeUnassignedBookingAuthHeader">
+    <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
+  </wsdl:message>
+  <wsdl:message name="ChangeGuestAccessSoapIn">
+    <wsdl:part name="parameters" element="tns:ChangeGuestAccess" />
+  </wsdl:message>
+  <wsdl:message name="ChangeGuestAccessSoapOut">
+    <wsdl:part name="parameters" element="tns:ChangeGuestAccessResponse" />
+  </wsdl:message>
+  <wsdl:message name="ChangeGuestAccessAuthHeader">
+    <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
+  </wsdl:message>
+  <wsdl:message name="AddGuestAccessSoapIn">
+    <wsdl:part name="parameters" element="tns:AddGuestAccess" />
+  </wsdl:message>
+  <wsdl:message name="AddGuestAccessSoapOut">
+    <wsdl:part name="parameters" element="tns:AddGuestAccessResponse" />
+  </wsdl:message>
+  <wsdl:message name="AddGuestAccessAuthHeader">
+    <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
+  </wsdl:message>
+  <wsdl:message name="DenyAccessToGuestSoapIn">
+    <wsdl:part name="parameters" element="tns:DenyAccessToGuest" />
+  </wsdl:message>
+  <wsdl:message name="DenyAccessToGuestSoapOut">
+    <wsdl:part name="parameters" element="tns:DenyAccessToGuestResponse" />
+  </wsdl:message>
+  <wsdl:message name="DenyAccessToGuestAuthHeader">
+    <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
+  </wsdl:message>
+  <wsdl:message name="ReEstablishAccessToGuestSoapIn">
+    <wsdl:part name="parameters" element="tns:ReEstablishAccessToGuest" />
+  </wsdl:message>
+  <wsdl:message name="ReEstablishAccessToGuestSoapOut">
+    <wsdl:part name="parameters" element="tns:ReEstablishAccessToGuestResponse" />
+  </wsdl:message>
+  <wsdl:message name="ReEstablishAccessToGuestAuthHeader">
+    <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
+  </wsdl:message>
+  <wsdl:message name="CancelGuestsAccessToRoomSoapIn">
+    <wsdl:part name="parameters" element="tns:CancelGuestsAccessToRoom" />
+  </wsdl:message>
+  <wsdl:message name="CancelGuestsAccessToRoomSoapOut">
+    <wsdl:part name="parameters" element="tns:CancelGuestsAccessToRoomResponse" />
+  </wsdl:message>
+  <wsdl:message name="CancelGuestsAccessToRoomAuthHeader">
+    <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
+  </wsdl:message>
+  <wsdl:message name="CancelGuestsMobileAccessToRoomSoapIn">
+    <wsdl:part name="parameters" element="tns:CancelGuestsMobileAccessToRoom" />
+  </wsdl:message>
+  <wsdl:message name="CancelGuestsMobileAccessToRoomSoapOut">
+    <wsdl:part name="parameters" element="tns:CancelGuestsMobileAccessToRoomResponse" />
+  </wsdl:message>
+  <wsdl:message name="CancelGuestsMobileAccessToRoomAuthHeader">
+    <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
+  </wsdl:message>
+  <wsdl:message name="CreateOneShotKeySoapIn">
+    <wsdl:part name="parameters" element="tns:CreateOneShotKey" />
+  </wsdl:message>
+  <wsdl:message name="CreateOneShotKeySoapOut">
+    <wsdl:part name="parameters" element="tns:CreateOneShotKeyResponse" />
+  </wsdl:message>
+  <wsdl:message name="CreateOneShotKeyAuthHeader">
+    <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
+  </wsdl:message>
+  <wsdl:message name="GetDeviceSecKeysRightsSoapIn">
+    <wsdl:part name="parameters" element="tns:GetDeviceSecKeysRights" />
+  </wsdl:message>
+  <wsdl:message name="GetDeviceSecKeysRightsSoapOut">
+    <wsdl:part name="parameters" element="tns:GetDeviceSecKeysRightsResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetDeviceSecKeysRightsAuthHeader">
+    <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
+  </wsdl:message>
+  <wsdl:message name="UpdateKeyTransactionStatusSoapIn">
+    <wsdl:part name="parameters" element="tns:UpdateKeyTransactionStatus" />
+  </wsdl:message>
+  <wsdl:message name="UpdateKeyTransactionStatusSoapOut">
+    <wsdl:part name="parameters" element="tns:UpdateKeyTransactionStatusResponse" />
+  </wsdl:message>
+  <wsdl:message name="UpdateKeyTransactionStatusAuthHeader">
+    <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
+  </wsdl:message>
+  <wsdl:message name="GetMobileTransactionHistorySoapIn">
+    <wsdl:part name="parameters" element="tns:GetMobileTransactionHistory" />
+  </wsdl:message>
+  <wsdl:message name="GetMobileTransactionHistorySoapOut">
+    <wsdl:part name="parameters" element="tns:GetMobileTransactionHistoryResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetMobileTransactionHistoryAuthHeader">
+    <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
+  </wsdl:message>
+  <wsdl:message name="SendKey2StaffMobileDeviceSoapIn">
+    <wsdl:part name="parameters" element="tns:SendKey2StaffMobileDevice" />
+  </wsdl:message>
+  <wsdl:message name="SendKey2StaffMobileDeviceSoapOut">
+    <wsdl:part name="parameters" element="tns:SendKey2StaffMobileDeviceResponse" />
+  </wsdl:message>
+  <wsdl:message name="SendKey2StaffMobileDeviceAuthHeader">
+    <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
+  </wsdl:message>
+  <wsdl:message name="UnRegisterStaffSoapIn">
+    <wsdl:part name="parameters" element="tns:UnRegisterStaff" />
+  </wsdl:message>
+  <wsdl:message name="UnRegisterStaffSoapOut">
+    <wsdl:part name="parameters" element="tns:UnRegisterStaffResponse" />
+  </wsdl:message>
+  <wsdl:message name="UnRegisterStaffAuthHeader">
+    <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
+  </wsdl:message>
+  <wsdl:portType name="MessengerPMSWSServiceSoap">
+    <wsdl:operation name="HelloWorldTest">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Hello OOOOOO simple.</wsdl:documentation>
+      <wsdl:input message="tns:HelloWorldTestSoapIn" />
+      <wsdl:output message="tns:HelloWorldTestSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="PublishResponseComplexTypes">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">This method has been included to publish complex types associated with each method return. The header Action attribut will be set to http://www.w3.org/2005/08/addressing/fault to trigger fault processing.</wsdl:documentation>
+      <wsdl:input message="tns:PublishResponseComplexTypesSoapIn" />
+      <wsdl:output message="tns:PublishResponseComplexTypesSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="PublishFaultList">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">This method has been included to publish complex types associated with each method return. The header Action attribut will be set to http://www.w3.org/2005/08/addressing/fault to trigger fault processing.</wsdl:documentation>
+      <wsdl:input message="tns:PublishFaultListSoapIn" />
+      <wsdl:output message="tns:PublishFaultListSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CreateNewBooking">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">This will create a  new key which, will remove access to all previously encoded keys that have access to the rooms. For variable room list selection, must have smartcards or memory card technology.</wsdl:documentation>
+      <wsdl:input message="tns:CreateNewBookingSoapIn" />
+      <wsdl:output message="tns:CreateNewBookingSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="AddSharedGuest">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Will be added to the room(s) which were already booked, by Original Booker,  without removing access to other users. Additional rooms will be shared only if the rooms have been booked by the same  Original Booker or are free.</wsdl:documentation>
+      <wsdl:input message="tns:AddSharedGuestSoapIn" />
+      <wsdl:output message="tns:AddSharedGuestSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="MakeDuplicateKey">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">The Reservation must have a key which has not expired. Must have been previously created.</wsdl:documentation>
+      <wsdl:input message="tns:MakeDuplicateKeySoapIn" />
+      <wsdl:output message="tns:MakeDuplicateKeySoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ChangeKeyAccess">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Existing keys access (new or duplicate) will not be modified, and will not carry any of the updated information.   This key will not override older keys, i.e. cancel old keys.</wsdl:documentation>
+      <wsdl:input message="tns:ChangeKeyAccessSoapIn" />
+      <wsdl:output message="tns:ChangeKeyAccessSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ExtendCheckOut">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Will be done remotely to all rooms associated with this Resv ID.</wsdl:documentation>
+      <wsdl:input message="tns:ExtendCheckOutSoapIn" />
+      <wsdl:output message="tns:ExtendCheckOutSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CheckOutGuest">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Will send a DenyAccessToUser with the Reservation # after the grace period has ended.</wsdl:documentation>
+      <wsdl:input message="tns:CheckOutGuestSoapIn" />
+      <wsdl:output message="tns:CheckOutGuestSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="MakeUnassignedBooking">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">You can not have 2 different unassigned guests merged into the same room unless one of the keys is re-encoded.</wsdl:documentation>
+      <wsdl:input message="tns:MakeUnassignedBookingSoapIn" />
+      <wsdl:output message="tns:MakeUnassignedBookingSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ChangeGuestAccess">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Existing keys access (new or duplicate) will not be modified, and will not carry any of the updated information.   This key will not override older keys, i.e. cancel old keys.</wsdl:documentation>
+      <wsdl:input message="tns:ChangeGuestAccessSoapIn" />
+      <wsdl:output message="tns:ChangeGuestAccessSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="AddGuestAccess">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Will add access to the targetted rooms. In a shared with context the new rooms must be either empty or belong to the same booking, i.e.  Shared with users all share a same special key.</wsdl:documentation>
+      <wsdl:input message="tns:AddGuestAccessSoapIn" />
+      <wsdl:output message="tns:AddGuestAccessSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="DenyAccessToGuest">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Access will be blocked immediately to all rooms for all keys created with this Reservation ID.</wsdl:documentation>
+      <wsdl:input message="tns:DenyAccessToGuestSoapIn" />
+      <wsdl:output message="tns:DenyAccessToGuestSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ReEstablishAccessToGuest">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Access will be unblocked immediately to all rooms for all keys created with this Reservation ID UNLESS the rooms have been re-booked.</wsdl:documentation>
+      <wsdl:input message="tns:ReEstablishAccessToGuestSoapIn" />
+      <wsdl:output message="tns:ReEstablishAccessToGuestSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CancelGuestsAccessToRoom">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">All guests and reservations of a room will be canceled and denied access to room(s) provided.</wsdl:documentation>
+      <wsdl:input message="tns:CancelGuestsAccessToRoomSoapIn" />
+      <wsdl:output message="tns:CancelGuestsAccessToRoomSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CancelGuestsMobileAccessToRoom">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">All guests and reservations of a room will be canceled and denied access to room(s) provided.</wsdl:documentation>
+      <wsdl:input message="tns:CancelGuestsMobileAccessToRoomSoapIn" />
+      <wsdl:output message="tns:CancelGuestsMobileAccessToRoomSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CreateOneShotKey">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">This will create a new key with limited use and will not remove access to all previously encoded keys that have access to the rooms.</wsdl:documentation>
+      <wsdl:input message="tns:CreateOneShotKeySoapIn" />
+      <wsdl:output message="tns:CreateOneShotKeySoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetDeviceSecKeysRights">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Use this Web Method to generate Sector Key A.</wsdl:documentation>
+      <wsdl:input message="tns:GetDeviceSecKeysRightsSoapIn" />
+      <wsdl:output message="tns:GetDeviceSecKeysRightsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="UpdateKeyTransactionStatus">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">This will update the PMS transaction status.</wsdl:documentation>
+      <wsdl:input message="tns:UpdateKeyTransactionStatusSoapIn" />
+      <wsdl:output message="tns:UpdateKeyTransactionStatusSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetMobileTransactionHistory">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">This will get all PMS transactions history according to some filters.</wsdl:documentation>
+      <wsdl:input message="tns:GetMobileTransactionHistorySoapIn" />
+      <wsdl:output message="tns:GetMobileTransactionHistorySoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="SendKey2StaffMobileDevice">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">This will create the Staff PMS transaction.</wsdl:documentation>
+      <wsdl:input message="tns:SendKey2StaffMobileDeviceSoapIn" />
+      <wsdl:output message="tns:SendKey2StaffMobileDeviceSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="UnRegisterStaff">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">This will remove the Staff PMS transaction.</wsdl:documentation>
+      <wsdl:input message="tns:UnRegisterStaffSoapIn" />
+      <wsdl:output message="tns:UnRegisterStaffSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="MessengerPMSWSServiceSoap" type="tns:MessengerPMSWSServiceSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="HelloWorldTest">
+      <soap:operation soapAction="http://tempuri.org/HelloWorldTest" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+        <soap:header message="tns:HelloWorldTestAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+        <soap:header message="tns:HelloWorldTestAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="PublishResponseComplexTypes">
+      <soap:operation soapAction="http://tempuri.org/PublishResponseComplexTypes" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+        <soap:header message="tns:PublishResponseComplexTypesAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+        <soap:header message="tns:PublishResponseComplexTypesAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="PublishFaultList">
+      <soap:operation soapAction="http://tempuri.org/PublishFaultList" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+        <soap:header message="tns:PublishFaultListAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+        <soap:header message="tns:PublishFaultListAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CreateNewBooking">
+      <soap:operation soapAction="http://tempuri.org/CreateNewBooking" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+        <soap:header message="tns:CreateNewBookingAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+        <soap:header message="tns:CreateNewBookingAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddSharedGuest">
+      <soap:operation soapAction="http://tempuri.org/AddSharedGuest" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+        <soap:header message="tns:AddSharedGuestAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+        <soap:header message="tns:AddSharedGuestAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="MakeDuplicateKey">
+      <soap:operation soapAction="http://tempuri.org/MakeDuplicateKey" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+        <soap:header message="tns:MakeDuplicateKeyAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+        <soap:header message="tns:MakeDuplicateKeyAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ChangeKeyAccess">
+      <soap:operation soapAction="http://tempuri.org/ChangeKeyAccess" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+        <soap:header message="tns:ChangeKeyAccessAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+        <soap:header message="tns:ChangeKeyAccessAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ExtendCheckOut">
+      <soap:operation soapAction="http://tempuri.org/ExtendCheckOut" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+        <soap:header message="tns:ExtendCheckOutAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+        <soap:header message="tns:ExtendCheckOutAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CheckOutGuest">
+      <soap:operation soapAction="http://tempuri.org/CheckOutGuest" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+        <soap:header message="tns:CheckOutGuestAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+        <soap:header message="tns:CheckOutGuestAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="MakeUnassignedBooking">
+      <soap:operation soapAction="http://tempuri.org/MakeUnassignedBooking" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+        <soap:header message="tns:MakeUnassignedBookingAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+        <soap:header message="tns:MakeUnassignedBookingAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ChangeGuestAccess">
+      <soap:operation soapAction="http://tempuri.org/ChangeGuestAccess" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+        <soap:header message="tns:ChangeGuestAccessAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+        <soap:header message="tns:ChangeGuestAccessAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddGuestAccess">
+      <soap:operation soapAction="http://tempuri.org/AddGuestAccess" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+        <soap:header message="tns:AddGuestAccessAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+        <soap:header message="tns:AddGuestAccessAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="DenyAccessToGuest">
+      <soap:operation soapAction="http://tempuri.org/DenyAccessToGuest" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+        <soap:header message="tns:DenyAccessToGuestAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+        <soap:header message="tns:DenyAccessToGuestAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ReEstablishAccessToGuest">
+      <soap:operation soapAction="http://tempuri.org/ReEstablishAccessToGuest" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+        <soap:header message="tns:ReEstablishAccessToGuestAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+        <soap:header message="tns:ReEstablishAccessToGuestAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CancelGuestsAccessToRoom">
+      <soap:operation soapAction="http://tempuri.org/CancelGuestsAccessToRoom" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+        <soap:header message="tns:CancelGuestsAccessToRoomAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+        <soap:header message="tns:CancelGuestsAccessToRoomAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CancelGuestsMobileAccessToRoom">
+      <soap:operation soapAction="http://tempuri.org/CancelGuestsMobileAccessToRoom" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+        <soap:header message="tns:CancelGuestsMobileAccessToRoomAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+        <soap:header message="tns:CancelGuestsMobileAccessToRoomAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CreateOneShotKey">
+      <soap:operation soapAction="http://tempuri.org/CreateOneShotKey" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+        <soap:header message="tns:CreateOneShotKeyAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+        <soap:header message="tns:CreateOneShotKeyAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetDeviceSecKeysRights">
+      <soap:operation soapAction="http://tempuri.org/GetDeviceSecKeysRights" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+        <soap:header message="tns:GetDeviceSecKeysRightsAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+        <soap:header message="tns:GetDeviceSecKeysRightsAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UpdateKeyTransactionStatus">
+      <soap:operation soapAction="http://tempuri.org/UpdateKeyTransactionStatus" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+        <soap:header message="tns:UpdateKeyTransactionStatusAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+        <soap:header message="tns:UpdateKeyTransactionStatusAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetMobileTransactionHistory">
+      <soap:operation soapAction="http://tempuri.org/GetMobileTransactionHistory" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+        <soap:header message="tns:GetMobileTransactionHistoryAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+        <soap:header message="tns:GetMobileTransactionHistoryAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SendKey2StaffMobileDevice">
+      <soap:operation soapAction="http://tempuri.org/SendKey2StaffMobileDevice" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+        <soap:header message="tns:SendKey2StaffMobileDeviceAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+        <soap:header message="tns:SendKey2StaffMobileDeviceAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UnRegisterStaff">
+      <soap:operation soapAction="http://tempuri.org/UnRegisterStaff" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+        <soap:header message="tns:UnRegisterStaffAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+        <soap:header message="tns:UnRegisterStaffAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="MessengerPMSWSServiceSoap12" type="tns:MessengerPMSWSServiceSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="HelloWorldTest">
+      <soap12:operation soapAction="http://tempuri.org/HelloWorldTest" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:HelloWorldTestAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:HelloWorldTestAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="PublishResponseComplexTypes">
+      <soap12:operation soapAction="http://tempuri.org/PublishResponseComplexTypes" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:PublishResponseComplexTypesAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:PublishResponseComplexTypesAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="PublishFaultList">
+      <soap12:operation soapAction="http://tempuri.org/PublishFaultList" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:PublishFaultListAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:PublishFaultListAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CreateNewBooking">
+      <soap12:operation soapAction="http://tempuri.org/CreateNewBooking" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:CreateNewBookingAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:CreateNewBookingAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddSharedGuest">
+      <soap12:operation soapAction="http://tempuri.org/AddSharedGuest" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:AddSharedGuestAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:AddSharedGuestAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="MakeDuplicateKey">
+      <soap12:operation soapAction="http://tempuri.org/MakeDuplicateKey" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:MakeDuplicateKeyAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:MakeDuplicateKeyAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ChangeKeyAccess">
+      <soap12:operation soapAction="http://tempuri.org/ChangeKeyAccess" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:ChangeKeyAccessAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:ChangeKeyAccessAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ExtendCheckOut">
+      <soap12:operation soapAction="http://tempuri.org/ExtendCheckOut" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:ExtendCheckOutAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:ExtendCheckOutAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CheckOutGuest">
+      <soap12:operation soapAction="http://tempuri.org/CheckOutGuest" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:CheckOutGuestAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:CheckOutGuestAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="MakeUnassignedBooking">
+      <soap12:operation soapAction="http://tempuri.org/MakeUnassignedBooking" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:MakeUnassignedBookingAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:MakeUnassignedBookingAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ChangeGuestAccess">
+      <soap12:operation soapAction="http://tempuri.org/ChangeGuestAccess" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:ChangeGuestAccessAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:ChangeGuestAccessAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddGuestAccess">
+      <soap12:operation soapAction="http://tempuri.org/AddGuestAccess" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:AddGuestAccessAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:AddGuestAccessAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="DenyAccessToGuest">
+      <soap12:operation soapAction="http://tempuri.org/DenyAccessToGuest" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:DenyAccessToGuestAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:DenyAccessToGuestAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ReEstablishAccessToGuest">
+      <soap12:operation soapAction="http://tempuri.org/ReEstablishAccessToGuest" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:ReEstablishAccessToGuestAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:ReEstablishAccessToGuestAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CancelGuestsAccessToRoom">
+      <soap12:operation soapAction="http://tempuri.org/CancelGuestsAccessToRoom" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:CancelGuestsAccessToRoomAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:CancelGuestsAccessToRoomAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CancelGuestsMobileAccessToRoom">
+      <soap12:operation soapAction="http://tempuri.org/CancelGuestsMobileAccessToRoom" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:CancelGuestsMobileAccessToRoomAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:CancelGuestsMobileAccessToRoomAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CreateOneShotKey">
+      <soap12:operation soapAction="http://tempuri.org/CreateOneShotKey" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:CreateOneShotKeyAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:CreateOneShotKeyAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetDeviceSecKeysRights">
+      <soap12:operation soapAction="http://tempuri.org/GetDeviceSecKeysRights" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:GetDeviceSecKeysRightsAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:GetDeviceSecKeysRightsAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UpdateKeyTransactionStatus">
+      <soap12:operation soapAction="http://tempuri.org/UpdateKeyTransactionStatus" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:UpdateKeyTransactionStatusAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:UpdateKeyTransactionStatusAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetMobileTransactionHistory">
+      <soap12:operation soapAction="http://tempuri.org/GetMobileTransactionHistory" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:GetMobileTransactionHistoryAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:GetMobileTransactionHistoryAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SendKey2StaffMobileDevice">
+      <soap12:operation soapAction="http://tempuri.org/SendKey2StaffMobileDevice" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:SendKey2StaffMobileDeviceAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:SendKey2StaffMobileDeviceAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UnRegisterStaff">
+      <soap12:operation soapAction="http://tempuri.org/UnRegisterStaff" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:UnRegisterStaffAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:UnRegisterStaffAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="MessengerPMSWSService">
+    <wsdl:port name="MessengerPMSWSServiceSoap" binding="tns:MessengerPMSWSServiceSoap">
+      <soap:address location="http://192.168.2.123/lenspmswebservice/MessengerPMSService.asmx" />
+    </wsdl:port>
+    <wsdl:port name="MessengerPMSWSServiceSoap12" binding="tns:MessengerPMSWSServiceSoap12">
+      <soap12:address location="http://192.168.2.123/lenspmswebservice/MessengerPMSService.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

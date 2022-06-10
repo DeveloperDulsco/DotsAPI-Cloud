@@ -1,0 +1,128 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Welcome Email</title>
+	<style type="text/css">
+		body {
+			Margin: 0;
+			padding: 0;
+            background-color: #f5f5f5;
+		}
+		table {
+			border-spacing: 0;
+		}
+		td {
+			padding: 0;
+		}
+		img {
+			border: 0;
+		}
+        .wrapper {
+            width: 100%;
+            table-layout: fixed;
+            /* background-color: #f6f9fc; */
+            padding-bottom: 40px;
+        }
+        .webkit {
+            max-width: 600px;
+            background-color: #ffffff;
+        }
+        .header {
+            margin: 0 auto;
+            width: 100%;
+            border-spacing: 0;
+            text-align: center;
+        }
+        .outer {
+            margin: 0 auto;
+            margin-top: 20px;
+            margin-bottom: 50px;
+            width: 100%;
+            max-width: 600px;
+            border-spacing: 0;
+            font-family: sans-serif;
+            color: #4a4a4a;
+        }
+        .maincontent {
+            text-align: left;
+        }
+        .pading {
+            padding: 15px;
+        }
+        a {
+            text-decoration: none;
+            color: #388cda;
+            font-size: 14px;
+        }
+		@media screen and (max-width: 600px) { 
+		}
+		@media screen and (max-width: 400px) { 
+		}
+	</style>
+</head>
+<body>
+    <center class="wraper">
+        <div class="header">
+            <table class="header" align="center">
+                <tr>
+                    <td>
+                        <table width="100%" style="border-spacing:0;">
+                            <tr>
+                                <td style="background-color:#ffffff; padding: 10px; text-align: center;">
+                                    <a href="#"><img src='cid:$$HEADER_IMAGE$$' width="300px" alt="" title=""></a>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="webkit">
+            
+            <table class="outer" align="left">
+                <tr>
+                    <td class="maincontent" style="background-color:#ffffff; padding: 10px; text-align: center;">
+                        <table class="column">
+                            <tr>
+                                <td class="padding">
+                                    <table class="content">
+                                        <tr>
+                                            <td style="padding: 15px; text-align: left; ">
+                                                <p style="font-size: 16px; font-weight: bold; ">Dear <span>$$GUEST_NAME$$</span></p>
+                                                <p style="font-size: 14px; font-weight: normal; line-height: 24px;">
+                                                    Thank you for choosing Fairmont Singapore for your recent visit. 
+                                                </p>
+                                                <p style="font-size: 14px; font-weight: normal; line-height: 24px;">Please find attached an electronic copy of your hotel invoice. It has been our pleasure to have you stay with us at Fairmont Singapore.</p>
+                                                <p>We look forward to seeing you again soon.</p>
+                                                <p><em>Please do not reply to this email. For enquiries, please email Singapore@fairmont.com.</em></p>
+
+                                                <p>Best Regards,</p>
+                                                <p>Fairmont Singapore</p>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <table width="100%" style="border-spacing:0;">
+                            <tr>
+                                <td style="background-color:#ffffff; padding: 20px; padding-bottom: 50px; text-align: center; margin-bottom: 20px;">
+                                    <!-- <a href="#"><img src="img/cancel.png" width="117px" alt="" title=""></a> -->
+                                    <a href="http://10.30.59.135:8083/Home/Index?ConfirmationNO=$$CONFIRMATION_NO$$"><img src='cid:$$BUTTON_IMAGE$$' width="117px" alt="" title=""></a>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </center>
+</body>
+</html>

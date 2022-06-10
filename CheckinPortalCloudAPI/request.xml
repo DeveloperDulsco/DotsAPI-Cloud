@@ -1,0 +1,31 @@
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+  <s:Header>
+    <Action s:mustUnderstand="1" xmlns="http://schemas.microsoft.com/ws/2005/05/addressing/none">http://webservices.micros.com/ows/5.1/Reservation.wsdl#AddAccompanyGuest</Action>
+    <h:OGHeader transactionID="76350429" primaryLangID="EN" xmlns="http://webservices.micros.com/og/4.3/Core/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:h="http://webservices.micros.com/og/4.3/Core/">
+      <Origin entityID="KIOSK" systemType="KIOSK" />
+      <Destination entityID="TI" systemType="KIOSK" />
+      <Authentication>
+        <UserCredentials>
+          <UserName>SUPERVISOR</UserName>
+          <UserPassword>PEGASUS2021</UserPassword>
+          <Domain>EU</Domain>
+        </UserCredentials>
+      </Authentication>
+    </h:OGHeader>
+  </s:Header>
+  <s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <AddAccompanyGuestRequest xmlns="http://webservices.micros.com/ows/5.1/Reservation.wsdl">
+      <HotelReference chainCode="CHA" hotelCode="EU" />
+      <ConfirmationNumber type="INTERNAL">293901</ConfirmationNumber>
+      <LegNumber type="INTERNAL">1</LegNumber>
+      <Profile>
+        <Customer gender="FEMALE" xmlns="http://webservices.micros.com/og/4.3/Name/">
+          <PersonName>
+            <firstName xmlns="http://webservices.micros.com/og/4.3/Common/">Sample</firstName>
+            <lastName xmlns="http://webservices.micros.com/og/4.3/Common/">Adaptive Recognition Hungary</lastName>
+          </PersonName>
+        </Customer>
+      </Profile>
+    </AddAccompanyGuestRequest>
+  </s:Body>
+</s:Envelope>
