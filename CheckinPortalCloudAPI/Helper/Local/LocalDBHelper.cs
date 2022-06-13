@@ -716,6 +716,35 @@ namespace CheckinPortalCloudAPI.Helper.Local
             }
         }
 
+        public List<Models.Local.DB.PaymentTransactionDetails> FetchPaymentTransactionDetails(string ReservationNameID, bool? isActive, string ConnectionString)
+        {
+            try
+            {
+                SQLHelpers.Instance.SetConnectionString(ConnectionString);
+                #region Parameters
+                SqlParameter ReservationNameIDParmeter = new SqlParameter()
+                {
+                    ParameterName = "@ReservationNameID",
+                    Value = ReservationNameID,
+                    SqlDbType = SqlDbType.VarChar
+                };
+
+                SqlParameter isActiveParmeter = new SqlParameter()
+                {
+                    ParameterName = "@IsActive",
+                    Value = isActive.Value,
+                    SqlDbType = SqlDbType.Bit
+                };
+                #endregion
+                var ResultTable = SQLHelpers.Instance.ExecuteSP("Usp_FetchPaymentTransactionsForPortal_Test", ReservationNameIDParmeter, isActiveParmeter);
+                return this.DataTableToList<Models.Local.DB.PaymentTransactionDetails>(ResultTable);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         public List<string> FetchNonModefiedReservationList(string ConnectionString,int BufferDays)
         {
             try

@@ -110,7 +110,7 @@ namespace CheckinPortalCloudAPI.Models.Local.DB
 		public string ReservationNumber { get; set; }
 		public string ReservationNameID { get; set; }
 		public string MaskedCardNumber { get; set; }
-		public string adjustAuthorisationData { get; set; }
+		//public string adjustAuthorisationData { get; set; }
 		public string ExpiryDate { get; set; }
 		public string FundingSource { get; set; }
 		public string Amount { get; set; }
@@ -125,6 +125,35 @@ namespace CheckinPortalCloudAPI.Models.Local.DB
 		public bool? IsActive { get; set; }
 		public string StatusType { get; set; }
 		public string CardType { get; set; }
+	}
+
+	public class PaymentTransactionDetails
+	{
+		public string PaymentID { get; set; }
+		public string TransactionID { get; set; }
+		public string ReservationNumber { get; set; }
+		public string ReservationNameID { get; set; }
+		public string MaskedCardNumber { get; set; }
+		//public string adjustAuthorisationData { get; set; }
+		public string ExpiryDate { get; set; }
+		public string FundingSource { get; set; }
+		public string Amount { get; set; }
+		public string Currency { get; set; }
+		public string RecurringIdentifier { get; set; }
+		public string AuthorisationCode { get; set; }
+		public string pspReferenceNumber { get; set; }
+		public string ParentPspRefereceNumber { get; set; }
+		public string ResultCode { get; set; }
+		public string ResponseMessage { get; set; }
+		public bool? IsActive { get; set; }
+		public string TransactionType { get; set; }
+		public string DisplayTransactionType { get; set; }		
+		public string StatusType { get; set; }
+		public DateTime CreatedDateTime { get; set; }
+		public string CardType { get; set; }
+		public string OperaPaymentTypeCode { get; set; }
+		public string NotificationStatus { get; set; }
+		public string AdjustAuthorisationData { get; set; }
 	}
 
 	public class PushPaymentHeaderModel

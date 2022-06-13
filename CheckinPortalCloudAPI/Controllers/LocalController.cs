@@ -1171,6 +1171,57 @@ namespace CheckinPortalCloudAPI.Controllers
         }
 
         [HttpPost]
+        [ActionName("FetchPaymentTransactionDetails")]
+        public async Task<Models.Local.LocalResponseModel> FetchPaymentTransactionDetails(Models.Local.LocalRequestModel localRequest)
+        {
+            try
+            {
+                Models.Local.FetchPaymentRequest fetchPaymentRequest = JsonConvert.DeserializeObject<Models.Local.FetchPaymentRequest>(localRequest.RequestObject.ToString());
+                if (fetchPaymentRequest != null)
+                {
+                    List<Models.Local.DB.PaymentTransactionDetails> paymentHeader = Helper.Local.DBHelper.Instance.FetchPaymentTransactionDetails(fetchPaymentRequest.ReservationNameID, fetchPaymentRequest.isActive, ConfigurationManager.AppSettings["SaavyConnectionString"]);
+                    if (paymentHeader != null)
+                    {
+                        return new Models.Local.LocalResponseModel()
+                        {
+                            result = true,
+                            responseMessage = "Success",
+                            statusCode = 101,
+                            responseData = paymentHeader
+
+                        };
+                    }
+                    else
+                        return new Models.Local.LocalResponseModel()
+                        {
+                            result = false,
+                            responseMessage = "Failled to insert the data",
+                            statusCode = -1
+                        };
+                }
+                else
+                {
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Request object can not be null",
+                        statusCode = -1
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new Models.Local.LocalResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message,
+                    statusCode = -1
+                };
+            }
+
+        }
+
+        [HttpPost]
         [ActionName("PushReservationDocumentDetails")]
         public async Task<Models.Local.LocalResponseModel> PushReservationDocumentDetails(Models.Local.LocalRequestModel localRequest)
         {
