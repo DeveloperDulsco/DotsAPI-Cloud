@@ -729,10 +729,16 @@ namespace CheckinPortalCloudAPI.Helper.Local
                     SqlDbType = SqlDbType.VarChar
                 };
 
-                SqlParameter isActiveParmeter = new SqlParameter()
+
+                SqlParameter isActiveParmeter = isActive != null ? new SqlParameter()
                 {
                     ParameterName = "@IsActive",
                     Value = isActive.Value,
+                    SqlDbType = SqlDbType.Bit
+                } : new SqlParameter()
+                {
+                    ParameterName = "@IsActive",
+                    Value =  null,
                     SqlDbType = SqlDbType.Bit
                 };
                 #endregion
