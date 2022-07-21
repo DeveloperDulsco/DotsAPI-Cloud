@@ -1736,9 +1736,9 @@ C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCl
 C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\bin\ru\Microsoft.ReportViewer.WinForms.resources.dll
 C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\bin\zh-CHS\Microsoft.ReportViewer.WinForms.resources.dll
 C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\bin\zh-CHT\Microsoft.ReportViewer.WinForms.resources.dll
-C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\obj\Debug\CheckinPortalCloudAPI.csproj.AssemblyReference.cache
 C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\obj\Debug\RdlCompile.cache
 C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\obj\Debug\RdlCompile.compiled
 C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\obj\Debug\CheckinPortalCloudAPI.csproj.CoreCompileInputs.cache
 C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\obj\Debug\CheckinPortalCloudAPI.dll
 C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\obj\Debug\CheckinPortalCloudAPI.pdb
+C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\obj\Debug\CheckinPortalCloudAPI.csproj.AssemblyReference.cache

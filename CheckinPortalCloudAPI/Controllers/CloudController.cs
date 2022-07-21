@@ -23,12 +23,39 @@ using Regula.DocumentReader.WebClient.Model;
 using Regula.DocumentReader.WebClient.Api;
 using System.Net.Security;
 using System.Globalization;
+using CheckinPortalCloudAPI.Helper.Local;
 
 namespace CheckinPortalCloudAPI.Controllers
 {
     public class CloudController : ApiController
     {
         static readonly string[] suffixes = { "Bytes", "KB", "MB", "GB", "TB", "PB" };
+
+        #region Temp
+        [HttpPost]
+        [ActionName("OCRProcessDocument")]
+        public async Task<Models.Cloud.CloudResponseModel> OCRProcessDocument(Models.Cloud.CloudRequestModel cloudRequest)
+        {
+            Models.Cloud.RegulaRequest regulaRequest = JsonConvert.DeserializeObject<Models.Cloud.RegulaRequest>(cloudRequest.RequestObject.ToString());
+
+            try
+            {
+                new LogHelper().Log("Processing Document", null, "ProcessDocumentForOCR", "", "Process Document");
+                Models.Cloud.CloudResponseModel cloudResponse = await new WSClientHelper().processDocument(new Models.Cloud.CloudRequestModel() { RequestObject = regulaRequest }, regulaRequest.OCRURL);
+                return cloudResponse;
+            }
+            catch (Exception ex)
+            {
+                return new Models.Cloud.CloudResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message
+                };
+            }
+        }
+        #endregion
+
+
 
         #region Regula
 

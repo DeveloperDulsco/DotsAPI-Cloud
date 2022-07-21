@@ -14,6 +14,69 @@ namespace CheckinPortalCloudAPI.Helper.Local
 {
     public class WSClientHelper
     {
+
+        public async Task<Models.Cloud.CloudResponseModel> processDocument(Models.Cloud.CloudRequestModel cloudRequest,string serviceURL)
+        {
+            try
+            {
+                ServicePointManager.ServerCertificateValidationCallback = delegate (object s, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors)
+                {
+                    return true;
+                };
+                HttpClient httpClient = new HttpClient();
+                if (httpClient == null)
+                {
+                    new LogHelper().Debug("Failled to process document for OCR using web api due to proxy error", null, "processDocument", "", "Process Document");
+                    return new Models.Cloud.CloudResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Failled to generate the proxy http client"
+                    };
+                }
+                httpClient.DefaultRequestHeaders.Clear();
+                string requestString = JsonConvert.SerializeObject(cloudRequest, Formatting.None);
+                var requestContent = new StringContent(requestString, Encoding.UTF8, "application/json");
+                HttpResponseMessage response = await httpClient.PostAsync(serviceURL, requestContent);
+                if (response != null)
+                {
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string apiResponse = await response.Content.ReadAsStringAsync();
+                        new LogHelper().Debug("web API response :- " + apiResponse, null, "processDocument", "", "Process Document");
+                        Models.Cloud.CloudResponseModel cloudResponse = JsonConvert.DeserializeObject<Models.Cloud.CloudResponseModel>(apiResponse);
+                        return cloudResponse;
+                    }
+                    else
+                    {
+                        new LogHelper().Debug("Failled to process document for OCR using web api due to HTTP error : " + response.ReasonPhrase, null, "processDocument", "", "Process Document");
+                        return new Models.Cloud.CloudResponseModel()
+                        {
+                            result = false,
+                            responseMessage = response.ReasonPhrase
+                        };
+                    }
+                }
+                else
+                {
+                    new LogHelper().Debug("Failled to process document for OCR using web api due to null returned from the cloud web api", null, "processDocument", "", "Process Document");
+                    return new Models.Cloud.CloudResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Cloud web API returned null"
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                new LogHelper().Error(ex, null, "processDocument", "", "Process Document");
+                return new Models.Cloud.CloudResponseModel()
+                {
+                    result = false,
+                    responseMessage = "Generic Exception : " + ex.Message
+                };
+            }
+        }
+
         public async Task<Models.Cloud.CloudResponseModel> FetchPrechedinRecord(Models.Cloud.CloudRequestModel cloudRequest ,Models.Local.ServiceParameters serviceParameters)
         {
             try

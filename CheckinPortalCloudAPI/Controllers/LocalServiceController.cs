@@ -55,5 +55,7 @@ namespace CheckinPortalCloudAPI.Controllers
             return await new Helper.Local.LocalAPI().PushDueOutReservationDetails(reservationRequest);
         }
 
+        
+
     }
 }
