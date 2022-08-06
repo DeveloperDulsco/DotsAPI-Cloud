@@ -1,7 +1,6 @@
 
+*.suo
+*.user
+_ReSharper.*
 vs
-.vs/CheckinPortalCloudAPI/v17/.suo
-.vs/CheckinPortalCloudAPI/FileContentIndex/read.lock
-.vs/CheckinPortalCloudAPI/FileContentIndex/b3fae254-8912-4f5d-acb7-2a833cd8b2e0.vsidx
-.vs/CheckinPortalCloudAPI/config/applicationhost.config
 obj
