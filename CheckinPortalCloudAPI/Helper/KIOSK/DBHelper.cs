@@ -246,7 +246,9 @@ namespace CheckinPortalCloudAPI.Helper.KIOSK
                         CreatedDateTime = kiok.CreatedDateTime,
                         Process = kiok.Process,
                         IscheckedOutFailed = kiok.IscheckedOutFailed,
-                        IsCheckedinFailled=kiok.IsCheckedinFailled
+                        IsCheckedinFailled=kiok.IsCheckedinFailled,
+                        LivePhoto=kiok.LivePhoto,
+                        DocumentNumber = kiok.DocumentNumber,
                     });
                 if (spResponse != null)
                     if (spResponse.Count() > 0

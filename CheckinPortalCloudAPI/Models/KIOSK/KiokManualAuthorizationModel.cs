@@ -25,6 +25,7 @@ namespace CheckinPortalCloudAPI.Models.KIOSK
 		public string Process { get; set; }
 		public bool? IscheckedOutFailed { get; set; }
 		public bool? IsCheckedinFailled { get; set; }
-		
+		public string DocumentNumber { get; set; }
+		public string LivePhoto { get; set; }
 	}
 }

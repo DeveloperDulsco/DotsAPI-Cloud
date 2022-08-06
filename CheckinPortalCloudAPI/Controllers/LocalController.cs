@@ -31,7 +31,7 @@ namespace CheckinPortalCloudAPI.Controllers
 {
     public class LocalController : ApiController
     {
-       
+
 
 
         [HttpPost]
@@ -169,7 +169,7 @@ namespace CheckinPortalCloudAPI.Controllers
                         }
                     }
                 }
-                if (Helper.Local.DBHelper.Instance.InsertReservationDetails(operaReservationDataTables, profileDetailsDataTables, new List<Models.Local.DB.ProfileDocumentDetailsModel>(),localDataRequest.SyncFromCloud , ConfigurationManager.AppSettings["LocalConnectionString"]))
+                if (Helper.Local.DBHelper.Instance.InsertReservationDetails(operaReservationDataTables, profileDetailsDataTables, new List<Models.Local.DB.ProfileDocumentDetailsModel>(), localDataRequest.SyncFromCloud, ConfigurationManager.AppSettings["LocalConnectionString"]))
                 {
                     return new Models.Local.LocalResponseModel()
                     {
@@ -239,7 +239,7 @@ namespace CheckinPortalCloudAPI.Controllers
                     };
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return new Models.Local.LocalResponseModel()
                 {
@@ -257,7 +257,7 @@ namespace CheckinPortalCloudAPI.Controllers
             try
             {
                 List<Models.Local.DB.ReservationListTypeModel> ReservationListTypeModel = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Models.Local.DB.ReservationListTypeModel>>(localDataRequest.RequestObject.ToString());
-                
+
                 if (Helper.Local.DBHelper.Instance.BulkUpdateReservationToDB(ReservationListTypeModel, ConfigurationManager.AppSettings["LocalConnectionString"]))
                 {
                     return new Models.Local.LocalResponseModel()
@@ -296,7 +296,7 @@ namespace CheckinPortalCloudAPI.Controllers
                 List<Models.Local.DB.ReservationListTypeModel> ReservationListTypeModel = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Models.Local.DB.ReservationListTypeModel>>(localDataRequest.RequestObject.ToString());
 
                 List<Models.Local.DB.ReservationListTypeModel> resultSet = Helper.Local.DBHelper.Instance.BulkFetchReservationStatus(ReservationListTypeModel, ConfigurationManager.AppSettings["LocalConnectionString"]);
-                if(resultSet != null)
+                if (resultSet != null)
                 {
                     return new Models.Local.LocalResponseModel()
                     {
@@ -330,7 +330,7 @@ namespace CheckinPortalCloudAPI.Controllers
         [ActionName("FetchKioskReceipt")]
         public async Task<Models.Local.LocalResponseModel> FetchKioskReceipt(Models.Local.LocalRequestModel localRequest)
         {
-            if(localRequest == null || localRequest.RequestObject == null)
+            if (localRequest == null || localRequest.RequestObject == null)
             {
                 return new LocalResponseModel()
                 {
@@ -366,7 +366,7 @@ namespace CheckinPortalCloudAPI.Controllers
             {
                 Models.KIOSK.ReservationRequestModel reservationRequests = Newtonsoft.Json.JsonConvert.DeserializeObject<Models.KIOSK.ReservationRequestModel>(localDataRequest.RequestObject.ToString());
 
-                List<Models.KIOSK.DB.ReservationDataTableModel> resultSet = Helper.KIOSK.DBHelper.Instance.FetchReservationDetails(reservationRequests.ReferenceNumber,reservationRequests.ArrivalDate, ConfigurationManager.AppSettings["LocalConnectionString"]);
+                List<Models.KIOSK.DB.ReservationDataTableModel> resultSet = Helper.KIOSK.DBHelper.Instance.FetchReservationDetails(reservationRequests.ReferenceNumber, reservationRequests.ArrivalDate, ConfigurationManager.AppSettings["LocalConnectionString"]);
                 if (resultSet != null)
                 {
                     return new Models.Local.LocalResponseModel()
@@ -694,12 +694,12 @@ namespace CheckinPortalCloudAPI.Controllers
                             statusCode = 101
                         };
                     }
-                    else if(resultSet.Count > 0
+                    else if (resultSet.Count > 0
                         && !string.IsNullOrEmpty(resultSet.First().Message))
                     {
                         return new Models.Local.LocalResponseModel()
                         {
-                           
+
                             result = false,
                             responseMessage = resultSet.First().Message,
                             statusCode = 102
@@ -709,7 +709,7 @@ namespace CheckinPortalCloudAPI.Controllers
                     {
                         return new Models.Local.LocalResponseModel()
                         {
-                            
+
                             result = false,
                             responseMessage = "Failled to retreave user detals",
                             statusCode = 103
@@ -867,7 +867,7 @@ namespace CheckinPortalCloudAPI.Controllers
                     profileDocumentList.Add(dBModelConverter.getProfileDocumentDetailsDataTable(profileDocument));
 
                 }
-                if (Helper.Local.DBHelper.Instance.InsertReservationDetails(new List<Models.Local.DB.OperaReservationDataTableModel>() , new List<Models.Local.DB.ProfileDetailsDataTableModel>(), profileDocumentList, localRequest.SyncFromCloud != null ? localRequest.SyncFromCloud.Value : false, ConfigurationManager.AppSettings["LocalConnectionString"]))
+                if (Helper.Local.DBHelper.Instance.InsertReservationDetails(new List<Models.Local.DB.OperaReservationDataTableModel>(), new List<Models.Local.DB.ProfileDetailsDataTableModel>(), profileDocumentList, localRequest.SyncFromCloud != null ? localRequest.SyncFromCloud.Value : false, ConfigurationManager.AppSettings["LocalConnectionString"]))
                 {
                     return new Models.Local.LocalResponseModel()
                     {
@@ -902,8 +902,8 @@ namespace CheckinPortalCloudAPI.Controllers
         {
             try
             {
-                
-               
+
+
                 List<Models.Local.DB.ReservationAdditionalDetails> additionalDetails = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Models.Local.DB.ReservationAdditionalDetails>>(localRequest.RequestObject.ToString());
                 //foreach (Models.Local.DB.ReservationAdditionalDetails additionalDetail in additionalDetails)
                 //{
@@ -994,10 +994,10 @@ namespace CheckinPortalCloudAPI.Controllers
         {
             try
             {
-                
-                List<Models.Local.DB.BISummaryArrivals> bISummaryArrivals =  Helper.Local.DBHelper.Instance.FetchBISummaryArrivals(ConfigurationManager.AppSettings["LocalConnectionString"]);
+
+                List<Models.Local.DB.BISummaryArrivals> bISummaryArrivals = Helper.Local.DBHelper.Instance.FetchBISummaryArrivals(ConfigurationManager.AppSettings["LocalConnectionString"]);
                 List<Models.Local.DB.BINationalityWiseSummaryArrivals> bINationalityWiseSummaryArrivals = Helper.Local.DBHelper.Instance.FetchBINationalityWiseSummaryArrivals(ConfigurationManager.AppSettings["LocalConnectionString"]);
-                
+
                 return new Models.Local.LocalResponseModel()
                 {
                     result = true,
@@ -1032,7 +1032,7 @@ namespace CheckinPortalCloudAPI.Controllers
                 Models.Local.DB.PaymentDetails paymentDetails = JsonConvert.DeserializeObject<Models.Local.DB.PaymentDetails>(localRequest.RequestObject.ToString());
                 if (paymentDetails != null)
                 {
-                    if (Helper.Local.DBHelper.Instance.InsertPaymentDetails(paymentDetails.paymentHistories, paymentDetails.paymentHeaders, paymentDetails.paymentAdditionalInfos,  ConfigurationManager.AppSettings["SaavyConnectionString"]))
+                    if (Helper.Local.DBHelper.Instance.InsertPaymentDetails(paymentDetails.paymentHistories, paymentDetails.paymentHeaders, paymentDetails.paymentAdditionalInfos, ConfigurationManager.AppSettings["SaavyConnectionString"]))
                     {
                         return new Models.Local.LocalResponseModel()
                         {
@@ -1080,7 +1080,7 @@ namespace CheckinPortalCloudAPI.Controllers
                 Models.KIOSK.AuditRequestModel auditRequest = JsonConvert.DeserializeObject<Models.KIOSK.AuditRequestModel>(localRequest.RequestObject.ToString());
                 if (auditRequest != null)
                 {
-                    if (Helper.KIOSK.AuditHelper.InsertAuditLog(auditRequest.PageName,auditRequest.UserName,auditRequest.AuditMessage,auditRequest.GroupIdentifier, auditRequest.GeneralIdentifier,auditRequest.DeviceIdentifier, auditRequest.jsonObjects,ConfigurationManager.AppSettings["LocalConnectionString"]))
+                    if (Helper.KIOSK.AuditHelper.InsertAuditLog(auditRequest.PageName, auditRequest.UserName, auditRequest.AuditMessage, auditRequest.GroupIdentifier, auditRequest.GeneralIdentifier, auditRequest.DeviceIdentifier, auditRequest.jsonObjects, ConfigurationManager.AppSettings["LocalConnectionString"]))
                     {
                         return new Models.Local.LocalResponseModel()
                         {
@@ -1128,8 +1128,8 @@ namespace CheckinPortalCloudAPI.Controllers
                 Models.Local.FetchPaymentRequest fetchPaymentRequest = JsonConvert.DeserializeObject<Models.Local.FetchPaymentRequest>(localRequest.RequestObject.ToString());
                 if (fetchPaymentRequest != null)
                 {
-                    List<Models.Local.DB.PaymentHeader> paymentHeader = Helper.Local.DBHelper.Instance.FetchPaymentDetails(fetchPaymentRequest.ReservationNameID,fetchPaymentRequest.isActive, ConfigurationManager.AppSettings["SaavyConnectionString"]);
-                    if(paymentHeader != null )
+                    List<Models.Local.DB.PaymentHeader> paymentHeader = Helper.Local.DBHelper.Instance.FetchPaymentDetails(fetchPaymentRequest.ReservationNameID, fetchPaymentRequest.isActive, ConfigurationManager.AppSettings["SaavyConnectionString"]);
+                    if (paymentHeader != null)
                     {
                         return new Models.Local.LocalResponseModel()
                         {
@@ -1228,8 +1228,8 @@ namespace CheckinPortalCloudAPI.Controllers
             try
             {
                 List<Models.Local.DB.ReservationDocumentsDataTableModel> reservationDocuments = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Models.Local.DB.ReservationDocumentsDataTableModel>>(localRequest.RequestObject.ToString());
-                
-                if (Helper.Local.DBHelper.Instance.InsertReservationDocuments(reservationDocuments,  localRequest.SyncFromCloud != null ? localRequest.SyncFromCloud.Value : false , ConfigurationManager.AppSettings["LocalConnectionString"]))
+
+                if (Helper.Local.DBHelper.Instance.InsertReservationDocuments(reservationDocuments, localRequest.SyncFromCloud != null ? localRequest.SyncFromCloud.Value : false, ConfigurationManager.AppSettings["LocalConnectionString"]))
                 {
                     return new Models.Local.LocalResponseModel()
                     {
@@ -1266,7 +1266,7 @@ namespace CheckinPortalCloudAPI.Controllers
             {
                 //HttpResponseMessage response = await httpClient.PostAsync($"/v52/payments", requestContent);
                 List<Models.Local.DB.UpsellPackageModel> upsellPackages = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Models.Local.DB.UpsellPackageModel>>(localRequest.RequestObject.ToString());
-                
+
                 if (Helper.Local.DBHelper.Instance.InsertUpsellPackages(upsellPackages, ConfigurationManager.AppSettings["LocalConnectionString"]))
                 {
                     return new Models.Local.LocalResponseModel()
@@ -1415,7 +1415,7 @@ namespace CheckinPortalCloudAPI.Controllers
             try
             {
                 int bufferDays = localRequest.RequestObject != null ? Int32.Parse(localRequest.RequestObject.ToString()) : 0;
-                List<string> reservationList = Helper.Local.DBHelper.Instance.FetchNonModefiedReservationList(ConfigurationManager.AppSettings["LocalConnectionString"],bufferDays);
+                List<string> reservationList = Helper.Local.DBHelper.Instance.FetchNonModefiedReservationList(ConfigurationManager.AppSettings["LocalConnectionString"], bufferDays);
 
                 return new LocalResponseModel()
                 {
@@ -1423,7 +1423,7 @@ namespace CheckinPortalCloudAPI.Controllers
                     result = true
                 };
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return new LocalResponseModel()
                 {
@@ -1856,7 +1856,7 @@ namespace CheckinPortalCloudAPI.Controllers
             (Models.Local.LocalRequestModel localDataRequest)
         {
             try
-          {
+            {
                 Models.KIOSK.ProfileDocumentRequestModel reservationRequests = Newtonsoft.Json.JsonConvert.DeserializeObject<Models.KIOSK.ProfileDocumentRequestModel>(localDataRequest.RequestObject.ToString());
 
                 List<Models.KIOSK.DB.ProfileDocumentDataTableModel> resultSet = Helper.KIOSK.DBHelper.Instance.FetchProfileDocumentByReservationNumber(reservationRequests.ReferenceNumber, ConfigurationManager.AppSettings["LocalConnectionString"]);
@@ -1901,9 +1901,12 @@ namespace CheckinPortalCloudAPI.Controllers
         {
             try
             {
-                Models.KIOSK.KiokManualAuthorizationModel kioskmanualRequests = Newtonsoft.Json.JsonConvert.DeserializeObject<Models.KIOSK.KiokManualAuthorizationModel>(localDataRequest.RequestObject.ToString());
-
-                var resultSet = Helper.KIOSK.DBHelper.Instance.InsertKioskManualAuthorizeDetails(kioskmanualRequests, ConfigurationManager.AppSettings["LocalConnectionString"]);
+                List<Models.KIOSK.KiokManualAuthorizationModel> kioskmanualRequests = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Models.KIOSK.KiokManualAuthorizationModel>>(localDataRequest.RequestObject.ToString());
+                bool resultSet = true;
+                foreach (var request in kioskmanualRequests)
+                {
+                    resultSet &= Helper.KIOSK.DBHelper.Instance.InsertKioskManualAuthorizeDetails(request, ConfigurationManager.AppSettings["LocalConnectionString"]);
+                }
                 if (resultSet)
                 {
                     return new Models.Local.LocalResponseModel()
