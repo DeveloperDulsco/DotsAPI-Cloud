@@ -6215,6 +6215,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                     CC.chipAndPin = false;
                     CC.chipAndPinSpecified = true;
                     CC.cardType = Request.MakePaymentRequest.PaymentTypeCode;//"WEB";
+                    
                     CC.Item = Request.MakePaymentRequest.MaskedCardNumber;// "4687560100136162";
                     CC.expirationDate = DateTime.Now.AddYears(2);
                     CC.cardCode = Request.MakePaymentRequest.PaymentTypeCode;
