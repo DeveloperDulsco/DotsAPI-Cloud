@@ -352,6 +352,28 @@ namespace CheckinPortalCloudAPI.Models.Local.DB
 	{
 		public string ResultMessage { get; set; }
 	}
+	public class ReservationCompareStatus
+	{
+		public string ReservationNameID { get; set; }
+		public DateTime? ArrivalDate { get; set; }
+		public DateTime? DepartureDate { get; set; }
+		public string Adultcount { get; set; }
+		public string Childcount { get; set; }
+		public string RoomType { get; set; }
+		public string Email { get; set; }
+		public string Phone { get; set; }
+		public bool IsBreakFastAvailable { get; set; }
+	}
 
-	
+	public class ReservationDueoutAmountCompare
+	{
+		public string ReservationDetailID { get; set; }
+		public decimal? BalanceAmount { get; set; }
+		public decimal? TotalAmount { get; set; }
+
+	}
+	public class RequestReservationDetail
+	{
+		public string ReservationNameID { get; set; }
+	}
 }

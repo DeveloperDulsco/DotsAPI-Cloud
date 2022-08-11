@@ -966,6 +966,53 @@ namespace CheckinPortalCloudAPI.Helper.Local
             }
 
         }
+        public List<Models.Local.DB.ReservationCompareStatus> ReservationDetailCompare(Models.Local.DB.RequestReservationDetail reservationListTypeModels, string ConnectionString)
+        {
+            SQLHelpers.Instance.SetConnectionString(ConnectionString);
+            //return BulkUpdateReservationToDB(this.ToDataTable(reservationListTypeModels));
+            bool isSavedSuccessfully = false;
+            try
+            {
+                List<SqlParameter> sqlParameters = new List<SqlParameter>();
+                sqlParameters.Add(new SqlParameter() { ParameterName = "@ReservationNameID", Value = reservationListTypeModels.ReservationNameID, SqlDbType = SqlDbType.VarChar });
+
+                var ResultTable = SQLHelpers.Instance.ExecuteSP("Usp_GetReservationStatusComapre", sqlParameters);
+                if (ResultTable != null)
+                    return this.DataTableToList<Models.Local.DB.ReservationCompareStatus>(ResultTable);
+
+                else
+                    return null;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+        }
+
+        public List<Models.Local.DB.ReservationDueoutAmountCompare> ReservationAmountCompare(Models.Local.DB.RequestReservationDetail RequestReservationDetail, string ConnectionString)
+        {
+            SQLHelpers.Instance.SetConnectionString(ConnectionString);
+            //return BulkUpdateReservationToDB(this.ToDataTable(reservationListTypeModels));
+            bool isSavedSuccessfully = false;
+            try
+            {
+                List<SqlParameter> sqlParameters = new List<SqlParameter>();
+                sqlParameters.Add(new SqlParameter() { ParameterName = "@ReservationNameID", Value = RequestReservationDetail.ReservationNameID, SqlDbType = SqlDbType.VarChar });
+
+                var ResultTable = SQLHelpers.Instance.ExecuteSP("Usp_GetReservationAmountList", sqlParameters);
+                if (ResultTable != null)
+                    return this.DataTableToList<Models.Local.DB.ReservationDueoutAmountCompare>(ResultTable);
+
+                else
+                    return null;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+        }
 
     }
 }

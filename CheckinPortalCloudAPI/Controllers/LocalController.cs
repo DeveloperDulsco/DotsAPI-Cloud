@@ -1935,6 +1935,83 @@ namespace CheckinPortalCloudAPI.Controllers
             }
 
         }
+        [HttpPost]
+        [ActionName("FetchReservationDetailCompare")]
+        public async Task<Models.Local.LocalResponseModel> FetchReservationDetailCompare(Models.Local.LocalRequestModel localDataRequest)
+        {
+            try
+            {
+                Models.Local.DB.RequestReservationDetail ReservationListTypeModel = Newtonsoft.Json.JsonConvert.DeserializeObject<Models.Local.DB.RequestReservationDetail>(localDataRequest.RequestObject.ToString());
+
+                List<Models.Local.DB.ReservationCompareStatus> resultSet = Helper.Local.DBHelper.Instance.ReservationDetailCompare(ReservationListTypeModel, ConfigurationManager.AppSettings["LocalConnectionString"]);
+                if (resultSet != null)
+                {
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        responseData = resultSet,
+                        result = true,
+                        responseMessage = "Success",
+                        statusCode = 101
+                    };
+                }
+                else
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Failled to Fetch the data",
+                        statusCode = -1
+                    };
+            }
+            catch (Exception ex)
+            {
+                return new Models.Local.LocalResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message,
+                    statusCode = -1
+                };
+            }
+
+        }
+        [HttpPost]
+        [ActionName("FetchReservationAmountCompare")]
+        public async Task<Models.Local.LocalResponseModel> FetchReservationAmountCompare(Models.Local.LocalRequestModel localDataRequest)
+        {
+            try
+            {
+                Models.Local.DB.RequestReservationDetail ReservationListTypeModel = Newtonsoft.Json.JsonConvert.DeserializeObject<Models.Local.DB.RequestReservationDetail>(localDataRequest.RequestObject.ToString());
+
+                List<Models.Local.DB.ReservationDueoutAmountCompare> resultSet = Helper.Local.DBHelper.Instance.ReservationAmountCompare(ReservationListTypeModel, ConfigurationManager.AppSettings["LocalConnectionString"]);
+                if (resultSet != null)
+                {
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        responseData = resultSet,
+                        result = true,
+                        responseMessage = "Success",
+                        statusCode = 101
+                    };
+                }
+                else
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Failled to Fetch the data",
+                        statusCode = -1
+                    };
+            }
+            catch (Exception ex)
+            {
+                return new Models.Local.LocalResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message,
+                    statusCode = -1
+                };
+            }
+
+        }
 
     }
 }
+
