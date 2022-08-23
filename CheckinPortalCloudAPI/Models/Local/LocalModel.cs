@@ -17,6 +17,9 @@ namespace CheckinPortalCloudAPI.Models.Local
     {
         public bool? IsMember { get; set; }
         public string RoomNumber { get; set; }
+        public string ReservationNumber { get; set; }
+        public string QRCode { get; set; }
+        public string LugaggeTagNo { get; set; }
     }
 
     public partial class PaymentDetails

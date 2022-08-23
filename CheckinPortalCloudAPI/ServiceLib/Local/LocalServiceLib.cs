@@ -55,11 +55,13 @@ namespace CheckinPortalCloudAPI.ServiceLib.Local
 
 
                     ReportParameter p1 = new ReportParameter("RoomNumber", receiptRequest.RoomNumber);
+                    ReportParameter p2 = new ReportParameter("ReservationNumber", receiptRequest.ReservationNumber);
+                    ReportParameter p3 = new ReportParameter("ReservationNoInQRCode", receiptRequest.QRCode);
+                    ReportParameter p4 = new ReportParameter("LugaggeTagNo", receiptRequest.LugaggeTagNo);
 
 
 
-
-                    rv.LocalReport.SetParameters(new ReportParameter[] { p1 });
+                    rv.LocalReport.SetParameters(new ReportParameter[] { p1,p2,p3,p4 });
                     rv.LocalReport.Refresh();
                     byte[] streamBytes = null;
                     string mimeType = "";
@@ -134,11 +136,17 @@ namespace CheckinPortalCloudAPI.ServiceLib.Local
 
 
                     ReportParameter p1 = new ReportParameter("RoomNumber", receiptRequest.RoomNumber);
+                    ReportParameter p2 = new ReportParameter("ReservationNumber", receiptRequest.ReservationNumber);
+
+                    
 
 
+                    ReportParameter p3 = new ReportParameter("ReservationNoInQRCode", receiptRequest.QRCode);
+                    ReportParameter p4 = new ReportParameter("LugaggeTagNo", receiptRequest.LugaggeTagNo);
+                    
 
 
-                    rv.LocalReport.SetParameters(new ReportParameter[] { p1 });
+                    rv.LocalReport.SetParameters(new ReportParameter[] { p1,p2,p3,p4 });
                     rv.LocalReport.Refresh();
                     byte[] streamBytes = null;
                     string mimeType = "";

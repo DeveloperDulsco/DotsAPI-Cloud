@@ -1,1 +1,0 @@
-{"Result":{"GDSError":{"errorCode":"15","elementId":"NAR","Value":"BOOKING NOT FOUND"},"Text":null,"IDs":null,"OperaErrorCode":"BOOKING_NOT_FOUND","resultStatusFlag":0,"resultStatusFlagSpecified":true},"HotelReservation":null,"xsn":{"Count":4}}

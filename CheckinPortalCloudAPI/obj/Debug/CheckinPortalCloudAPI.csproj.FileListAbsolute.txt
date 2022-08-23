@@ -1741,4 +1741,9 @@ C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCl
 C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\obj\Debug\CheckinPortalCloudAPI.csproj.CoreCompileInputs.cache
 C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\obj\Debug\CheckinPortalCloudAPI.dll
 C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\obj\Debug\CheckinPortalCloudAPI.pdb
-C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\obj\Debug\CheckinPortalCloudAPI.csproj.AssemblyReference.cache
+C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\bin\Microsoft.IdentityModel.Logging.dll
+C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\bin\Microsoft.IdentityModel.Tokens.dll
+C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\bin\System.IdentityModel.Tokens.Jwt.dll
+C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\bin\Microsoft.IdentityModel.Tokens.xml
+C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\bin\System.IdentityModel.Tokens.Jwt.xml
+C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\obj\Debug\CheckinPortalCloudAPI.csproj.CopyComplete
