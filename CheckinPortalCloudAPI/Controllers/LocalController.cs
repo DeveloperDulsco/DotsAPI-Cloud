@@ -26,6 +26,8 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Web;
 using System.Web.Http;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
+using System.Net.Sockets;
 
 namespace CheckinPortalCloudAPI.Controllers
 {
@@ -1611,6 +1613,7 @@ namespace CheckinPortalCloudAPI.Controllers
                     }
                     ChangeKeyAccessReq.CommonAreaList = CommonAreasArray;
                     ChangeKeyAccessReq.TrackIIFolioNo = Request.ReservationNo;
+                    ChangeKeyAccessReq.TrackIGuestNo = null;
                     ChangeKeyAccessReq.KeyCount = 1;
                     ChangeKeyAccessReq.KeySize = 1;
                     ChangeKeyAccessReq.UID = "AAAAAAAA";
@@ -1618,7 +1621,7 @@ namespace CheckinPortalCloudAPI.Controllers
 
                     XmlNode XN = SoapClnt.ChangeKeyAccess(ref Auth, ChangeKeyAccessReq.ReservationID, ChangeKeyAccessReq.SiteName, ChangeKeyAccessReq.PMSTerminalID, ChangeKeyAccessReq.EncoderID,
                                                             ChangeKeyAccessReq.CheckIn, ChangeKeyAccessReq.CheckOut, ChangeKeyAccessReq.GuestName, null, ChangeKeyAccessReq.CommonAreaList,
-                                                            ChangeKeyAccessReq.TrackIIFolioNo, ChangeKeyAccessReq.TrackIIFolioNo, ChangeKeyAccessReq.KeyCount, ChangeKeyAccessReq.KeySize, ChangeKeyAccessReq.UID);
+                                                            ChangeKeyAccessReq.TrackIIFolioNo, null, ChangeKeyAccessReq.KeyCount, ChangeKeyAccessReq.KeySize, ChangeKeyAccessReq.UID);
                     if (XN != null)
                     {
                         bool IsFoult = false;
@@ -1676,6 +1679,123 @@ namespace CheckinPortalCloudAPI.Controllers
                 {
                     result = false,
                     responseMessage = ex.Message
+                };
+            }
+        }
+
+        private byte[] GetStringToBytes(string value)
+        {
+            try
+            {
+                SoapHexBinary shb = SoapHexBinary.Parse(value);
+                return shb.Value;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        [HttpPost]
+        [ActionName("EncodeKeyWithIRIS")]
+        public async Task<Models.Local.LocalResponseModel> EncodeKeyWithIRIS(Models.Local.LocalRequestModel localRequest)
+        {
+            try
+            {
+                Models.Local.KeyEncodeRequestModel Request = JsonConvert.DeserializeObject<Models.Local.KeyEncodeRequestModel>(localRequest.RequestObject.ToString());
+
+                string str = "";
+                string returndata = string.Empty;
+
+                if(Request.IsNewKey)
+                    str = "200000070001250    " + Request.RoomNo + " 1" + Request.EncoderID + "FF01" + Request.CheckoutDate + "1400" + Request.CheckoutDate + "1400" + "0000000000000";
+                else
+                    str = "200000070003250    " + Request.RoomNo + " 1" + Request.EncoderID + "FF01" + Request.CheckoutDate + "1400" + Request.CheckoutDate + "1400" + "0000000000000";
+                char[] charValues = str.ToCharArray();
+                string hexOutput = "02";
+
+                foreach (char _eachChar in charValues)
+                {
+                    int value = Convert.ToInt32(_eachChar);
+                    hexOutput += String.Format("{0:X}", value);
+                }
+                hexOutput += "03";
+                byte[] outStream = GetStringToBytes(hexOutput);
+
+                using (TcpClient clientSocket = new System.Net.Sockets.TcpClient())
+                {
+                    clientSocket.Connect(ConfigurationManager.AppSettings["KeyEncoderServerIP"], Int32.Parse(ConfigurationManager.AppSettings["KeyEncoderServerPort"]));
+
+                    using (NetworkStream serverStream = clientSocket.GetStream())
+                    {
+                        serverStream.Write(outStream, 0, outStream.Length);
+                        serverStream.Flush();
+
+                        byte[] inStream = new byte[505196];
+                        serverStream.Read(inStream, 0, (int)clientSocket.ReceiveBufferSize);
+
+                        using (StreamReader streamReader = new StreamReader(serverStream))
+                        {
+                            returndata = System.Text.Encoding.ASCII.GetString(inStream);
+                            while (true)
+                            {
+                                var start = returndata.IndexOf('\u0002');
+                                if (start == -1) break;
+                                var end = returndata.IndexOf('\u0003', start);
+
+                                if (end == -1) break;
+
+                                //Console.WriteLine(@"Start: " + start + @". End: " + end);
+                                var diff = end - start;
+                                returndata = returndata.Substring(start + 1, diff - 1);
+
+                                //switch (returndata.Substring())
+
+
+                            }
+                        }
+                    }
+                }
+
+                if (returndata != null && returndata.Length > 13)
+                {
+                    if (returndata.Substring(9, 2).Equals("00"))
+                    {
+                        return new LocalResponseModel()
+                        {
+                            result = true,
+                            responseMessage = "Success"
+                        };
+                    }
+                    else
+                    {
+
+                        return new LocalResponseModel()
+                        {
+                            result = false,
+                            responseMessage = "{\"error_code\":\"" + returndata.Substring(9, 2) + "\",\"error_message\":\"" + returndata.Substring(11, 3) + "\"}",
+                            
+                        };
+                       
+                    }
+                }
+                else
+                {
+                    return new LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "{\"error_code\":\"105\",\"error_message\":\"Invalid transaction response\"}",
+
+                    };
+                    
+                }
+            }
+            catch (Exception ex)
+            {
+                return new LocalResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.ToString()
                 };
             }
         }
