@@ -105,4 +105,20 @@ namespace CheckinPortalCloudAPI.Models.EVA
         
     }
     #endregion
+
+    public class tbSTBResponse
+    {
+        public int ResponseID { get; set; }
+        public string ReservationNameID { get; set; }
+        public string DocumentType { get; set; }
+        public string DocumentNumber { get; set; }
+        public bool IsMannualAutherized { get; set; }
+        public string ResponseJSON { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public DateTime? ResponseDateTime { get; set; }
+        public string TransactionId { get; set; }
+        public int? StatusCode { get; set; }
+        public string ErrorCodes { get; set; }
+        public string Message { get; set; }
+    }
 }

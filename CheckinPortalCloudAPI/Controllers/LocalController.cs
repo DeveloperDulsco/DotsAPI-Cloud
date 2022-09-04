@@ -1707,7 +1707,7 @@ namespace CheckinPortalCloudAPI.Controllers
                 string str = "";
                 string returndata = string.Empty;
 
-                if(Request.IsNewKey)
+                if (Request.IsNewKey)
                     str = "200000070001250    " + Request.RoomNo + " 1" + Request.EncoderID + "FF01" + Request.CheckoutDate + "1400" + Request.CheckoutDate + "1400" + "0000000000000";
                 else
                     str = "200000070003250    " + Request.RoomNo + " 1" + Request.EncoderID + "FF01" + Request.CheckoutDate + "1400" + Request.CheckoutDate + "1400" + "0000000000000";
@@ -1774,9 +1774,9 @@ namespace CheckinPortalCloudAPI.Controllers
                         {
                             result = false,
                             responseMessage = "{\"error_code\":\"" + returndata.Substring(9, 2) + "\",\"error_message\":\"" + returndata.Substring(11, 3) + "\"}",
-                            
+
                         };
-                       
+
                     }
                 }
                 else
@@ -1787,7 +1787,7 @@ namespace CheckinPortalCloudAPI.Controllers
                         responseMessage = "{\"error_code\":\"105\",\"error_message\":\"Invalid transaction response\"}",
 
                     };
-                    
+
                 }
             }
             catch (Exception ex)
@@ -2131,6 +2131,55 @@ namespace CheckinPortalCloudAPI.Controllers
             }
 
         }
+
+
+        /// <summary>
+        /// Added for kiosk on 04-09-2022
+        /// </summary>
+        /// <param name="localDataRequest"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [ActionName("InsertUpdateSTBResponse")]
+        public LocalResponseModel InsertUpdateSTBResponse(LocalRequestModel localDataRequest)
+        {
+            try
+            {
+                Models.EVA.tbSTBResponse stbRequest = JsonConvert.DeserializeObject<Models.EVA.tbSTBResponse>(localDataRequest.RequestObject.ToString());
+
+                var response = Helper.KIOSK.DBHelper.Instance.FetchSTBResponses(ConfigurationManager.AppSettings["LocalConnectionString"], stbRequest.ReservationNameID, stbRequest.DocumentType, stbRequest.DocumentNumber);
+                if(response != null && response.Count > 0)
+                {
+                    stbRequest.ResponseID = response.FirstOrDefault().ResponseID;
+                }
+
+                if (Helper.KIOSK.DBHelper.Instance.InsertORUpdateSTBResponse(stbRequest, ConfigurationManager.AppSettings["LocalConnectionString"]))
+                {
+                    return new LocalResponseModel()
+                    {
+                        result = true,
+                        responseMessage = "Success",
+                        statusCode = 101
+                    };
+                }
+                else
+                    return new LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Failled to insert STBResponse",
+                        statusCode = -1
+                    };
+            }
+            catch (Exception ex)
+            {
+                return new LocalResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message,
+                    statusCode = -1
+                };
+            }
+        }
+
 
     }
 }

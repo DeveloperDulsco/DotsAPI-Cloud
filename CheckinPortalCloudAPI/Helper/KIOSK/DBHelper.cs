@@ -41,7 +41,7 @@ namespace CheckinPortalCloudAPI.Helper.KIOSK
             return table;
         }
 
-        
+
 
         public bool InsertReservationDetails(List<Models.KIOSK.DB.ReservationDataTableModel> reservationDetailsTypeModels, List<Models.KIOSK.DB.ProfileDataTableModel> profileDetailsTypeModels, string ConnectionString)
         {
@@ -104,7 +104,7 @@ namespace CheckinPortalCloudAPI.Helper.KIOSK
             try
             {
                 var spResponse = new DapperHelper().ExecuteSP<Models.KIOSK.DB.ReservationDataTableModel>("Usp_GetReservationDetailsByReferenceNumber",
-                    ConnectionString, new { ReferenceNumber = ReferenceNumber}).ToList();
+                    ConnectionString, new { ReferenceNumber = ReferenceNumber }).ToList();
                 return spResponse;
             }
             catch (Exception ex)
@@ -118,7 +118,7 @@ namespace CheckinPortalCloudAPI.Helper.KIOSK
             try
             {
                 var spResponse = new DapperHelper().ExecuteSP<Models.KIOSK.DB.ReservationDataTableModel>("usp_GetReservationByReservationNumber",
-                    ConnectionString, new { ReferenceNumber = ReferenceNumber}).ToList();
+                    ConnectionString, new { ReferenceNumber = ReferenceNumber }).ToList();
                 return spResponse;
             }
             catch (Exception ex)
@@ -127,12 +127,12 @@ namespace CheckinPortalCloudAPI.Helper.KIOSK
             }
         }
 
-        public bool InsertNotificationDetails(string ReservationNameID, string RequestTypeCode,string UserName,bool isActionTaken, string Message,int? ID,string DeviceID, string ConnectionString)
+        public bool InsertNotificationDetails(string ReservationNameID, string RequestTypeCode, string UserName, bool isActionTaken, string Message, int? ID, string DeviceID, string ConnectionString)
         {
             try
             {
                 var spResponse = new DapperHelper().ExecuteSP("Usp_InsertNotification",
-                    ConnectionString, new { RESERVATIONNAME = ReservationNameID, TYPECODE = RequestTypeCode, USERNAME = UserName, ISACTIONTAKEN = isActionTaken, MESSAGE= Message, ID = ID ,DEVICEID = DeviceID}).ToList();
+                    ConnectionString, new { RESERVATIONNAME = ReservationNameID, TYPECODE = RequestTypeCode, USERNAME = UserName, ISACTIONTAKEN = isActionTaken, MESSAGE = Message, ID = ID, DEVICEID = DeviceID }).ToList();
                 if (spResponse != null)
                     return true;
                 else
@@ -177,7 +177,7 @@ namespace CheckinPortalCloudAPI.Helper.KIOSK
         {
             try
             {
-                var spResponse = new DapperHelper().ExecuteSP<Models.GeneralSettingsModel>("usp_GetSettingsList",ConnectionString).ToList();
+                var spResponse = new DapperHelper().ExecuteSP<Models.GeneralSettingsModel>("usp_GetSettingsList", ConnectionString).ToList();
                 return spResponse;
             }
             catch (Exception ex)
@@ -198,11 +198,11 @@ namespace CheckinPortalCloudAPI.Helper.KIOSK
             }
         }
 
-        public List<Models.Local.DB.UserDetails> FetchUserByQrCode(string ConnectionString,string qrCode)
+        public List<Models.Local.DB.UserDetails> FetchUserByQrCode(string ConnectionString, string qrCode)
         {
             try
             {
-                var spResponse = new DapperHelper().ExecuteSP<Models.Local.DB.UserDetails>("usp_GetUserByQrCode", ConnectionString,new { QrCode = qrCode }).ToList();
+                var spResponse = new DapperHelper().ExecuteSP<Models.Local.DB.UserDetails>("usp_GetUserByQrCode", ConnectionString, new { QrCode = qrCode }).ToList();
                 return spResponse;
             }
             catch (Exception ex)
@@ -215,7 +215,7 @@ namespace CheckinPortalCloudAPI.Helper.KIOSK
             try
             {
                 var spResponse = new DapperHelper().ExecuteSP<Models.KIOSK.DB.ProfileDocumentDataTableModel>("usp_getProfileDocumentByReservationNumber",
-                    ConnectionString, new { ReferenceNumber = ReferenceNumber}).ToList();
+                    ConnectionString, new { ReferenceNumber = ReferenceNumber }).ToList();
                 return spResponse;
             }
             catch (Exception ex)
@@ -236,7 +236,7 @@ namespace CheckinPortalCloudAPI.Helper.KIOSK
                         IsECTAmmended = kiok.IsECTAmmended,
                         IsManualyFacialAuthrised = kiok.IsManualyFacialAuthrised,
                         IsManuallyRoomAssigned = kiok.IsManuallyRoomAssigned,
-                        ManualyFacialAuthorisedUserName=kiok.ManualyFacialAuthorisedUserName,
+                        ManualyFacialAuthorisedUserName = kiok.ManualyFacialAuthorisedUserName,
                         ManuallyRoomAssignedUsername = kiok.ManuallyRoomAssignedUsername,
                         IsKeyEncodedFailled = kiok.IsKeyEncodedFailled,
                         IsPrintFailled = kiok.IsPrintFailled,
@@ -246,8 +246,8 @@ namespace CheckinPortalCloudAPI.Helper.KIOSK
                         CreatedDateTime = kiok.CreatedDateTime,
                         Process = kiok.Process,
                         IscheckedOutFailed = kiok.IscheckedOutFailed,
-                        IsCheckedinFailled=kiok.IsCheckedinFailled,
-                        LivePhoto=kiok.LivePhoto,
+                        IsCheckedinFailled = kiok.IsCheckedinFailled,
+                        LivePhoto = kiok.LivePhoto,
                         DocumentNumber = kiok.DocumentNumber,
                     });
                 if (spResponse != null)
@@ -255,8 +255,8 @@ namespace CheckinPortalCloudAPI.Helper.KIOSK
                        && !string.IsNullOrEmpty(spResponse.First().Result)
                        && spResponse.First().Result.Equals("1"))
                         return true;
-                else
-                return false;
+                    else
+                        return false;
                 else
                     return false;
             }
@@ -265,5 +265,64 @@ namespace CheckinPortalCloudAPI.Helper.KIOSK
                 throw ex;
             }
         }
+
+
+
+        public List<Models.EVA.tbSTBResponse> FetchSTBResponses(string ConnectionString, string ReservationNameID = null, string DocumentType = null, string DocumentNumber = null)
+        {
+            try
+            {
+                var spResponse = new DapperHelper().ExecuteSP<Models.EVA.tbSTBResponse>("USP_STB_GET_RESPONSE",
+                    ConnectionString, new
+                    {
+                        ReservationNameID = ReservationNameID,
+                        DocumentType = DocumentType,
+                        DocumentNumber = DocumentNumber
+                    }).ToList();
+                return spResponse;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public bool InsertORUpdateSTBResponse(Models.EVA.tbSTBResponse request, string ConnectionString)
+        {
+            try
+            {
+                var spResponse = new DapperHelper().ExecuteSP("USP_STB_RESPONSE_AU",
+                    ConnectionString, new
+                    {
+                        ResponseID = request.ResponseID,
+                        ReservationNameID = request.ReservationNameID,
+                        DocumentType = request.DocumentType,
+                        DocumentNumber = request.DocumentNumber,
+                        IsMannualAutherized = request.IsMannualAutherized,
+                        ResponseJSON = request.ResponseJSON,
+                        CreatedAt = request.CreatedAt,
+                        ResponseDateTime = request.ResponseDateTime,
+                        TransactionId = request.TransactionId,
+                        StatusCode = request.StatusCode,
+                        ErrorCodes = request.ErrorCodes,
+                        Message = request.Message
+                    });
+                if (spResponse != null)
+                    if (spResponse.Count() > 0
+                       && !string.IsNullOrEmpty(spResponse.First().Result)
+                       && spResponse.First().Result.Equals("1"))
+                        return true;
+                    else
+                        return false;
+                else
+                    return false;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+
     }
 }

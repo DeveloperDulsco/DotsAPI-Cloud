@@ -79,24 +79,24 @@ namespace CheckinPortalCloudAPI.Models.EVA
         public string Nationality { get; set; }
 
         [JsonProperty("gender", NullValueHandling = NullValueHandling.Ignore)]
-        
+        [JsonConverter(typeof(GenderConverter))]
         public string Gender { get; set; }
 
         [JsonProperty("passportNumber", NullValueHandling = NullValueHandling.Ignore)]
         public string PassportNumber { get; set; }
 
-        //[JsonProperty("dateOfBirth", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("dateOfBirth", NullValueHandling = NullValueHandling.Ignore)]
         [JsonConverter(typeof(DateTimeFormatConverter), "yyyyMMdd")]
         public DateTime? DateOfBirth { get; set; }
 
         [JsonProperty("passportType", NullValueHandling = NullValueHandling.Ignore)]
         public string PassportType { get; set; }
 
-        //[JsonProperty("checkIn", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("checkIn", NullValueHandling = NullValueHandling.Ignore)]
         [JsonConverter(typeof(DateTimeFormatConverter), "yyyyMMdd")]
         public DateTime? CheckIn { get; set; }
 
-        //[JsonProperty("checkOut", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("checkOut", NullValueHandling = NullValueHandling.Ignore)]
         [JsonConverter(typeof(DateTimeFormatConverter), "yyyyMMdd")]
         public DateTime? CheckOut { get; set; }
 
