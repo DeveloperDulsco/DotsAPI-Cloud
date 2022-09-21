@@ -4294,7 +4294,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         {
                             int count = 0;
                             Reservation.ExpectedArrivalTime = rGuest.arrivalTime.AddYears(1899);
-                            Reservation.ExpectedArrivalTime = Reservation.ExpectedArrivalTime.Value.ToUniversalTime();
+                            Reservation.ExpectedArrivalTime = Reservation.ExpectedArrivalTime.Value;
 
                             foreach (ReservationService.Profile gProfile in rGuest.Profiles)
                             {
@@ -5444,7 +5444,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 if (modifyReservation.modifyBookingRequest.isETASpecified != null && modifyReservation.modifyBookingRequest.isETASpecified.Value && modifyReservation.modifyBookingRequest.ETA != null)
                 {
                     try
-                    {
+                    {                        
                         hReservation.checkInTime = modifyReservation.modifyBookingRequest.ETA.Value;
                         hReservation.checkInTimeSpecified = true;
                         ReservationService.HotelReference HF = new ReservationService.HotelReference();
