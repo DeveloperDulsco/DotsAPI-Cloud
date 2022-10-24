@@ -1137,7 +1137,8 @@ namespace CheckinPortalCloudAPI.Helper.Local
                                                         ReservationNameID = reservation.ReservationNameID,
                                                         MaskedCardNumber = paymentHeader.MaskedCardNumber.ToLower(),
                                                         PaymentRefernce = "Payment from web checkin - Sale",
-                                                        PaymentTypeCode = paymentHeader.OperaPaymentTypeCode
+                                                        PaymentTypeCode = paymentHeader.OperaPaymentTypeCode,
+                                                        ApprovalCode = paymentHeader.pspReferenceNumber
                                                     }
                                                 }, "pre checked-in fetch", fetchReservationRequest.ServiceParameters);
                                                 if (!owsResponse.result)
@@ -1505,7 +1506,8 @@ namespace CheckinPortalCloudAPI.Helper.Local
                                                         ReservationNameID = reservation.ReservationNameID,
                                                         MaskedCardNumber = paymentHeader.MaskedCardNumber.ToLower(),
                                                         PaymentRefernce = "web checkin - (" + paymentHeader.MaskedCardNumber + ")",
-                                                        PaymentTypeCode = paymentHeader.OperaPaymentTypeCode
+                                                        PaymentTypeCode = paymentHeader.OperaPaymentTypeCode,
+                                                        ApprovalCode = paymentHeader.pspReferenceNumber
                                                     }
                                                 }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
                                                 if (!owsResponse.result)
@@ -1598,7 +1600,8 @@ namespace CheckinPortalCloudAPI.Helper.Local
                                                         ReservationNameID = reservation.ReservationNameID,
                                                         MaskedCardNumber = paymentHeader.MaskedCardNumber.ToLower(),
                                                         PaymentRefernce = "web checkin - (" + paymentHeader.MaskedCardNumber + ")",
-                                                        PaymentTypeCode = paymentHeader.OperaPaymentTypeCode
+                                                        PaymentTypeCode = paymentHeader.OperaPaymentTypeCode,
+                                                        ApprovalCode = paymentHeader.pspReferenceNumber
                                                     }
                                                 }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
                                                 if (!owsResponse.result)
@@ -3120,6 +3123,501 @@ namespace CheckinPortalCloudAPI.Helper.Local
 
         }
 
+        public async Task<Models.Local.LocalResponseModel> PushPaymentLink(Models.Local.PushReservationRequest pushReservationRequest)
+        {
+
+            #region Variables
+            List<Models.OWS.OperaReservation> operaReservationList = null;
+            Models.OWS.OperaReservation Reservation = null;
+            #endregion
+
+            try
+            {
+                new LogHelper().Log("Pushing payment link", null, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+
+
+                bool? isEmailSent = null;
+                bool? IsEmailProcessed = null;
+                //new LogHelper().Log("Processing reservation No. : " + pushReservationRequest.ReservationNumber, null, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+
+                List<Models.OWS.OperaReservation> temp_operaReservations = null;
+
+                #region Fetching Reservation from OWS
+                //new LogHelper().Log("Fetching opera reservation", null, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                Models.OWS.OwsResponseModel owsResponse1 = await new WSClientHelper().FetchReservationAsync(pushReservationRequest.ReservationNumber, new Models.OWS.OwsRequestModel()
+                {
+                    ChainCode = pushReservationRequest.ServiceParameters.ChainCode,
+                    DestinationEntityID = pushReservationRequest.ServiceParameters.DestinationEntityID,
+                    HotelDomain = pushReservationRequest.ServiceParameters.HotelDomain,
+                    KioskID = pushReservationRequest.ServiceParameters.KioskID,
+                    Language = pushReservationRequest.ServiceParameters.Language,
+                    LegNumber = pushReservationRequest.ServiceParameters.Legnumber,
+                    Password = pushReservationRequest.ServiceParameters.Password,
+                    SystemType = pushReservationRequest.ServiceParameters.SystemType,
+                    Username = pushReservationRequest.ServiceParameters.Username,
+                    FetchBookingRequest = new Models.OWS.FetchBookingRequestModel()
+                    {
+                        ReservationNumber = pushReservationRequest.ReservationNumber
+                        //ReservationNameID = pushReservationRequest.ReservationNameID
+                    }
+                }, "Payment link push", pushReservationRequest.ServiceParameters);
+                if (!owsResponse1.result)
+                {
+                    new LogHelper().Log("Fetching opera reservation", null, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                    new LogHelper().Warn("Failled to fetch opera reservation with reason :- " + owsResponse1.responseMessage, pushReservationRequest.ReservationNumber, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Failled to fetch opera reservation with reason :- " + owsResponse1.responseMessage
+                    };
+                }
+                if (owsResponse1.responseData == null)
+                {
+                    new LogHelper().Log("Failled to fetch opera reservation with reason :- API response data is NULL" + owsResponse1.responseMessage, pushReservationRequest.ReservationNumber, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Failled to fetch opera reservation with reason :- API response data is NULL" + owsResponse1.responseMessage
+                    };
+                }
+                else
+                {
+                    new LogHelper().Debug("Converting API json to object", pushReservationRequest.ReservationNumber, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                    try
+                    {
+                        temp_operaReservations = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Models.OWS.OperaReservation>>(owsResponse1.responseData.ToString());
+                        Reservation = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Models.OWS.OperaReservation>>(owsResponse1.responseData.ToString())[0];
+                        new LogHelper().Log("Opera reservation fetched successfully", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                    }
+                    catch (Exception ex)
+                    {
+                        new LogHelper().Error(ex, pushReservationRequest.ReservationNumber, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                        new LogHelper().Log("Failled to covert API response to object", pushReservationRequest.ReservationNumber, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                        new LogHelper().Warn("Failled to fetch opera reservation with reason :- " + ex.Message, pushReservationRequest.ReservationNumber, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                        new LogHelper().Debug("Failled to fetch opera reservation with reason :- " + ex.Message, pushReservationRequest.ReservationNumber, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                        return new Models.Local.LocalResponseModel()
+                        {
+                            result = false,
+                            responseMessage = ex.Message
+                        };
+                    }
+                }
+
+                #endregion
+                
+
+                #region Pushing record copy in local DB
+                new LogHelper().Log("Updating the reservation in Local DB", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                //Reservation.IsEmailSend = false;
+                //Reservation.reservationDocument = null;
+                Models.Local.LocalResponseModel localResponse = await new WSClientHelper().PushRecordLocally(new Models.Local.LocalRequestModel()
+                {
+                    SyncFromCloud = false,
+                    RequestObject = temp_operaReservations,//new List<Models.OWS.OperaReservation>() { Reservation }
+                }, Reservation.ReservationNameID, "Payment link push", pushReservationRequest.ServiceParameters);
+                if (!localResponse.result)
+                {
+                    new LogHelper().Log("Updating the reservation in Local DB with email send flag failled with reason :- " + localResponse.responseMessage, Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                }
+                else
+                    new LogHelper().Log("Updating the reservation in Local DB with email send flag fsucceeded", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                #endregion
+
+                #region Validating email present or not
+                bool isEmailPresent = false;
+                if (Reservation != null && Reservation.GuestProfiles != null && Reservation.GuestProfiles.Count > 0 &&
+                    Reservation.GuestProfiles[0].Email != null && Reservation.GuestProfiles[0].Email.Count > 0 &&
+                    !string.IsNullOrEmpty(Reservation.GuestProfiles[0].Email[0].email))
+                    isEmailPresent = true;
+                if (!isEmailPresent)
+                {
+                    new LogHelper().Log("Skipping reservation No. : " + Reservation.ReservationNumber + " no email ID present", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = " no email ID present"
+                    };
+                }
+                #endregion
+
+                #region Processing RoomRate
+                new LogHelper().Log("Updating rate details", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                if (Reservation.RateDetails != null && Reservation.RateDetails.DailyRates != null && Reservation.RateDetails.DailyRates.Count > 0)
+                {
+                    decimal total_roomrate = Reservation.RateDetails.DailyRates.Sum(x => x.Amount);
+                    if (Reservation.PrintRate != null && Reservation.PrintRate.Value)
+                        Reservation.RateDetails.RateAmount = total_roomrate;
+                    else
+                        Reservation.TotalAmount = 0;
+                    new LogHelper().Log("Updating rate details completed", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                }
+                else
+                    new LogHelper().Log("Updating rate details failed because Rate details are blank in the reservation", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                #endregion
+
+
+                #region Processing MealPlan
+                if (pushReservationRequest.ServiceParameters.IsBreakFastValidationWithUDF != null && pushReservationRequest.ServiceParameters.IsBreakFastValidationWithUDF.Value)
+                {
+                    new LogHelper().Debug("Processing meal plan from UDF fields", Reservation.ReservationNameID, "PushPaymentLink", "Grabber", "Payment link push");
+                    if (Reservation.userDefinedFields != null && Reservation.userDefinedFields.Count > 0)
+                    {
+                        if (Reservation.userDefinedFields.Find(x => x.FieldName.Equals(pushReservationRequest.ServiceParameters.MealPlanFieldName)) != null)
+                        {
+
+                            if (!Reservation.userDefinedFields.Find(x => x.FieldName.Equals(pushReservationRequest.ServiceParameters.MealPlanFieldName)).FieldValue.Equals("NP"))
+                            {
+                                string tempUDFValue = Reservation.userDefinedFields.Find(x => x.FieldName.Equals(pushReservationRequest.ServiceParameters.MealPlanFieldName)).FieldValue;
+                                if (!string.IsNullOrEmpty(tempUDFValue))
+                                {
+                                    bool isPackageFound = false;
+                                    if (pushReservationRequest.ServiceParameters.PackageCodes.Split(';').ToList().Contains(tempUDFValue))
+                                        isPackageFound = true;
+                                    if (isPackageFound)
+                                    {
+                                        Reservation.IsBreakFastAvailable = true;
+                                        new LogHelper().Debug("Meal plan updated", Reservation.ReservationNameID, "PushPaymentLink", "Grabber", "Payment link push");
+                                    }
+                                }
+                            }
+                            else
+                                new LogHelper().Log("Processing meal plan not updated (NP not present in UDF)", Reservation.ReservationNameID, "PushPaymentLink", "Grabber", "Payment link push");
+                        }
+                    }
+                    else
+                        new LogHelper().Log("No UDF fields for meal plan not found", Reservation.ReservationNameID, "PushPaymentLink", "Grabber", "Payment link push");
+                }
+                if (pushReservationRequest.ServiceParameters.IsBreakFastValidationWithPackage != null && pushReservationRequest.ServiceParameters.IsBreakFastValidationWithPackage.Value)
+                {
+                    new LogHelper().Debug("Processing package list in the reservation for meal plan", Reservation.ReservationNameID, "PushPaymentLink", "Grabber", "Payment link push");
+                    if (((Reservation.PackageDetails != null && Reservation.PackageDetails.Count > 0) || (Reservation.PreferanceDetails != null && Reservation.PreferanceDetails.Count > 0)) && (!string.IsNullOrEmpty(pushReservationRequest.ServiceParameters.PackageCodes) && pushReservationRequest.ServiceParameters.PackageCodes.Split(';').ToList() != null))
+                    {
+                        if (Reservation.PackageDetails != null && Reservation.PackageDetails.Count > 0)
+                        {
+                            bool isPackageFound = false;
+                            foreach (Models.OWS.PackageDetails package in Reservation.PackageDetails)
+                            {
+                                if (pushReservationRequest.ServiceParameters.PackageCodes.Split(';').ToList().Contains(package.PackageCode))
+                                {
+                                    isPackageFound = true;
+                                    break;
+                                }
+                            }
+                            if (isPackageFound)
+                            {
+                                Reservation.IsBreakFastAvailable = true;
+                                new LogHelper().Debug("Meal plan updated", Reservation.ReservationNameID, "PushPaymentLink", "Grabber", "Payment link push");
+                            }
+                        }
+                        if (Reservation.PreferanceDetails != null && Reservation.PreferanceDetails.Count > 0)
+                        {
+                            if (Reservation.IsBreakFastAvailable == null || !Reservation.IsBreakFastAvailable.Value)
+                            {
+                                bool isPrefernceFound = false;
+                                foreach (Models.OWS.PreferanceDetails prefernce in Reservation.PreferanceDetails)
+                                {
+                                    if (pushReservationRequest.ServiceParameters.PackageCodes.Split(';').ToList().Contains(prefernce.PreferanceCode))
+                                    {
+                                        isPrefernceFound = true;
+                                        break;
+                                    }
+                                }
+                                if (isPrefernceFound)
+                                {
+                                    Reservation.IsBreakFastAvailable = true;
+                                    new LogHelper().Debug("Meal plan updated", Reservation.ReservationNameID, "PushPaymentLink", "Grabber", "Payment link push");
+                                }
+                            }
+                        }
+                    }
+                    else
+                        new LogHelper().Log("No package or prefernce list in the reservation for meal plan not found", Reservation.ReservationNameID, "PushPaymentLink", "Grabber", "Payment link push");
+                }
+                #endregion
+
+
+
+                #region VerifyVIPReservationOrNot
+                new LogHelper().Log("Verifying reservation VIP status in UDF field", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                if (Reservation.userDefinedFields != null && Reservation.userDefinedFields.Count > 0)
+                {
+                    if (Reservation.userDefinedFields.Find(x => x.FieldName.Equals(pushReservationRequest.ServiceParameters.PreAuthUDF)) != null &&
+                        Reservation.userDefinedFields.Find(x => x.FieldName.Equals(pushReservationRequest.ServiceParameters.PreAuthUDF)).FieldValue.Equals("NO"))
+                    {
+                        new LogHelper().Log("Reservation is flagged not to take payment", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                        Reservation.DepositDetail = new List<Models.OWS.DepositDetail>()
+                {
+                    new Models.OWS.DepositDetail()
+                    {
+                        Amount = 0,
+                        CardExpiryDate = null,
+                        CreditCardNumber = null,
+                        IsCreditCardDeposit = false,
+                        PaymentType = null
+                    }
+                };
+                    }
+                    else if (Reservation.userDefinedFields.Find(x => x.FieldName.Equals(pushReservationRequest.ServiceParameters.PreAuthAmntUDF)) != null &&
+                        Reservation.userDefinedFields.Find(x => x.FieldName.Equals(pushReservationRequest.ServiceParameters.PreAuthAmntUDF)).FieldValue.Equals("NO"))
+                    {
+                        new LogHelper().Log("Reservation is flagged not to take payment", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                        Reservation.DepositDetail = new List<Models.OWS.DepositDetail>()
+                        {
+                            new Models.OWS.DepositDetail()
+                            {
+                                Amount = 0,
+                                CardExpiryDate = null,
+                                CreditCardNumber = null,
+                                IsCreditCardDeposit = false,
+                                PaymentType = null
+                            }
+                        };
+                    }
+                }
+                new LogHelper().Log("Verifying reservation VIP status in UDF field completed", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                #endregion
+
+                #region PaymentDesabling
+                if (pushReservationRequest.ServiceParameters.IsPaymentDisabled)
+                {
+                    new LogHelper().Log("Disabling the payment as per the config", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                    Reservation.DepositDetail = new List<Models.OWS.DepositDetail>()
+                {
+                    new Models.OWS.DepositDetail()
+                    {
+                        Amount = 0,
+                        CardExpiryDate = null,
+                        CreditCardNumber = null,
+                        IsCreditCardDeposit = false,
+                        PaymentType = null
+                    }
+                };
+                }
+                #endregion
+
+                #region Update ETA
+                if (pushReservationRequest.ServiceParameters.IsETADefault)
+                {
+                    new LogHelper().Log("Assigning NULL value to ETA as per the config", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                    Reservation.ExpectedArrivalTime = null;
+                }
+                #endregion
+
+                #region Push due in record
+                new LogHelper().Log("Pushing due in reservation, reservation No. : " + Reservation.ReservationNumber, Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                Models.Cloud.CloudResponseModel cloudResponse = await new WSClientHelper().PushRecordToCloud(Reservation.ReservationNameID, new Models.Cloud.CloudRequestModel()
+                {
+                    RequestObject = new List<Models.OWS.OperaReservation>() { Reservation }
+                }, "Payment link push", pushReservationRequest.ServiceParameters);
+                if (!cloudResponse.result)
+                {
+                    new LogHelper().Log("Failled to push the reservation to cloud, so skipping the reservation ", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Failled to push the reservation to cloud, so skipping the reservation "
+                    };
+                }
+                new LogHelper().Log("Reservation pushed to cloud successfully", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+
+                #endregion
+
+                #region Fetching Reservation Track whethere is email is already send or not
+                //new LogHelper().Log("Fetching reservation track from local DB for status (email send or not)", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+
+                //Models.Local.LocalResponseModel localWebResponse = await new WSClientHelper().FetchReservationTracjLocally(Reservation.ReservationNameID, new Models.Local.LocalRequestModel()
+                //{
+
+                //    RequestObject = new Models.Local.ReservationTrackStatus()
+                //    {
+                //        ReservationNameID = Reservation.ReservationNameID,
+                //        ProcessType = Models.Local.ReservationProcessType.Precheckinemail.ToString()
+                //    }
+                //}, "Payment link push", pushReservationRequest.ServiceParameters);
+
+                //if (localWebResponse.result)
+                //{
+                //    new LogHelper().Log("Reservation track in local DB fetched successfully ", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                //    if (localWebResponse.responseData != null)
+                //    {
+                //        List<Models.Local.ReservationTrackStatus> reservationTracks = null;
+                //        new LogHelper().Debug("Converting API json to object", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                //        try
+                //        {
+                //            reservationTracks = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Models.Local.ReservationTrackStatus>>(localWebResponse.responseData.ToString());
+                //        }
+                //        catch (Exception ex)
+                //        {
+                //            isEmailSent = false;
+                //            new LogHelper().Error(ex, Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                //        }
+                //        if (reservationTracks != null && reservationTracks.Count > 0)
+                //        {
+                //            isEmailSent = true;
+                //            new LogHelper().Debug("Pre checkin email already send", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                //        }
+                //    }
+                //    else
+                //    {
+                //        isEmailSent = false;
+                //        new LogHelper().Log("Resrvation track not present ", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                //    }
+                //}
+                //else
+                //{
+                //    isEmailSent = false;
+                //    new LogHelper().Log("Failled to fetch reservation track in local DB with reason :- " + localWebResponse.responseMessage, Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                //}
+
+
+                #endregion
+
+                #region Sending Email
+                try
+                {
+
+                    new LogHelper().Log("Verifying email send or not ", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                    //if (isEmailSent == null || !isEmailSent.Value)
+                    {
+                        new LogHelper().Log("Sending pre-checkin email", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                        if (Reservation != null && Reservation.GuestProfiles != null && Reservation.GuestProfiles[0].Email != null && Reservation.GuestProfiles[0].Email.Count > 0)
+                        {
+                            foreach (Models.OWS.Email email in Reservation.GuestProfiles[0].Email)
+                            {
+                                if (email.primary != null && email.primary.Value)
+                                {
+                                    TextInfo textInfo = new CultureInfo("en-US", false).TextInfo;
+                                    Models.Email.EmailResponse emailResponse = await new WSClientHelper().SendEmail(Reservation.ReservationNameID, new Models.Email.EmailRequest()
+                                    {
+                                        FromEmail = pushReservationRequest.ServiceParameters.PreArrivalFromEmail,
+                                        ToEmail = email.email,
+                                        GuestName = !string.IsNullOrEmpty(Reservation.GuestProfiles[0].GuestName) ? textInfo.ToTitleCase(Reservation.GuestProfiles[0].GuestName)
+                                        : Reservation.GuestProfiles[0].GuestName,
+                                        Subject = pushReservationRequest.ServiceParameters.PreArrivalEmailSubject,
+                                        confirmationNumber = "?id=" + HttpUtility.UrlEncode(new Helper().EncryptString("b14ca5898a4e4133bbce2ea2315a1916", Reservation.ReservationNumber)),
+                                        displayFromEmail = pushReservationRequest.ServiceParameters.EmailDisplayName,
+                                        EmailType = Models.Email.EmailType.Precheckedin,
+                                        AttachmentFileName = "WelcomeEmail.pdf",
+                                        ReservationNumber = !string.IsNullOrEmpty(Reservation.ReservationNumber) ? (Reservation.ReservationNumber.Contains("||") ?
+                                                            (Reservation.ReservationNumber.Substring(0, Reservation.ReservationNumber.IndexOf('|') - 1)) : (Reservation.ReservationNumber)) : (Reservation.ReservationNumber),
+                                        ArrivalDate = Reservation.ArrivalDate.Value.ToString("dd-MMM-yyyy"),
+                                        DepartureDate = Reservation.DepartureDate.Value.ToString("dd-MMM-yyy")
+
+                                    }, "Payment link push", pushReservationRequest.ServiceParameters);
+                                    if (!emailResponse.result)
+                                    {
+                                        isEmailSent = false;
+                                        IsEmailProcessed = false;
+                                        new LogHelper().Log("Failled to send confirmation email with reason :- " + emailResponse.responseMessage, Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                                        new LogHelper().Warn("Failled to send confirmation email with reason :- " + emailResponse.responseMessage, Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                                    }
+                                    else
+                                    {
+                                        isEmailSent = true;
+                                        IsEmailProcessed = true;
+                                        new LogHelper().Log("Email send successfully", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            new LogHelper().Log("Failled to send pre-checkin since email address not found from pre checked in list response", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                            new LogHelper().Warn("Failled to send pre-checkin since email address not found from pre checked in list response", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                        }
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    new LogHelper().Error(ex, Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                }
+                #endregion
+
+                #region Pushing Reservation Track
+                if (IsEmailProcessed != null && IsEmailProcessed.Value)
+                {
+                    new LogHelper().Log("Pushing reservation track from local DB ", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+
+                    localResponse = await new WSClientHelper().PushReservationTrackLocally(Reservation.ReservationNameID, new Models.Local.LocalRequestModel()
+                    {
+                        RequestObject = new Models.Local.ReservationTrackStatus()
+                        {
+                            ReservationNameID = Reservation.ReservationNameID,
+                            ProcessType = Models.Local.ReservationProcessType.Precheckinemail.ToString(),
+                            ReservationNumber = !string.IsNullOrEmpty(Reservation.ReservationNumber) ? (Reservation.ReservationNumber.Contains("||") ?
+                                                            (Reservation.ReservationNumber.Substring(0, Reservation.ReservationNumber.IndexOf('|') - 1)) : (Reservation.ReservationNumber)) : (Reservation.ReservationNumber),
+                            EmailSent = IsEmailProcessed.Value,
+                            ProcessStatus = ""
+                        }
+                    }, "Payment link push", pushReservationRequest.ServiceParameters);
+                    if (localResponse.result)
+                    {
+                        new LogHelper().Log("Reservation track in local DB updated successfully ", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                    }
+                    else
+                    {
+                        //isReservationTrackPresent = true;
+                        new LogHelper().Log("Failled to update reservation track in local DB with reason :- " + localResponse.responseMessage, Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                    }
+                }
+                #endregion
+
+                #region Pushing record copy in local DB
+                new LogHelper().Log("Updating the reservation in Local DB with email send flag ", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                Reservation.IsEmailSend = isEmailSent;
+                Reservation.reservationDocument = null;
+                localResponse = await new WSClientHelper().PushRecordLocally(new Models.Local.LocalRequestModel()
+                {
+                    SyncFromCloud = false,
+                    RequestObject = new List<Models.OWS.OperaReservation>() { Reservation }
+                }, Reservation.ReservationNameID, "Payment link push", pushReservationRequest.ServiceParameters);
+                if (!localResponse.result)
+                {
+                    new LogHelper().Log("Updating the reservation in Local DB with email send flag failled with reason :- " + localResponse.responseMessage, Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                }
+                else
+                    new LogHelper().Log("Updating the reservation in Local DB with email send flag fsucceeded", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                #endregion
+
+                #region Updating record status in Local DB
+                new LogHelper().Log("Updating the reservation status in Local DB", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                localResponse = await new WSClientHelper().UpdateRecordLocally(Reservation.ReservationNameID, new Models.Local.LocalRequestModel()
+                {
+                    RequestObject = new List<Models.Local.UpdateReservationByReservationNameIDModel>()
+                {
+                    new Models.Local.UpdateReservationByReservationNameIDModel{
+                        IsPushedToCloud = true,
+                        ReservationNameID = Reservation.ReservationNameID
+                        //StatusDescription = "Success"
+                    }
+                }
+                }, "Payment link push", pushReservationRequest.ServiceParameters);
+                if (!localResponse.result)
+                {
+                    new LogHelper().Log("Updating the reservation status in Local DB with email send flag failled with reason :- " + localResponse.responseMessage, Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                }
+                else
+                    new LogHelper().Log("Updating the reservation status in Local DB ", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
+                #endregion
+
+                return new Models.Local.LocalResponseModel()
+                {
+                    result = true,
+                    responseMessage = "Success"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Models.Local.LocalResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message
+                };
+            }
+
+        }
+
         public async Task<Models.Local.LocalResponseModel> PushDueOutReservation(Models.Local.PushReservationRequest pushReservationRequest)
         {
             
@@ -3351,15 +3849,22 @@ namespace CheckinPortalCloudAPI.Helper.Local
                 }
                 #endregion
 
-                //if ((paymentHeaders == null || paymentHeaders.Count == 0) && guestFolio.BalanceAmount > 0)
-                //{
-                //    new LogHelper().Log("Not able to process reservation No. : " + Reservation.ReservationNumber + " because there is no payment details in the saavy pay as well as current balance is greater than 0", Reservation.ReservationNameID, "PushDueOutReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
-                //    return new Models.Local.LocalResponseModel()
-                //    {
-                //        result = false,
-                //        responseMessage = "Not able to process reservation No. : " + Reservation.ReservationNumber + " because there is no payment details in the saavy pay as well as current balance is greater than 0"
-                //    };
-                //}
+                bool isOPIEnabled = false;
+                isOPIEnabled = (ConfigurationManager.AppSettings["OPIEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OPIEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OPIEnabled"].ToString(), out isOPIEnabled)) ? isOPIEnabled : false;
+                if (isOPIEnabled)
+                {
+                    if ((paymentHeaders == null || paymentHeaders.Count == 0) && guestFolio.BalanceAmount > 0)
+                    {
+                        new LogHelper().Log("Not able to process reservation No. : " + Reservation.ReservationNumber + " because there is no payment details in the saavy pay as well as current balance is greater than 0", Reservation.ReservationNameID, "PushDueOutReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                        return new Models.Local.LocalResponseModel()
+                        {
+                            result = false,
+                            responseMessage = "Not able to process reservation No. : " + Reservation.ReservationNumber + " because there is no payment details in the saavy pay as well as current balance is greater than 0"
+                        };
+                    }
+                }
 
                 #region FetchFolioAsBase64
                 new LogHelper().Log("Fetching reservation folio as base64 for reservation No. : " + Reservation.ReservationNumber, Reservation.ReservationNameID, "PushDueOutReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");

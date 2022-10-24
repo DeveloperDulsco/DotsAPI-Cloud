@@ -1507,7 +1507,10 @@ namespace CheckinPortalCloudAPI.Controllers
                     }
                     MakeKeyReq.CommonAreaList = CommonAreasArray;
                     MessengerPMSWSServiceSoapClient SoapClnt = new MessengerPMSWSServiceSoapClient();
-                    System.Xml.XmlNode XN = SoapClnt.CreateNewBooking(ref Auth, MakeKeyReq.ReservationID, MakeKeyReq.SiteName, MakeKeyReq.PMSTerminalID, MakeKeyReq.EncoderID, MakeKeyReq.CheckIn, MakeKeyReq.CheckOut, MakeKeyReq.GuestName, MakeKeyReq.MainRoomNo, MakeKeyReq.bGrantAccessPredefinedSuiteDoors, null, MakeKeyReq.CommonAreaList, MakeKeyReq.TrackIIFolioNo, null, MakeKeyReq.KeyCount, MakeKeyReq.KeySize, MakeKeyReq.UID);
+                    System.Xml.XmlNode XN = SoapClnt.CreateNewBooking(ref Auth, MakeKeyReq.ReservationID, MakeKeyReq.SiteName, MakeKeyReq.PMSTerminalID, MakeKeyReq.EncoderID, 
+                                                                        MakeKeyReq.CheckIn, MakeKeyReq.CheckOut, MakeKeyReq.GuestName, MakeKeyReq.MainRoomNo,
+                                                                        MakeKeyReq.bGrantAccessPredefinedSuiteDoors, null, MakeKeyReq.CommonAreaList, MakeKeyReq.TrackIIFolioNo, 
+                                                                        null, MakeKeyReq.KeyCount, MakeKeyReq.KeySize, MakeKeyReq.UID);
 
                     if (XN != null)
                     {
@@ -1619,9 +1622,14 @@ namespace CheckinPortalCloudAPI.Controllers
                     ChangeKeyAccessReq.UID = "AAAAAAAA";
 
 
+                    //XmlNode XN = SoapClnt.ChangeKeyAccess(ref Auth, ChangeKeyAccessReq.ReservationID, ChangeKeyAccessReq.SiteName, ChangeKeyAccessReq.PMSTerminalID, ChangeKeyAccessReq.EncoderID,
+                    //                                        ChangeKeyAccessReq.CheckIn, ChangeKeyAccessReq.CheckOut, ChangeKeyAccessReq.GuestName, null, ChangeKeyAccessReq.CommonAreaList,
+                    //                                        ChangeKeyAccessReq.TrackIIFolioNo, null, ChangeKeyAccessReq.KeyCount, ChangeKeyAccessReq.KeySize, ChangeKeyAccessReq.UID);
+
                     XmlNode XN = SoapClnt.ChangeKeyAccess(ref Auth, ChangeKeyAccessReq.ReservationID, ChangeKeyAccessReq.SiteName, ChangeKeyAccessReq.PMSTerminalID, ChangeKeyAccessReq.EncoderID,
-                                                            ChangeKeyAccessReq.CheckIn, ChangeKeyAccessReq.CheckOut, ChangeKeyAccessReq.GuestName, null, ChangeKeyAccessReq.CommonAreaList,
-                                                            ChangeKeyAccessReq.TrackIIFolioNo, null, ChangeKeyAccessReq.KeyCount, ChangeKeyAccessReq.KeySize, ChangeKeyAccessReq.UID);
+                                                           ChangeKeyAccessReq.CheckIn, ChangeKeyAccessReq.CheckOut, ChangeKeyAccessReq.GuestName, null, ChangeKeyAccessReq.CommonAreaList,
+                                                           ChangeKeyAccessReq.TrackIIFolioNo, ChangeKeyAccessReq.TrackIIFolioNo, ChangeKeyAccessReq.KeyCount, ChangeKeyAccessReq.KeySize, ChangeKeyAccessReq.UID);
+
                     if (XN != null)
                     {
                         bool IsFoult = false;

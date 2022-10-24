@@ -187,7 +187,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
 
 
                 ReservationService.ReservationServiceSoapClient ResPortClient = new ReservationService.ReservationServiceSoapClient();
-                ResPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour("Test USE", "Request.WSSEPassword", "Request.KioskUserName", "Request.KioskPassword", "Request.HotelDomain"));
+                //ResPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour("Test USE", "Request.WSSEPassword", "Request.KioskUserName", "Request.KioskPassword", "Request.HotelDomain"));
                 ReservationService.AddAccompanyGuestResponse AcmpnyResponse = new ReservationService.AddAccompanyGuestResponse();
                 AcmpnyResponse = ResPortClient.AddAccompanyGuest(ref OGHeader, AcmpnyRequest);
                 if (AcmpnyResponse.Result.resultStatusFlag == ReservationService.ResultStatusFlag.SUCCESS)
@@ -2490,7 +2490,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                             {
                                                 try
                                                 {
-                                                    System.IO.File.AppendAllLines(System.Web.Hosting.HostingEnvironment.MapPath(@"~\FetchReservation.txt"), new string[] { "Member ship Details found :- " });
+                                                    //System.IO.File.AppendAllLines(System.Web.Hosting.HostingEnvironment.MapPath(@"~\FetchReservation.txt"), new string[] { "Member ship Details found :- " });
                                                     foreach (ReservationService.NameMembership MS in gProfile.Memberships)
                                                     {
                                                         if (MS.usedInReservationSpecified && MS.usedInReservation)
@@ -2508,7 +2508,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                                 }
                                                 catch (Exception ex)
                                                 {
-                                                    System.IO.File.AppendAllLines(System.Web.Hosting.HostingEnvironment.MapPath(@"~\FetchReservation.txt"), new string[] { "Error :- ", "", ex.Message });
+                                                    //System.IO.File.AppendAllLines(System.Web.Hosting.HostingEnvironment.MapPath(@"~\FetchReservation.txt"), new string[] { "Error :- ", "", ex.Message });
                                                 }
                                             }
                                             #endregion
@@ -2804,7 +2804,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         catch (Exception ex)
                         {
                             //Nlog Debug
-                            System.IO.File.AppendAllLines(System.Web.Hosting.HostingEnvironment.MapPath(@"~\FetchReservation.txt"), new string[] { "Error :- ", "", ex.Message });
+                            //System.IO.File.AppendAllLines(System.Web.Hosting.HostingEnvironment.MapPath(@"~\FetchReservation.txt"), new string[] { "Error :- ", "", ex.Message });
                         }
                     }
                     #endregion
@@ -3054,7 +3054,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
         {
             try
             {
-                System.IO.File.AppendAllLines(System.Web.Hosting.HostingEnvironment.MapPath(@"~\GuestCheckin.txt"), new string[] { JsonConvert.SerializeObject(Request) });
+                //System.IO.File.AppendAllLines(System.Web.Hosting.HostingEnvironment.MapPath(@"~\GuestCheckin.txt"), new string[] { JsonConvert.SerializeObject(Request) });
 
                 #region Request
                 #region Request Header
@@ -3797,7 +3797,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 //fetchBookingRes = new ReservationService.FetchBookingResponse();
                 //string temp1 = System.IO.File.ReadAllText(System.Web.Hosting.HostingEnvironment.MapPath(@"~\Log.txt"));
                 //fetchBookingRes  = Newtonsoft.Json.JsonConvert.DeserializeObject<ReservationService.FetchBookingResponse>(temp1);
-                System.IO.File.WriteAllText(System.Web.Hosting.HostingEnvironment.MapPath(@"~\Log.txt"), Newtonsoft.Json.JsonConvert.SerializeObject(fetchBookingRes));
+                //System.IO.File.WriteAllText(System.Web.Hosting.HostingEnvironment.MapPath(@"~\Log.txt"), Newtonsoft.Json.JsonConvert.SerializeObject(fetchBookingRes));
 
                 ReservationService.GDSResultStatus status = fetchBookingRes.Result;
                 //Nlog debug
@@ -5508,7 +5508,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                     }
                     catch (Exception ex)
                     {
-                        System.IO.File.AppendAllText(System.Web.Hosting.HostingEnvironment.MapPath(@"~\Error.txt"), ex.Message);
+                        //System.IO.File.AppendAllText(System.Web.Hosting.HostingEnvironment.MapPath(@"~\Error.txt"), ex.Message);
                         hReservation.checkOutTimeSpecified = false;
                     }
                 }
@@ -6147,7 +6147,8 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                     }
 
                 }
-                catch (Exception ex) { System.IO.File.AppendAllText(System.Web.Hosting.HostingEnvironment.MapPath(@"~\Error.txt"), ex.Message); }
+                catch (Exception ex) { //System.IO.File.AppendAllText(System.Web.Hosting.HostingEnvironment.MapPath(@"~\Error.txt"), ex.Message);
+                                       }
                 #endregion
 
 
@@ -6210,15 +6211,39 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 ReservationAdvancedService.CreditCardInfo CCInfo = new ReservationAdvancedService.CreditCardInfo();
                 
                 ReservationAdvancedService.CreditCard CC = new ReservationAdvancedService.CreditCard();
+
+                //ReservationAdvancedService.cred
                 if (Request.MakePaymentRequest.PaymentTypeCode != "CA")
                 {
+                    bool isOPIEnabled = false;
+                    isOPIEnabled = (ConfigurationManager.AppSettings["OPIEnabled"] != null
+                                    && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OPIEnabled"].ToString())
+                                    && bool.TryParse(ConfigurationManager.AppSettings["OPIEnabled"].ToString()  , out isOPIEnabled)) ? isOPIEnabled : false;
                     CC.chipAndPin = false;
                     CC.chipAndPinSpecified = true;
                     CC.cardType = Request.MakePaymentRequest.PaymentTypeCode;//"WEB";
                     
-                    CC.Item = Request.MakePaymentRequest.MaskedCardNumber;// "4687560100136162";
-                    CC.expirationDate = DateTime.Now.AddYears(2);
-                    CC.cardCode = Request.MakePaymentRequest.PaymentTypeCode;
+                    if(isOPIEnabled)
+                    {
+                        CC.Item = new ReservationAdvancedService.VaultedCardType()
+                        {
+                            vaultedCardID = Request.MakePaymentRequest.ApprovalCode,
+                            lastFourDigits = Request.MakePaymentRequest.MaskedCardNumber.Substring(Request.MakePaymentRequest.MaskedCardNumber.Length - 4)
+                        };
+                    }
+                    else
+                    {
+                        CC.Item = Request.MakePaymentRequest.MaskedCardNumber;// "4687560100136162";
+                        CC.cardCode = Request.MakePaymentRequest.PaymentTypeCode;
+                    }
+                    if (Request.MakePaymentRequest.ExpiryDate != null)
+                    {
+                        CC.expirationDate = Request.MakePaymentRequest.ExpiryDate.Value;
+                    }
+                    else
+                    {
+                        CC.expirationDate = DateTime.Now.AddYears(2);
+                    }
                     CC.expirationDateSpecified = true;
                     CCInfo.Item = CC;
                 }
@@ -6231,10 +6256,10 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 MPRequest.CreditCardInfo = CCInfo;
 
                 ReservationAdvancedService.ResvAdvancedServiceSoapClient ResAdvPortClient = new ReservationAdvancedService.ResvAdvancedServiceSoapClient();
-
+                ResAdvPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour("Test USE", "Request.WSSEPassword", "Request.KioskUserName", "Request.KioskPassword", "Request.HotelDomain"));
                 ReservationAdvancedService.MakePaymentResponse RSResponse = new ReservationAdvancedService.MakePaymentResponse();
                 #endregion
-
+                //ResAdvPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour("Test USE", "Request.WSSEPassword", "Request.KioskUserName", "Request.KioskPassword", "Request.HotelDomain"));
                 RSResponse = ResAdvPortClient.MakePayment(ref OGHeader, MPRequest);
 
                 
@@ -6313,10 +6338,10 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
 
                 NameService.NameServiceSoapClient PortClient = new NameService.NameServiceSoapClient();
                 NameService.FetchEmailListResponse EMailListResp = PortClient.FetchEmailList(ref OGHeader, FetchEmailListReq);
-                System.IO.File.AppendAllLines(System.Web.Hosting.HostingEnvironment.MapPath(@"~\EmailList.txt"), new string[] { JsonConvert.SerializeObject(EMailListResp) });
+                //System.IO.File.AppendAllLines(System.Web.Hosting.HostingEnvironment.MapPath(@"~\EmailList.txt"), new string[] { JsonConvert.SerializeObject(EMailListResp) });
                 if (EMailListResp.Result.resultStatusFlag == NameService.ResultStatusFlag.SUCCESS)
                 {
-                    System.IO.File.AppendAllLines(System.Web.Hosting.HostingEnvironment.MapPath(@"~\EmailList.txt"), new string[] { "Email found :- " });
+                    //System.IO.File.AppendAllLines(System.Web.Hosting.HostingEnvironment.MapPath(@"~\EmailList.txt"), new string[] { "Email found :- " });
                     List<Models.OWS.Email> LEmail = new List<Models.OWS.Email>();
                     
 

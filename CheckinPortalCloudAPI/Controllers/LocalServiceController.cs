@@ -40,6 +40,14 @@ namespace CheckinPortalCloudAPI.Controllers
         }
 
         [HttpPost]
+        [ActionName("PushPaymentLink")]
+        public async Task<Models.Local.LocalResponseModel> PushPaymentLink(Models.Local.LocalRequestModel localRequest)
+        {
+            Models.Local.PushReservationRequest reservationRequest = JsonConvert.DeserializeObject<Models.Local.PushReservationRequest>(localRequest.RequestObject.ToString());
+            return await new Helper.Local.LocalAPI().PushDueInReservation(reservationRequest);
+        }
+
+        [HttpPost]
         [ActionName("PushDueOutReservation")]
         public async Task<Models.Local.LocalResponseModel> PushDueOutReservation(Models.Local.LocalRequestModel localRequest)
         {
