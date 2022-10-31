@@ -310,6 +310,7 @@
     <Compile Include="Helper\Cloud\BasicAuthenticationAttribute.cs" />
     <Compile Include="Helper\Cloud\CloudDBHelper.cs" />
     <Compile Include="Helper\Cloud\CloudDBModelConverter.cs" />
+    <Compile Include="Helper\CustomHeader.cs" />
     <Compile Include="Helper\EndPointBehaviour.cs" />
     <Compile Include="Helper\Helper.cs" />
     <Compile Include="Helper\KIOSK\AuditHelper.cs" />
@@ -337,6 +338,8 @@
     <Compile Include="Models\Fiserv\PayWithTokenResponseModel.cs" />
     <Compile Include="Models\GeneralSettingsModel.cs" />
     <Compile Include="Models\Global\GlobalModel.cs" />
+    <Compile Include="Models\Header\OGHeader.cs" />
+    <Compile Include="Models\Header\SecurityHeader.cs" />
     <Compile Include="Models\KIOSK\AuditRequestModel.cs" />
     <Compile Include="Models\KIOSK\KiokManualAuthorizationModel.cs" />
     <Compile Include="Models\KIOSK\DB\DocumentTypeMasterModel.cs" />

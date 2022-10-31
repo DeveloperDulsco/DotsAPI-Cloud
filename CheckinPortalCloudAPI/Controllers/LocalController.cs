@@ -1803,7 +1803,7 @@ namespace CheckinPortalCloudAPI.Controllers
                 return new LocalResponseModel()
                 {
                     result = false,
-                    responseMessage = ex.ToString()
+                    responseMessage = ex.InnerException.Message
                 };
             }
         }

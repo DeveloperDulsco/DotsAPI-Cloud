@@ -20,6 +20,10 @@ namespace CheckinPortalCloudAPI.Helper
         static string og_header_usr_name = null;
         static string og_header_paswd = null;
         static string hotel_domain = null;
+        static string dest_entity_id = "KIOSK";
+        static string dest_system_type = "PMS";
+        static string source_entity_id = "KIOSK"; 
+        static string source_system_type = "KIOSK";
         public MessageInspector(string WSSE_Username, string WSSE_Password, string Username, string Password, string HotelDomain)
         {
             wsdl_usr_name = WSSE_Username;
@@ -39,72 +43,16 @@ namespace CheckinPortalCloudAPI.Helper
         public object BeforeSendRequest(ref System.ServiceModel.Channels.Message request, IClientChannel channel)
         {
             Helper HelperClass = new Helper();
-            System.IO.File.WriteAllText(System.Web.Hosting.HostingEnvironment.MapPath(@"~\request.xml"), request.ToString());
-            //request.Headers.Add(getSecurityHeader(wsdl_usr_name, wsdl_paswd));
+            request.Headers.Add(HelperClass.getSecurityHeader(wsdl_usr_name, wsdl_paswd));
 
-            //request.Headers.RemoveAt(request.Headers.FindHeader("OGHeader", "http://webservices.micros.com/og/4.3/Core/"));
+            request.Headers.RemoveAt(request.Headers.FindHeader("OGHeader", "http://webservices.micros.com/og/4.3/Core/"));
 
-            //request.Headers.Add(GetOGHeader(hotel_domain, og_header_usr_name, og_header_paswd));
+            request.Headers.Add(HelperClass.GetOGHeader(hotel_domain, og_header_usr_name, og_header_paswd,dest_entity_id,dest_system_type,source_entity_id,source_system_type));
+            //System.IO.File.WriteAllText("request.txt", Newtonsoft.Json.JsonConvert.SerializeObject(request));
             return null;
         }
 
         #endregion
-
-        
-    }
-
-    public class CustomHeader : MessageHeader
-    {
-        private string CUSTOM_HEADER_NAME = "";
-        private string CUSTOM_HEADER_NAMESPACE = "";
-
-        private readonly XmlDocument _xnlData = new XmlDocument();
-
-        protected List<CusttomHeaderAttributes> _attributes = new List<CusttomHeaderAttributes>();
-
-        public CustomHeader(XmlDocument elements, string HeaderName, string HeaderNameSpace)
-        {
-            _xnlData = elements;
-            CUSTOM_HEADER_NAME = HeaderName.Equals(null) ? "" : HeaderName;
-            CUSTOM_HEADER_NAMESPACE = HeaderNameSpace.Equals(null) ? "" : HeaderNameSpace;
-        }
-
-        public List<CusttomHeaderAttributes> Attributes
-        {
-            set { _attributes = value; }
-        }
-
-        public override string Name
-        {
-            get { return (CUSTOM_HEADER_NAME); }
-        }
-
-        public override string Namespace
-        {
-            get { return (CUSTOM_HEADER_NAMESPACE); }
-        }
-
-        protected override void OnWriteHeaderContents(System.Xml.XmlDictionaryWriter writer, MessageVersion messageVersion)
-        {
-            foreach (CusttomHeaderAttributes Attributes in _attributes)
-            {
-                writer.WriteAttributeString(Attributes.AttributPrefix, Attributes.AttributeLocalName, Attributes.Attributens, Attributes.Value);
-            }
-            foreach (XmlNode node in _xnlData.ChildNodes[0].ChildNodes)
-            {
-                writer.WriteNode(node.CreateNavigator(), false);
-            }
-
-        }
-
-    }
-
-    public class CusttomHeaderAttributes
-    {
-        public string AttributPrefix { get; set; }
-        public string AttributeLocalName { get; set; }
-        public string Attributens { get; set; }
-        public string Value { get; set; }
     }
 
     public class CustomEndpointBehaviour : IEndpointBehavior

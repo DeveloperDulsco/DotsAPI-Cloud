@@ -54,9 +54,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 #endregion
 
                 ReservationService.ReservationServiceSoapClient ResSoapCLient = new ReservationService.ReservationServiceSoapClient();
-
-
-
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if(isOperaCloudEnabled)
+                {
+                    ResSoapCLient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(), 
+                                            modifyReservation.Username, modifyReservation.Password, modifyReservation.HotelDomain));                                            
+                }
 
                 ReservationService.UniqueID uID = new ReservationService.UniqueID();
                 uID.type = ReservationService.UniqueIDType.INTERNAL;
@@ -187,6 +194,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
 
 
                 ReservationService.ReservationServiceSoapClient ResPortClient = new ReservationService.ReservationServiceSoapClient();
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    ResPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            Request.Username, Request.Password, Request.HotelDomain));
+                }
                 //ResPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour("Test USE", "Request.WSSEPassword", "Request.KioskUserName", "Request.KioskPassword", "Request.HotelDomain"));
                 ReservationService.AddAccompanyGuestResponse AcmpnyResponse = new ReservationService.AddAccompanyGuestResponse();
                 AcmpnyResponse = ResPortClient.AddAccompanyGuest(ref OGHeader, AcmpnyRequest);
@@ -315,7 +332,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 InvRequest.ReservationRequest = RB;
 
                 ReservationAdvancedService.ResvAdvancedServiceSoapClient ResAdvPortClient = new ReservationAdvancedService.ResvAdvancedServiceSoapClient();
-
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    ResAdvPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            Request.Username, Request.Password, Request.HotelDomain));
+                }
                 ReservationAdvancedService.InvoiceResponse InvResponse = new ReservationAdvancedService.InvoiceResponse();
 
                 InvResponse = ResAdvPortClient.Invoice(ref OGHeader, InvRequest);
@@ -1406,6 +1432,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 #region Response
 
                 NameService.NameServiceSoapClient NamePortClient = new NameService.NameServiceSoapClient();
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    NamePortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            Request.Username, Request.Password, Request.HotelDomain));
+                }
                 PassportResponse = NamePortClient.GetPassport(ref OGHeader, PassportRequest);
                 if (PassportResponse.Result.resultStatusFlag == NameService.ResultStatusFlag.SUCCESS)
                 {
@@ -1503,6 +1539,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 #region Response
 
                 NameService.NameServiceSoapClient NamePortClient = new NameService.NameServiceSoapClient();
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    NamePortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            Request.Username, Request.Password, Request.HotelDomain));
+                }
                 DocumentResponse = NamePortClient.InsertUpdateDocument(ref OGHeader, DocumentRequest);
                 if (DocumentResponse.Result.resultStatusFlag == NameService.ResultStatusFlag.SUCCESS)
                 {
@@ -1686,6 +1732,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 #region Response
 
                 NameService.NameServiceSoapClient NamePortClient = new NameService.NameServiceSoapClient();
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    NamePortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            Request.Username, Request.Password, Request.HotelDomain));
+                }
                 UpdateNameRes = NamePortClient.UpdateName(ref OGHeader, UpdateNameReq);
                 if (UpdateNameRes.Result.resultStatusFlag == NameService.ResultStatusFlag.SUCCESS)
                 {
@@ -1760,6 +1816,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 #endregion
 
                 InformationService.InformationSoapClient InfoPortClient = new InformationService.InformationSoapClient();
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    InfoPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            request.Username, request.Password, request.HotelDomain));
+                }
                 LOVRes = InfoPortClient.QueryLov(ref OG, LOVReq);
                 List<Models.OWS.CountryState> CountryStateList = new List<Models.OWS.CountryState>();
 
@@ -1864,6 +1930,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 #endregion
 
                 InformationService.InformationSoapClient InfoPortClient = new InformationService.InformationSoapClient();
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    InfoPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            request.Username, request.Password, request.HotelDomain));
+                }
                 LOVRes = InfoPortClient.QueryLov(ref OG, LOVReq);
                 List<Models.OWS.CountryState> CountryStateList = new List<Models.OWS.CountryState>();
 
@@ -1962,7 +2038,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 #endregion
 
                 ReservationService.ReservationServiceSoapClient ResSoapCLient = new ReservationService.ReservationServiceSoapClient();
-
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    ResSoapCLient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            Request.Username, Request.Password, Request.HotelDomain));
+                }
 
                 #region Request Body
 
@@ -2723,7 +2808,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 #endregion
 
                 NameService.NameServiceSoapClient PortClient = new NameService.NameServiceSoapClient();
-
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    PortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            Request.Username, Request.Password, Request.HotelDomain));
+                }
                 NameService.FetchProfileResponse FetchResponse = new NameService.FetchProfileResponse();
                 FetchResponse = PortClient.FetchProfile(ref OGHeader, FetchRequest);
                 if (FetchResponse.Result.resultStatusFlag == NameService.ResultStatusFlag.SUCCESS)
@@ -2950,7 +3044,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                     RSRequest.IncludePseudoRoomSpecified = true;
 
                     ReservationAdvancedService.ResvAdvancedServiceSoapClient ResAdvPortClient = new ReservationAdvancedService.ResvAdvancedServiceSoapClient();
-
+                    bool isOperaCloudEnabled = false;
+                    isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                    && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                    && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                    if (isOperaCloudEnabled)
+                    {
+                        ResAdvPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                                ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                                Request.Username, Request.Password, Request.HotelDomain));
+                    }
                     ReservationAdvancedService.FetchRoomStatusResponse RSResponse = new ReservationAdvancedService.FetchRoomStatusResponse();
                     #endregion
 
@@ -3199,7 +3302,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 #region Response
 
                 ReservationAdvancedService.ResvAdvancedServiceSoapClient ResAdvPortClient = new ReservationAdvancedService.ResvAdvancedServiceSoapClient();
-
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    ResAdvPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            Request.Username, Request.Password, Request.HotelDomain));
+                }
                 ReservationAdvancedService.CheckInResponse CIResponse = new ReservationAdvancedService.CheckInResponse();
                 CIResponse = ResAdvPortClient.CheckIn(ref OGHeader, CIRequest);
                 
@@ -3538,7 +3650,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
 
 
                 ReservationAdvancedService.ResvAdvancedServiceSoapClient ResAdvPortClient = new ReservationAdvancedService.ResvAdvancedServiceSoapClient();
-
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    ResAdvPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            Request.Username, Request.Password, Request.HotelDomain));
+                }
                 ReservationAdvancedService.FetchRoomStatusResponse RSResponse = new ReservationAdvancedService.FetchRoomStatusResponse();
                 #endregion
 
@@ -3657,7 +3778,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
 
 
                 ReservationAdvancedService.ResvAdvancedServiceSoapClient ResAdvPortClient = new ReservationAdvancedService.ResvAdvancedServiceSoapClient();
-
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    ResAdvPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            Request.Username, Request.Password, Request.HotelDomain));
+                }
                 ReservationAdvancedService.GuestMessagesResponse GMResponse = new ReservationAdvancedService.GuestMessagesResponse();
                 #endregion
 
@@ -3754,7 +3884,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 #endregion
 
                 ReservationService.ReservationServiceSoapClient ResSoapCLient = new ReservationService.ReservationServiceSoapClient();
-
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    ResSoapCLient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            Request.Username, Request.Password, Request.HotelDomain));
+                }
 
                 #region Request Body
                 ReservationService.UniqueID uID = new ReservationService.UniqueID();
@@ -4918,7 +5057,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 #endregion
 
                 ReservationService.ReservationServiceSoapClient ResSoapCLient = new ReservationService.ReservationServiceSoapClient();
-
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    ResSoapCLient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            Request.Username, Request.Password, Request.HotelDomain));
+                }
 
                 #region Request Body
                 ReservationService.UniqueID uID = new ReservationService.UniqueID();
@@ -5095,6 +5243,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 #endregion
 
                 NameService.NameServiceSoapClient PortClient = new NameService.NameServiceSoapClient();
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    PortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            Request.Username, Request.Password, Request.HotelDomain));
+                }
                 NameService.FetchAddressListResponse AddressListResp = PortClient.FetchAddressList(ref OGHeader, FetchAddressListReq);
                 if (AddressListResp.Result.resultStatusFlag == NameService.ResultStatusFlag.SUCCESS)
                 {
@@ -5209,7 +5367,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 InvRequest.returnFileContents = false;
                 InvRequest.returnFileContentsSpecified = false;
                 ReservationAdvancedService.ResvAdvancedServiceSoapClient ResAdvPortClient = new ReservationAdvancedService.ResvAdvancedServiceSoapClient();
-
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    ResAdvPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            Request.Username, Request.Password, Request.HotelDomain));
+                }
                 ReservationAdvancedService.PrintPreCheckOutBillResponse InvResponse = new ReservationAdvancedService.PrintPreCheckOutBillResponse();
 
                 InvResponse = ResAdvPortClient.PrintPreCheckOutBill(ref OGHeader, InvRequest);
@@ -5283,8 +5450,17 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 #endregion
 
                 ReservationService.ReservationServiceSoapClient ResSoapCLient = new ReservationService.ReservationServiceSoapClient();
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    ResSoapCLient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            modifyReservation.Username, modifyReservation.Password, modifyReservation.HotelDomain));
+                }
 
-                
                 ReservationService.HotelReservation hReservation = new ReservationService.HotelReservation();
 
                 ReservationService.UniqueID[] rUniqueIDList = new ReservationService.UniqueID[2];
@@ -5595,7 +5771,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
 
 
                 ReservationAdvancedService.ResvAdvancedServiceSoapClient ResAdvPortClient = new ReservationAdvancedService.ResvAdvancedServiceSoapClient();
-
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    ResAdvPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            Request.Username, Request.Password, Request.HotelDomain));
+                }
                 ReservationAdvancedService.CheckOutResponse COResponse = new ReservationAdvancedService.CheckOutResponse();
                 COResponse = ResAdvPortClient.CheckOut(ref OGHeader, CORequest);
                 
@@ -5931,7 +6116,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 #endregion
 
                 ReservationService.ReservationServiceSoapClient ResSoapCLient = new ReservationService.ReservationServiceSoapClient();
-
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    ResSoapCLient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            Request.Username, Request.Password, Request.HotelDomain));
+                }
 
                 #region Request Body
                 ReservationService.UniqueID uID = new ReservationService.UniqueID();
@@ -6022,7 +6216,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 #endregion
 
                 InformationService.InformationSoapClient InfoPortClient = new InformationService.InformationSoapClient();
-
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    InfoPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            Request.Username, Request.Password, Request.HotelDomain));
+                }
                 LOVRes = InfoPortClient.QueryLov(ref OG, LOVReq);
                 if (LOVRes.Result.resultStatusFlag == InformationService.ResultStatusFlag.SUCCESS)
                 {
@@ -6123,7 +6326,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                     #endregion
 
                     InformationService.InformationSoapClient InfoPortClient = new InformationService.InformationSoapClient();
-
+                    bool isOperaCloudEnabled1 = false;
+                    isOperaCloudEnabled1 = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                    && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                    && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled1)) ? isOperaCloudEnabled1 : false;
+                    if (isOperaCloudEnabled1)
+                    {
+                        InfoPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                                ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                                Request.Username, Request.Password, Request.HotelDomain));
+                    }
                     LOVRes = InfoPortClient.QueryLov(ref OG, LOVReq);
                     if (LOVRes.Result.resultStatusFlag == InformationService.ResultStatusFlag.SUCCESS)
                     {
@@ -6256,7 +6468,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 MPRequest.CreditCardInfo = CCInfo;
 
                 ReservationAdvancedService.ResvAdvancedServiceSoapClient ResAdvPortClient = new ReservationAdvancedService.ResvAdvancedServiceSoapClient();
-                ResAdvPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour("Test USE", "Request.WSSEPassword", "Request.KioskUserName", "Request.KioskPassword", "Request.HotelDomain"));
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    ResAdvPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            Request.Username, Request.Password, Request.HotelDomain));
+                }
                 ReservationAdvancedService.MakePaymentResponse RSResponse = new ReservationAdvancedService.MakePaymentResponse();
                 #endregion
                 //ResAdvPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour("Test USE", "Request.WSSEPassword", "Request.KioskUserName", "Request.KioskPassword", "Request.HotelDomain"));
@@ -6337,6 +6558,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 #endregion
 
                 NameService.NameServiceSoapClient PortClient = new NameService.NameServiceSoapClient();
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    PortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            Request.Username, Request.Password, Request.HotelDomain));
+                }
                 NameService.FetchEmailListResponse EMailListResp = PortClient.FetchEmailList(ref OGHeader, FetchEmailListReq);
                 //System.IO.File.AppendAllLines(System.Web.Hosting.HostingEnvironment.MapPath(@"~\EmailList.txt"), new string[] { JsonConvert.SerializeObject(EMailListResp) });
                 if (EMailListResp.Result.resultStatusFlag == NameService.ResultStatusFlag.SUCCESS)
@@ -6433,6 +6664,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 #endregion
 
                 NameService.NameServiceSoapClient PortClient = new NameService.NameServiceSoapClient();
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    PortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            Request.Username, Request.Password, Request.HotelDomain));
+                }
                 NameService.FetchPhoneListResponse PhoneListResp = PortClient.FetchPhoneList(ref OGHeader, FetchPhoneListReq);
                 if (PhoneListResp.Result.resultStatusFlag == NameService.ResultStatusFlag.SUCCESS)
                 {
@@ -6549,7 +6790,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
 
 
                 ReservationService.ReservationServiceSoapClient ResPortClient = new ReservationService.ReservationServiceSoapClient();
-
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    ResPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            Request.Username, Request.Password, Request.HotelDomain));
+                }
                 ReservationService.ModifyBookingResponse MBookingRes = ResPortClient.ModifyBooking(ref OGHeader, ModifyBookingReq);
                 if (MBookingRes.Result.resultStatusFlag == ReservationService.ResultStatusFlag.SUCCESS)
                 {
@@ -6644,6 +6894,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                             #region Response
 
                             NameService.NameServiceSoapClient NamePortClient = new NameService.NameServiceSoapClient();
+                            bool isOperaCloudEnabled = false;
+                            isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                            && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                            && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                            if (isOperaCloudEnabled)
+                            {
+                                NamePortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                                        ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                                        Request.Username, Request.Password, Request.HotelDomain));
+                            }
                             AddressResponse = NamePortClient.UpdateAddress(ref OGHeader, AddressRequest);
                             if (AddressResponse.Result.resultStatusFlag != NameService.ResultStatusFlag.SUCCESS)
                             {
@@ -6680,6 +6940,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                             AddressRequest.NameID = UId;
                             #region Response
                             NameService.NameServiceSoapClient NamePortClient = new NameService.NameServiceSoapClient();
+                            bool isOperaCloudEnabled = false;
+                            isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                            && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                            && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                            if (isOperaCloudEnabled)
+                            {
+                                NamePortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                                        ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                                        Request.Username, Request.Password, Request.HotelDomain));
+                            }
                             InsertAddressResponse = NamePortClient.InsertAddress(ref OGHeader, AddressRequest);
                             if (InsertAddressResponse.Result.resultStatusFlag != NameService.ResultStatusFlag.SUCCESS)
                             {
@@ -6772,6 +7042,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                             #region Response
 
                             NameService.NameServiceSoapClient NamePortClient = new NameService.NameServiceSoapClient();
+                            bool isOperaCloudEnabled = false;
+                            isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                            && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                            && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                            if (isOperaCloudEnabled)
+                            {
+                                NamePortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                                        ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                                        Request.Username, Request.Password, Request.HotelDomain));
+                            }
                             EMailResponse = NamePortClient.UpdateEmail(ref OGHeader, EmailRequest);
                             if (EMailResponse.Result.resultStatusFlag != NameService.ResultStatusFlag.SUCCESS)
                             {
@@ -6805,6 +7085,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                             #region Response
                             NameService.InsertEmailResponse InsertEmailResponse = new NameService.InsertEmailResponse();
                             NameService.NameServiceSoapClient NamePortClient = new NameService.NameServiceSoapClient();
+                            bool isOperaCloudEnabled = false;
+                            isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                            && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                            && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                            if (isOperaCloudEnabled)
+                            {
+                                NamePortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                                        ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                                        Request.Username, Request.Password, Request.HotelDomain));
+                            }
                             InsertEmailResponse = NamePortClient.InsertEmail(ref OGHeader, EmailRequest);
                             if (InsertEmailResponse.Result.resultStatusFlag != NameService.ResultStatusFlag.SUCCESS)
                             {
@@ -6896,6 +7186,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                             #region Response
 
                             NameService.NameServiceSoapClient NamePortClient = new NameService.NameServiceSoapClient();
+                            bool isOperaCloudEnabled = false;
+                            isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                            && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                            && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                            if (isOperaCloudEnabled)
+                            {
+                                NamePortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                                        ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                                        Request.Username, Request.Password, Request.HotelDomain));
+                            }
                             PhoneResponse = NamePortClient.UpdatePhone(ref OGHeader, PhoneRequest);
                             if (PhoneResponse.Result.resultStatusFlag != NameService.ResultStatusFlag.SUCCESS)
                             {
@@ -6927,6 +7227,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                             #region Response
 
                             NameService.NameServiceSoapClient NamePortClient = new NameService.NameServiceSoapClient();
+                            bool isOperaCloudEnabled = false;
+                            isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                            && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                            && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                            if (isOperaCloudEnabled)
+                            {
+                                NamePortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                                        ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                                        Request.Username, Request.Password, Request.HotelDomain));
+                            }
                             InsertPhoneResponse = NamePortClient.InsertPhone(ref OGHeader, PhoneRequest);
                             if (InsertPhoneResponse.Result.resultStatusFlag != NameService.ResultStatusFlag.SUCCESS)
                             {
