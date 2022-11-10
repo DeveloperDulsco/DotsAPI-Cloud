@@ -26,8 +26,22 @@ namespace CheckinPortalCloudAPI.Controllers
         }
 
         [HttpPost]
+        [ActionName("AddToReservationQueue")]
+        public Models.OWS.OwsResponseModel AddToReservationQueue(Models.OWS.OwsRequestModel Request)
+        {
+            return new ServiceLib.OWS.OperaServiceLib().AddToReservationQueue(Request);
+        }
+
+        [HttpPost]
         [ActionName("ModifyPackage")]
         public async Task<Models.OWS.OwsResponseModel> ModifyPackage(Models.OWS.OwsRequestModel owsRequest)
+        {
+            return new ServiceLib.OWS.OperaServiceLib().ModifyPackage(owsRequest);
+        }
+
+        [HttpPost]
+        [ActionName("FetchPackages")]
+        public async Task<Models.OWS.OwsResponseModel> FetchPackages(Models.OWS.OwsRequestModel owsRequest)
         {
             return new ServiceLib.OWS.OperaServiceLib().ModifyPackage(owsRequest);
         }
@@ -52,7 +66,27 @@ namespace CheckinPortalCloudAPI.Controllers
         {
             return new ServiceLib.OWS.OperaServiceLib().GetCountryCodes(owsRequest);
         }
-        
+
+        [HttpPost]
+        [ActionName("GetNationalityList")]
+        public async Task<Models.OWS.OwsResponseModel> GetNationalityList(Models.OWS.OwsRequestModel owsRequest)
+        {
+            return new ServiceLib.OWS.OperaServiceLib().GetNationalityCodes(owsRequest);
+        }
+
+        [HttpPost]
+        [ActionName("GetDocumentTypeList")]
+        public async Task<Models.OWS.OwsResponseModel> GetDocumentTypeList(Models.OWS.OwsRequestModel owsRequest)
+        {
+            return new ServiceLib.OWS.OperaServiceLib().GetDocumentTypes(owsRequest);
+        }
+        [HttpPost]
+        [ActionName("GetPhoneTypeList")]
+        public async Task<Models.OWS.OwsResponseModel> GetPhoneTypeList(Models.OWS.OwsRequestModel owsRequest)
+        {
+            return new ServiceLib.OWS.OperaServiceLib().GetPhoneTypes(owsRequest);
+        }
+
 
         [HttpPost]
         [ActionName("GetStateCodesByCountryCode")]

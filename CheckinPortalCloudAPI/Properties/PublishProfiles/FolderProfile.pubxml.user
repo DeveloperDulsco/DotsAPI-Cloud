@@ -6,8 +6,8 @@ by editing this MSBuild file. In order to learn more about this please visit htt
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <TimeStampOfAssociatedLegacyPublishXmlFile />
-    <_PublishTargetUrl>C:\Users\Muhammed\source\repos\CheckinPortalCloudAPI\CheckinPortalCloudAPI\bin\Release\Publish</_PublishTargetUrl>
-    <History>True|2021-12-14T10:30:53.5377737Z;True|2021-08-03T08:38:15.7417639+04:00;</History>
+    <_PublishTargetUrl>C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\bin\Release\Publish</_PublishTargetUrl>
+    <History>False|2022-11-08T09:12:42.7098768Z;False|2022-11-08T13:11:30.0011902+04:00;True|2021-12-14T14:30:53.5377737+04:00;True|2021-08-03T08:38:15.7417639+04:00;</History>
   </PropertyGroup>
   <ItemGroup>
     <File Include="Areas/HelpPage/HelpPage.css">

@@ -79,7 +79,7 @@ namespace CheckinPortalCloudAPI.Models.EVA
         public string Nationality { get; set; }
 
         [JsonProperty("gender", NullValueHandling = NullValueHandling.Ignore)]
-        [JsonConverter(typeof(GenderConverter))]
+        //[JsonConverter(typeof(GenderConverter))]
         public string Gender { get; set; }
 
         [JsonProperty("passportNumber", NullValueHandling = NullValueHandling.Ignore)]

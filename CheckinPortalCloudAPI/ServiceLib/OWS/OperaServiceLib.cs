@@ -122,6 +122,219 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
 
             }
         }
+
+        public Models.OWS.OwsResponseModel AddToReservationQueue(Models.OWS.OwsRequestModel reservationQueRquest)
+        {
+            try
+            {
+
+                ReservationAdvancedService.QueueReservationRequest queueReservationReq = new ReservationAdvancedService.QueueReservationRequest();
+                ReservationAdvancedService.QueueReservationResponse queueReservationRes = new ReservationAdvancedService.QueueReservationResponse();
+
+                #region Request Header
+
+                string temp = Helper.Helper.Get8Digits();
+                ReservationAdvancedService.OGHeader OGHeader = new ReservationAdvancedService.OGHeader();
+                OGHeader.transactionID = temp;
+                OGHeader.timeStamp = DateTime.Now;
+                OGHeader.primaryLangID = reservationQueRquest.Language; //English
+                ReservationAdvancedService.EndPoint orginEndPOint = new ReservationAdvancedService.EndPoint();
+                orginEndPOint.entityID = reservationQueRquest.KioskID; //Kiosk Identifier
+                orginEndPOint.systemType = reservationQueRquest.SystemType;//"KIOSK";
+                OGHeader.Origin = orginEndPOint;
+                ReservationAdvancedService.EndPoint destEndPOint = new ReservationAdvancedService.EndPoint();
+                destEndPOint.entityID = reservationQueRquest.DestinationEntityID;
+                destEndPOint.systemType = reservationQueRquest.DestinationSystemType;
+                OGHeader.Destination = destEndPOint;
+                ReservationAdvancedService.OGHeaderAuthentication Auth = new ReservationAdvancedService.OGHeaderAuthentication();
+                ReservationAdvancedService.OGHeaderAuthenticationUserCredentials userCredentials = new ReservationAdvancedService.OGHeaderAuthenticationUserCredentials();
+                userCredentials.UserName = reservationQueRquest.Username;
+                userCredentials.UserPassword = reservationQueRquest.Password;
+                Auth.UserCredentials = userCredentials;
+                OGHeader.Authentication = Auth;
+                #endregion
+
+                ReservationAdvancedService.ResvAdvancedServiceSoapClient ResSoapCLient = new ReservationAdvancedService.ResvAdvancedServiceSoapClient();
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    ResSoapCLient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            reservationQueRquest.Username, reservationQueRquest.Password, reservationQueRquest.HotelDomain));
+                }
+
+                ReservationAdvancedService.UniqueID uID = new ReservationAdvancedService.UniqueID();
+                uID.type = ReservationAdvancedService.UniqueIDType.INTERNAL;
+                uID.source = "RESV_NAME_ID";
+                uID.Value = reservationQueRquest.ReservationQueueRequest.ReservationNameID;
+                ReservationAdvancedService.UniqueID[] UIDLIST = new ReservationAdvancedService.UniqueID[1];
+                UIDLIST[0] = uID;
+                queueReservationReq.ReservationRequest = new ReservationAdvancedService.ReservationRequestBase()
+                {
+                    HotelReference = new ReservationAdvancedService.HotelReference()
+                    {
+                        chainCode = reservationQueRquest.ChainCode,
+                        hotelCode = reservationQueRquest.HotelDomain
+                    },
+                    ReservationID = UIDLIST
+                    
+                };
+
+                
+
+                
+               
+
+                queueReservationReq.ActionType = ReservationAdvancedService.RequestActionType.ADD;
+
+
+
+               
+
+                
+
+                queueReservationRes = ResSoapCLient.QueueReservation(ref OGHeader, queueReservationReq);
+
+                if (queueReservationRes.Result.resultStatusFlag == ReservationAdvancedService.ResultStatusFlag.SUCCESS)
+                {
+                    return new Models.OWS.OwsResponseModel()
+                    {
+                        responseData = null,
+                        result = true,
+                        responseMessage = "Success," + queueReservationRes.QueueMessage
+                    };
+                }
+                else
+                {
+                    return new Models.OWS.OwsResponseModel()
+                    {
+                        responseData = null,
+                        result = false,
+                        responseMessage = "Failled to update package"
+                    };
+                }
+
+
+
+            }
+            catch (Exception ex)
+            {
+                return new Models.OWS.OwsResponseModel
+                {
+                    responseMessage = ex.ToString(),
+                    statusCode = -1,
+                    result = false
+                };
+
+            }
+        }
+
+
+        
+
+        public Models.OWS.OwsResponseModel FetchPackages(Models.OWS.OwsRequestModel modifyReservation)
+        {
+            try
+            {
+
+                ReservationService.UpdatePackagesRequest updatePackageReq = new ReservationService.UpdatePackagesRequest();
+                ReservationService.UpdatePackagesResponse updatePackageRes = new ReservationService.UpdatePackagesResponse();
+
+                #region Request Header
+
+                string temp = Helper.Helper.Get8Digits();
+                ReservationService.OGHeader OGHeader = new ReservationService.OGHeader();
+                OGHeader.transactionID = temp;
+                OGHeader.timeStamp = DateTime.Now;
+                OGHeader.primaryLangID = modifyReservation.Language; //English
+                ReservationService.EndPoint orginEndPOint = new ReservationService.EndPoint();
+                orginEndPOint.entityID = modifyReservation.KioskID; //Kiosk Identifier
+                orginEndPOint.systemType = modifyReservation.SystemType;//"KIOSK";
+                OGHeader.Origin = orginEndPOint;
+                ReservationService.EndPoint destEndPOint = new ReservationService.EndPoint();
+                destEndPOint.entityID = modifyReservation.DestinationEntityID;
+                destEndPOint.systemType = modifyReservation.DestinationSystemType;
+                OGHeader.Destination = destEndPOint;
+                ReservationService.OGHeaderAuthentication Auth = new ReservationService.OGHeaderAuthentication();
+                ReservationService.OGHeaderAuthenticationUserCredentials userCredentials = new ReservationService.OGHeaderAuthenticationUserCredentials();
+                userCredentials.UserName = modifyReservation.Username;
+                userCredentials.UserPassword = modifyReservation.Password;
+                Auth.UserCredentials = userCredentials;
+                OGHeader.Authentication = Auth;
+                #endregion
+
+                ReservationService.ReservationServiceSoapClient ResSoapCLient = new ReservationService.ReservationServiceSoapClient();
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    ResSoapCLient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            modifyReservation.Username, modifyReservation.Password, modifyReservation.HotelDomain));
+                }
+
+                ReservationService.UniqueID uID = new ReservationService.UniqueID();
+                uID.type = ReservationService.UniqueIDType.INTERNAL;
+                uID.Value = modifyReservation.ModifyPackageRequest.ReservationNumber;
+                updatePackageReq.HotelReference = new ReservationService.HotelReference()
+                {
+                    chainCode = modifyReservation.ChainCode,
+                    hotelCode = modifyReservation.HotelDomain
+                };
+                updatePackageReq.ConfirmationNumber = uID;
+
+
+
+                uID = new ReservationService.UniqueID();
+                uID.type = ReservationService.UniqueIDType.INTERNAL;
+                uID.source = "LEGNUMBER";
+                uID.Value = modifyReservation.LegNumber;
+                updatePackageReq.LegNumber = uID;
+
+                updatePackageReq.ProductCode = modifyReservation.ModifyPackageRequest.ProductCode;
+                updatePackageReq.Quantity = modifyReservation.ModifyPackageRequest.Quantity != null ? (int)modifyReservation.ModifyPackageRequest.Quantity : 1;
+                updatePackageReq.QuantitySpecified = modifyReservation.ModifyPackageRequest.QuantitySpecified;
+
+                updatePackageRes = ResSoapCLient.UpdatePackages(ref OGHeader, updatePackageReq);
+
+                if (updatePackageRes.Result.resultStatusFlag == ReservationService.ResultStatusFlag.SUCCESS)
+                {
+                    return new Models.OWS.OwsResponseModel()
+                    {
+                        responseData = null,
+                        result = true,
+                        responseMessage = "Success"
+                    };
+                }
+                else
+                {
+                    return new Models.OWS.OwsResponseModel()
+                    {
+                        responseData = null,
+                        result = false,
+                        responseMessage = "Failled to update package"
+                    };
+                }
+
+
+
+            }
+            catch (Exception ex)
+            {
+                return new Models.OWS.OwsResponseModel
+                {
+                    responseMessage = ex.ToString(),
+                    statusCode = -1,
+                    result = false
+                };
+
+            }
+        }
         public Models.OWS.OwsResponseModel createAccompanyingGuset(Models.OWS.OwsRequestModel Request)
         {
             try
@@ -1852,6 +2065,332 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                             result = true,
                             statusCode = 200,
                             responseData = CountryStateList
+                        };
+                    }
+                    else
+                    {
+                        return new Models.OWS.OwsResponseModel
+                        {
+                            result = false,
+                            statusCode = 200,
+                            responseData = null
+                        };
+                    }
+                }
+                else
+                {
+                    return new Models.OWS.OwsResponseModel
+                    {
+                        result = false,
+                        statusCode = -1,
+                        responseData = null
+                    };
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return new Models.OWS.OwsResponseModel
+                {
+                    responseMessage = ex.Message,
+                    result = false,
+                    statusCode = -1
+                };
+            }
+        }
+
+        public Models.OWS.OwsResponseModel GetNationalityCodes(Models.OWS.OwsRequestModel request)
+        {
+            try
+            {
+                #region Request Header
+                string temp1 = Helper.Helper.Get8Digits();
+                InformationService.OGHeader OG = new InformationService.OGHeader();
+                OG.transactionID = temp1;
+                OG.timeStamp = DateTime.Now;
+                OG.primaryLangID = request.Language; //English
+                InformationService.EndPoint orginEndPnt = new InformationService.EndPoint();
+                orginEndPnt.entityID = request.KioskID; //Kiosk Identifier
+                orginEndPnt.systemType = request.SystemType;
+                OG.Origin = orginEndPnt;
+                InformationService.EndPoint destEndPnt = new InformationService.EndPoint();
+                destEndPnt.entityID = request.DestinationEntityID;
+                destEndPnt.systemType = request.DestinationSystemType;
+                OG.Destination = destEndPnt;
+                InformationService.OGHeaderAuthentication Authnt = new InformationService.OGHeaderAuthentication();
+                InformationService.OGHeaderAuthenticationUserCredentials userCrdntls = new InformationService.OGHeaderAuthenticationUserCredentials();
+                userCrdntls.UserName = request.Username;
+                userCrdntls.UserPassword = request.Password;
+                userCrdntls.Domain = request.HotelDomain;
+                Authnt.UserCredentials = userCrdntls;
+                OG.Authentication = Authnt;
+                #endregion
+
+
+
+                #region Request Body
+                InformationService.LovRequest LOVReq = new InformationService.LovRequest();
+                InformationService.LovResponse LOVRes = new InformationService.LovResponse();
+
+                InformationService.LovQueryType2 LOVQuery = new InformationService.LovQueryType2();
+                LOVQuery.LovIdentifier = "NATIONALITY";
+                LOVReq.Item = LOVQuery;
+                #endregion
+
+                InformationService.InformationSoapClient InfoPortClient = new InformationService.InformationSoapClient();
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    InfoPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            request.Username, request.Password, request.HotelDomain));
+                }
+                LOVRes = InfoPortClient.QueryLov(ref OG, LOVReq);
+                List<Models.OWS.CountryState> CountryStateList = new List<Models.OWS.CountryState>();
+
+                if (LOVRes.Result.resultStatusFlag == InformationService.ResultStatusFlag.SUCCESS)
+                {
+                    if (LOVRes.LovQueryResult != null)
+                    {
+
+                        foreach (InformationService.LovQueryResultType lovQueryResult in LOVRes.LovQueryResult)
+                        {
+                            if (lovQueryResult.LovValue != null)
+                            {
+                                foreach (InformationService.LovValueType lovValue in lovQueryResult.LovValue)
+                                {
+                                    Models.OWS.CountryState countryState = new Models.OWS.CountryState();
+                                    countryState.CountryName = lovValue.description;
+                                    countryState.CountryCode = lovValue.Value;
+                                    CountryStateList.Add(countryState);
+                                }
+                            }
+                        }
+                        return new Models.OWS.OwsResponseModel
+                        {
+                            result = true,
+                            statusCode = 200,
+                            responseData = CountryStateList
+                        };
+                    }
+                    else
+                    {
+                        return new Models.OWS.OwsResponseModel
+                        {
+                            result = false,
+                            statusCode = 200,
+                            responseData = null
+                        };
+                    }
+                }
+                else
+                {
+                    return new Models.OWS.OwsResponseModel
+                    {
+                        result = false,
+                        statusCode = -1,
+                        responseData = null
+                    };
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return new Models.OWS.OwsResponseModel
+                {
+                    responseMessage = ex.Message,
+                    result = false,
+                    statusCode = -1
+                };
+            }
+        }
+        public Models.OWS.OwsResponseModel GetDocumentTypes(Models.OWS.OwsRequestModel request)
+        {
+            try
+            {
+                #region Request Header
+                string temp1 = Helper.Helper.Get8Digits();
+                InformationService.OGHeader OG = new InformationService.OGHeader();
+                OG.transactionID = temp1;
+                OG.timeStamp = DateTime.Now;
+                OG.primaryLangID = request.Language; //English
+                InformationService.EndPoint orginEndPnt = new InformationService.EndPoint();
+                orginEndPnt.entityID = "WEBHOTEL";//request.KioskID; //Kiosk Identifier
+                orginEndPnt.systemType = "WEB";//request.SystemType;
+                OG.Origin = orginEndPnt;
+                InformationService.EndPoint destEndPnt = new InformationService.EndPoint();
+                destEndPnt.entityID = "TI";//request.DestinationEntityID;
+                destEndPnt.systemType = "ORS";//request.DestinationSystemType;
+                OG.Destination = destEndPnt;
+                InformationService.OGHeaderAuthentication Authnt = new InformationService.OGHeaderAuthentication();
+                InformationService.OGHeaderAuthenticationUserCredentials userCrdntls = new InformationService.OGHeaderAuthenticationUserCredentials();
+                userCrdntls.UserName = request.Username;
+                userCrdntls.UserPassword = request.Password;
+                userCrdntls.Domain = request.HotelDomain;
+                Authnt.UserCredentials = userCrdntls;
+                OG.Authentication = Authnt;
+                #endregion
+
+
+
+                #region Request Body
+                InformationService.LovRequest LOVReq = new InformationService.LovRequest();
+                InformationService.LovResponse LOVRes = new InformationService.LovResponse();
+
+                InformationService.LovQueryType2 LOVQuery = new InformationService.LovQueryType2();
+                LOVQuery.LovIdentifier = "DOCUMENT_TYPES";
+                LOVReq.Item = LOVQuery;
+                #endregion
+
+                InformationService.InformationSoapClient InfoPortClient = new InformationService.InformationSoapClient();
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    InfoPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            request.Username, request.Password, request.HotelDomain));
+                }
+                LOVRes = InfoPortClient.QueryLov(ref OG, LOVReq);
+                List<Models.OWS.DocumentTypeMaster> DocumentTypeList = new List<Models.OWS.DocumentTypeMaster>();
+
+                if (LOVRes.Result.resultStatusFlag == InformationService.ResultStatusFlag.SUCCESS)
+                {
+                    if (LOVRes.LovQueryResult != null)
+                    {
+
+                        foreach (InformationService.LovQueryResultType lovQueryResult in LOVRes.LovQueryResult)
+                        {
+                            if (lovQueryResult.LovValue != null)
+                            {
+                                foreach (InformationService.LovValueType lovValue in lovQueryResult.LovValue)
+                                {
+                                    Models.OWS.DocumentTypeMaster document = new Models.OWS.DocumentTypeMaster();
+                                    document.DocumentTypeDescription = lovValue.description;
+                                    document.DocumentTypeCode = lovValue.Value;
+                                    DocumentTypeList.Add(document);
+                                }
+                            }
+                        }
+                        return new Models.OWS.OwsResponseModel
+                        {
+                            result = true,
+                            statusCode = 200,
+                            responseData = DocumentTypeList
+                        };
+                    }
+                    else
+                    {
+                        return new Models.OWS.OwsResponseModel
+                        {
+                            result = false,
+                            statusCode = 200,
+                            responseData = null
+                        };
+                    }
+                }
+                else
+                {
+                    return new Models.OWS.OwsResponseModel
+                    {
+                        result = false,
+                        statusCode = -1,
+                        responseData = null
+                    };
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return new Models.OWS.OwsResponseModel
+                {
+                    responseMessage = ex.Message,
+                    result = false,
+                    statusCode = -1
+                };
+            }
+        }
+
+        public Models.OWS.OwsResponseModel GetPhoneTypes(Models.OWS.OwsRequestModel request)
+        {
+            try
+            {
+                #region Request Header
+                string temp1 = Helper.Helper.Get8Digits();
+                InformationService.OGHeader OG = new InformationService.OGHeader();
+                OG.transactionID = temp1;
+                OG.timeStamp = DateTime.Now;
+                OG.primaryLangID = request.Language; //English
+                InformationService.EndPoint orginEndPnt = new InformationService.EndPoint();
+                orginEndPnt.entityID = request.KioskID; //Kiosk Identifier
+                orginEndPnt.systemType = request.SystemType;
+                OG.Origin = orginEndPnt;
+                InformationService.EndPoint destEndPnt = new InformationService.EndPoint();
+                destEndPnt.entityID = request.DestinationEntityID;
+                destEndPnt.systemType = request.DestinationSystemType;
+                OG.Destination = destEndPnt;
+                InformationService.OGHeaderAuthentication Authnt = new InformationService.OGHeaderAuthentication();
+                InformationService.OGHeaderAuthenticationUserCredentials userCrdntls = new InformationService.OGHeaderAuthenticationUserCredentials();
+                userCrdntls.UserName = request.Username;
+                userCrdntls.UserPassword = request.Password;
+                userCrdntls.Domain = request.HotelDomain;
+                Authnt.UserCredentials = userCrdntls;
+                OG.Authentication = Authnt;
+                #endregion
+
+
+
+                #region Request Body
+                InformationService.LovRequest LOVReq = new InformationService.LovRequest();
+                InformationService.LovResponse LOVRes = new InformationService.LovResponse();
+
+                InformationService.LovQueryType2 LOVQuery = new InformationService.LovQueryType2();
+                LOVQuery.LovIdentifier = "phoneType";
+                LOVReq.Item = LOVQuery;
+                #endregion
+
+                InformationService.InformationSoapClient InfoPortClient = new InformationService.InformationSoapClient();
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    InfoPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            request.Username, request.Password, request.HotelDomain));
+                }
+                LOVRes = InfoPortClient.QueryLov(ref OG, LOVReq);
+                List<Models.OWS.PhoneTypeMaster> phoneTypes = new List<Models.OWS.PhoneTypeMaster>();
+
+                if (LOVRes.Result.resultStatusFlag == InformationService.ResultStatusFlag.SUCCESS)
+                {
+                    if (LOVRes.LovQueryResult != null)
+                    {
+
+                        foreach (InformationService.LovQueryResultType lovQueryResult in LOVRes.LovQueryResult)
+                        {
+                            if (lovQueryResult.LovValue != null)
+                            {
+                                foreach (InformationService.LovValueType lovValue in lovQueryResult.LovValue)
+                                {
+                                    Models.OWS.PhoneTypeMaster phoneType = new Models.OWS.PhoneTypeMaster();
+                                    phoneType.PhoneTypeDescription = lovValue.description;
+                                    phoneType.PhoneTypeCode = lovValue.Value;
+                                    phoneTypes.Add(phoneType);
+                                }
+                            }
+                        }
+                        return new Models.OWS.OwsResponseModel
+                        {
+                            result = true,
+                            statusCode = 200,
+                            responseData = phoneTypes
                         };
                     }
                     else
@@ -3843,6 +4382,8 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
             }
         }
 
+        
+
         public Models.OWS.OwsResponseModel GetReservationDetailsFromPMS(Models.OWS.OwsRequestModel Request)
         {
             try
@@ -3908,6 +4449,13 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                     uID.Value = Request.FetchBookingRequest.ReservationNameID;
                     fetchBookingReq.ResvNameId = uID;
                 }
+                else if (!string.IsNullOrEmpty(Request.FetchBookingRequest.CRSNumber))
+                {
+                    uID.Value = Request.FetchBookingRequest.CRSNumber;
+                    fetchBookingReq.ResvNameId = uID;
+                    OGHeader.Origin.systemType = "PMS";
+                    OGHeader.Origin.entityID = "OWS";
+                }
                 else
 
                 {
@@ -3959,7 +4507,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         //string temp1 = hReservation.checkOutTime.ToString("HH:mm");
 
                         //"INHOUSE"
-
+                        Reservation.isInQueue = hReservation.queueExists;
                         Reservation.ReservationStatus = hReservation.computedReservationStatus.ToString();
                         Reservation.ComputedReservationStatus = hReservation.computedReservationStatus.ToString();
 

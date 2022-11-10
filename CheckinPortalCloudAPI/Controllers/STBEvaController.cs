@@ -105,6 +105,7 @@ namespace CheckinPortalCloudAPI.Controllers
                 if (!string.IsNullOrEmpty(token))
                 {
                     Models.EVA.VisitorCheckInRequest visitorCheckInRequest = JsonConvert.DeserializeObject<Models.EVA.VisitorCheckInRequest>(evaRequest.RequestObject.ToString());
+                    //Models.EVA.VisitorCheckInRequest visitorCheckInRequest = (Models.EVA.VisitorCheckInRequest)evaRequest.RequestObject;
                     System.IO.File.WriteAllText(System.Web.Hosting.HostingEnvironment.MapPath(@"~\Request.txt"), JsonConvert.SerializeObject(visitorCheckInRequest));
                     HttpResponseMessage responseMessage = await new Helper.Helper().ExecutePostAsync(evaRequest.webUrl, visitorCheckInRequest, null, token, null);
 

@@ -36,13 +36,26 @@ namespace CheckinPortalCloudAPI.Models.OWS
         public CreateAccompanyingProfileRequest CreateAccompanyingProfileRequest { get; set; }
         public ModifyPackageRequest ModifyPackageRequest { get; set; }
         public FetchGuestMessageRequest FetchGuestMessageRequest { get; set; }
+        public ReservationQueueRequest ReservationQueueRequest { get; set; }
+        public FetchGuestRequest FetchGuestRequest { get; set; }
     }
+
+    public class FetchGuestRequest
+    {
+        public string ReservationNumber { get; set; }
+    }
+
 
     public class FetchGuestMessageRequest
     {
         public string ReservationNameID { get; set; }
     }
 
+
+    public class ReservationQueueRequest
+    {
+        public string ReservationNameID { get; set; }
+    }
     public class GuestMessage
     {
         public DateTime? MessageDate { get; set; }
@@ -135,6 +148,17 @@ namespace CheckinPortalCloudAPI.Models.OWS
         public string CountryCode { get; set; }
         public string StateCode { get; set; }
         public string StateName { get; set; }
+    }
+
+    public class DocumentTypeMaster
+    {
+        public string DocumentTypeCode { get; set; }
+        public string DocumentTypeDescription { get; set; }
+    }
+    public class PhoneTypeMaster
+    {
+        public string PhoneTypeCode { get; set; }
+        public string PhoneTypeDescription { get; set; }
     }
 
     public class FetchRoomList
@@ -232,6 +256,7 @@ namespace CheckinPortalCloudAPI.Models.OWS
     {
         public string ReservationNumber { get; set; }
         public string ReservationNameID { get; set; }
+        public string CRSNumber { get; set; }
     }
 
     public class FetchBookedPackagesRequestModel
@@ -271,6 +296,7 @@ namespace CheckinPortalCloudAPI.Models.OWS
         public bool? NoPost { get; set; }
         public bool? DoNotMoveRoom { get; set; }
         public decimal? TotalAmount { get; set; }
+        public bool isInQueue { get; set; }
         public decimal? TotalTax { get; set; }
         public bool IsTaxInclusive { get; set; }
         public decimal CurrentBalance { get; set; }

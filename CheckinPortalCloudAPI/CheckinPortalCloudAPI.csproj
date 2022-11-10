@@ -39,6 +39,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <ExcludeGeneratedDebugSymbol>true</ExcludeGeneratedDebugSymbol>
+    <LegacyPublishPropertiesPageEnabled>true</LegacyPublishPropertiesPageEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -880,12 +882,6 @@
     <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.ExternalPaymentResponse1.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.FetchAuthorizationsHistoryResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.FetchAuthorizationsHistoryResponse1.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
     <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.FetchKeyDataResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Content>
@@ -941,12 +937,6 @@
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Content>
     <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.InsertPayRoutingResponse1.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.InstantPaymentNotificationResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.InstantPaymentNotificationResponse1.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Content>
     <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.InvoiceResponse.datasource">
@@ -1064,9 +1054,6 @@
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Content>
     <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.DeletePayRoutingResponse1.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.FetchFixedChargesResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Content>
     <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.FetchFixedChargesResponse1.datasource">
