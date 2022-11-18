@@ -2261,6 +2261,45 @@ namespace CheckinPortalCloudAPI.Controllers
                 };
             }
         }
+        [HttpPost]
+        [ActionName("FetchProfileDocumentImageByProfileID")]
+        public async Task<Models.Local.LocalResponseModel> FetchProfileDocumentImageByProfileID
+       (Models.Local.LocalRequestModel localDataRequest)
+        {
+            try
+            {
+                Models.KIOSK.ProfileDocumentImageRequestModel reservationRequests = Newtonsoft.Json.JsonConvert.DeserializeObject<Models.KIOSK.ProfileDocumentImageRequestModel>(localDataRequest.RequestObject.ToString());
+
+                List<Models.KIOSK.DB.ProfileDocumentImageDataTableModel> resultSet = Helper.KIOSK.DBHelper.Instance.FetchProfileDocumentImageByProfileID(reservationRequests.ProfileID, reservationRequests.ReservationNameID, ConfigurationManager.AppSettings["LocalConnectionString"]);
+                if (resultSet != null)
+                {
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        responseData = resultSet,
+                        result = true,
+                        responseMessage = "Success",
+                        statusCode = 101
+                    };
+                }
+                else
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Failled to Fetch the data",
+                        statusCode = -1
+                    };
+            }
+            catch (Exception ex)
+            {
+                return new Models.Local.LocalResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message,
+                    statusCode = -1
+                };
+            }
+
+        }
 
 
     }
