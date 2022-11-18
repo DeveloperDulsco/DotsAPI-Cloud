@@ -601,6 +601,80 @@ namespace CheckinPortalCloudAPI.Controllers
         }
 
         [HttpPost]
+        [ActionName("FetchPaymentTypeMaster")]
+        public async Task<Models.Local.LocalResponseModel> FetchPaymentTypeMaster()
+        {
+            try
+            {
+                List<Models.KIOSK.DB.PaymentTypeMasterModel> resultSet = Helper.KIOSK.DBHelper.Instance.FetchOperaPaymentTypeMasters(ConfigurationManager.AppSettings["LocalConnectionString"]);
+                if (resultSet != null)
+                {
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        responseData = resultSet,
+                        result = true,
+                        responseMessage = "Success",
+                        statusCode = 101
+                    };
+                }
+                else
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Failled to Fetch the document master",
+                        statusCode = -1
+                    };
+            }
+            catch (Exception ex)
+            {
+                return new Models.Local.LocalResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message,
+                    statusCode = -1
+                };
+            }
+
+        }
+
+        [HttpPost]
+        [ActionName("FetchCountryListMaster")]
+        public async Task<Models.Local.LocalResponseModel> FetchCountryListMaster()
+        {
+            try
+            {
+                List<Models.KIOSK.DB.CountryCodeMasterModel> resultSet = Helper.KIOSK.DBHelper.Instance.FetchCountryMasters(ConfigurationManager.AppSettings["LocalConnectionString"]);
+                if (resultSet != null)
+                {
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        responseData = resultSet,
+                        result = true,
+                        responseMessage = "Success",
+                        statusCode = 101
+                    };
+                }
+                else
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Failled to Fetch the document master",
+                        statusCode = -1
+                    };
+            }
+            catch (Exception ex)
+            {
+                return new Models.Local.LocalResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message,
+                    statusCode = -1
+                };
+            }
+
+        }
+
+        [HttpPost]
         [ActionName("FetchGeneralSettings")]
         public async Task<Models.Local.LocalResponseModel> FetchGeneralSettings(Models.Local.LocalRequestModel localDataRequest)
         {

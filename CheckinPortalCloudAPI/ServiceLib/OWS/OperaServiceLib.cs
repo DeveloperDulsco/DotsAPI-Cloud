@@ -1,5 +1,6 @@
 ﻿//using Adyen.Model.Nexo;
 using Antlr.Runtime.Misc;
+using CheckinPortalCloudAPI.Helper;
 using CheckinPortalCloudAPI.InformationService;
 using CheckinPortalCloudAPI.Models;
 using CheckinPortalCloudAPI.Models.OWS;
@@ -2764,6 +2765,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                             Reservation.ComputedReservationStatus = hReservation.computedReservationStatus.ToString();
 
                             ReservationService.Paragraph p;
+                            Reservation.isInQueue = hReservation.queueExists;
 
                             #region Creation Date
                             Reservation.CreatedDateTime = hReservation.insertDate;
@@ -3581,7 +3583,11 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
 
                     RSRequest.IncludePseudoRoom = false;
                     RSRequest.IncludePseudoRoomSpecified = true;
-
+                    //ReservationAdvancedService.RoomFeature roomFeature = new ReservationAdvancedService.RoomFeature()
+                    //{
+                        
+                    //}
+                    //RSRequest.Features features = new RSRequest.Features[]
                     ReservationAdvancedService.ResvAdvancedServiceSoapClient ResAdvPortClient = new ReservationAdvancedService.ResvAdvancedServiceSoapClient();
                     bool isOperaCloudEnabled = false;
                     isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
@@ -4451,8 +4457,15 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 }
                 else if (!string.IsNullOrEmpty(Request.FetchBookingRequest.CRSNumber))
                 {
-                    uID.Value = Request.FetchBookingRequest.CRSNumber;
-                    fetchBookingReq.ResvNameId = uID;
+                    fetchBookingReq.ExternalSystemNumber = new ReservationService.ExternalReference()
+                    {
+                        LegNumber = string.IsNullOrEmpty(Request.LegNumber) ? 0 : Int32.Parse(Request.LegNumber),
+                        LegNumberSpecified = string.IsNullOrEmpty(Request.LegNumber) ? false : true,
+                        ReferenceNumber = Request.FetchBookingRequest.CRSNumber,
+                        ReferenceType = "OWS"
+                    };
+                    //uID.Value = Request.FetchBookingRequest.CRSNumber;
+                    //fetchBookingReq.ResvNameId = uID;
                     OGHeader.Origin.systemType = "PMS";
                     OGHeader.Origin.entityID = "OWS";
                 }
@@ -5969,7 +5982,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
         {
             try
             {
-
+                new LogHelper().Debug("ModifyReservation request : " + JsonConvert.SerializeObject(modifyReservation), modifyReservation.modifyBookingRequest.ReservationNumber, "ModifyReservation", "API", "OWS");
                 ReservationService.ModifyBookingRequest modifyBookingReq = new ReservationService.ModifyBookingRequest();
                 ReservationService.ModifyBookingResponse modifyBookingRes = new ReservationService.ModifyBookingResponse();
 
@@ -6835,6 +6848,8 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
         {
             try
             {
+
+                new LogHelper().Debug("MakePayment request : " + JsonConvert.SerializeObject(Request), Request.MakePaymentRequest.ReservationNameID, "MakePayment", "API", "OWS");
                 DateTime? PostingDate = null;
                 
                 

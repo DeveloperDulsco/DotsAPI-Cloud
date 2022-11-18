@@ -159,6 +159,36 @@ namespace CheckinPortalCloudAPI.Helper.KIOSK
             }
         }
 
+        public List<Models.KIOSK.DB.PaymentTypeMasterModel> FetchOperaPaymentTypeMasters(string ConnectionString)
+        {
+            try
+            {
+
+                var spResponse = new DapperHelper().ExecuteSP<Models.KIOSK.DB.PaymentTypeMasterModel>("Usp_GetPaymentTypeMaster",
+                    ConnectionString).ToList();
+                return spResponse;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public List<Models.KIOSK.DB.CountryCodeMasterModel> FetchCountryMasters(string ConnectionString)
+        {
+            try
+            {
+
+                var spResponse = new DapperHelper().ExecuteSP<Models.KIOSK.DB.CountryCodeMasterModel>("Usp_GetCountryListMaster",
+                    ConnectionString).ToList();
+                return spResponse;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         public List<Models.KIOSK.PaymentTypeMasterModel> FetchPaymentTypeMasters(string ConnectionString)
         {
             try
