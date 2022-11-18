@@ -322,7 +322,19 @@ namespace CheckinPortalCloudAPI.Helper.KIOSK
                 throw ex;
             }
         }
-
+        public List<Models.KIOSK.DB.ProfileDocumentImageDataTableModel> FetchProfileDocumentImageByProfileID(string ProfileId, string ReservationNameID, string ConnectionString)
+        {
+            try
+            {
+                var spResponse = new DapperHelper().ExecuteSP<Models.KIOSK.DB.ProfileDocumentImageDataTableModel>("usp_getProfileDocumentByProfileID",
+                    ConnectionString, new { ProfileId = ProfileId, ReservationNameID = ReservationNameID }).ToList();
+                return spResponse;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
 
     }
 }
