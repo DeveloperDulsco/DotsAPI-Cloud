@@ -26,6 +26,15 @@ namespace CheckinPortalCloudAPI.Controllers
         }
 
         [HttpPost]
+        [ActionName("FetchGuestComments")]
+        public Models.OWS.OwsResponseModel FetchGuestComments(Models.OWS.OwsRequestModel Request)
+        {
+            return new ServiceLib.OWS.OperaServiceLib().GetComments(Request);
+        }
+
+        
+
+        [HttpPost]
         [ActionName("AddToReservationQueue")]
         public Models.OWS.OwsResponseModel AddToReservationQueue(Models.OWS.OwsRequestModel Request)
         {

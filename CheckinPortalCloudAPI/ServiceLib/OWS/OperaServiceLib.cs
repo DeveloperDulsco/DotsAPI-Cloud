@@ -340,6 +340,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
         {
             try
             {
+                new LogHelper().Debug("Create accompany request : " + JsonConvert.SerializeObject(Request), Request.CreateAccompanyingProfileRequest.ReservationNumber, "createAccompanyingGuset", "API", "OWS");
                 #region Request
 
                 #region Request Header
@@ -1696,7 +1697,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
         {
             try
             {
-
+                new LogHelper().Debug("Update Passport request : " + JsonConvert.SerializeObject(Request), Request.UpdateProileRequest.ProfileID, "UpdatePassport", "API", "OWS");
                 #region Request Header
                 string temp = Helper.Helper.Get8Digits();
                 NameService.OGHeader OGHeader = new NameService.OGHeader();
@@ -1801,7 +1802,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
         {
             try
             {
-
+                new LogHelper().Debug("Update Name request : " + JsonConvert.SerializeObject(Request), Request.UpdateProileRequest.ProfileID, "UpdateName", "API", "OWS");
 
                 #region Request Header
                 string temp = Helper.Helper.Get8Digits();
@@ -4388,7 +4389,141 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
             }
         }
 
-        
+        public Models.OWS.OwsResponseModel GetComments(Models.OWS.OwsRequestModel Request)
+        {
+            try
+            {
+                #region Request Header
+                string temp = Helper.Helper.Get8Digits();
+                ReservationService.OGHeader OGHeader = new ReservationService.OGHeader();
+                OGHeader.transactionID = temp;
+                OGHeader.timeStamp = DateTime.Now;
+                OGHeader.primaryLangID = Request.Language; //English
+                ReservationService.EndPoint orginEndPOint = new ReservationService.EndPoint();
+                orginEndPOint.entityID = Request.KioskID; //Kiosk Identifier
+                orginEndPOint.systemType = Request.SystemType;
+                OGHeader.Origin = orginEndPOint;
+                ReservationService.EndPoint destEndPOint = new ReservationService.EndPoint();
+                destEndPOint.entityID = "TI";
+                destEndPOint.systemType = "PMS";
+                OGHeader.Destination = destEndPOint;
+                ReservationService.OGHeaderAuthentication Auth = new ReservationService.OGHeaderAuthentication();
+                ReservationService.OGHeaderAuthenticationUserCredentials userCredentials = new ReservationService.OGHeaderAuthenticationUserCredentials();
+                userCredentials.UserName = Request.Username;
+                userCredentials.UserPassword = Request.Password;
+                userCredentials.Domain = Request.HotelDomain;
+                Auth.UserCredentials = userCredentials;
+                OGHeader.Authentication = Auth;
+                #endregion
+
+                #region Request Body
+
+                ReservationService.GuestRequestsRequest GRRequest = new ReservationService.GuestRequestsRequest();
+
+                GRRequest.ActionType = ReservationService.RequestActionType.FETCH;
+
+                ReservationService.UniqueID uID = new ReservationService.UniqueID();
+                uID.type = ReservationService.UniqueIDType.INTERNAL;
+                
+                uID.Value = Request.FetchGuestRequest.ReservationNumber;
+                GRRequest.ConfirmationNumber = uID;
+
+                ReservationService.HotelReference HF = new ReservationService.HotelReference();
+                HF.hotelCode = Request.HotelDomain;
+                GRRequest.HotelReference = HF;
+
+                GRRequest.RequestType = "COMMENTS";
+
+               
+
+
+                ReservationService.ReservationServiceSoapClient ResPortClient = new ReservationService.ReservationServiceSoapClient();
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    ResPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            Request.Username, Request.Password, Request.HotelDomain));
+                }
+                ReservationService.GuestRequestsResponse GRResponse = new ReservationService.GuestRequestsResponse();
+                #endregion
+
+                GRResponse = ResPortClient.GuestRequests(ref OGHeader, GRRequest);
+                if (GRResponse.Result.resultStatusFlag == ReservationService.ResultStatusFlag.SUCCESS)
+                {
+
+
+                    List<Models.OWS.GuestComments> LGC = new List<Models.OWS.GuestComments>();
+
+                    if (GRResponse.GuestRequests != null && GRResponse.GuestRequests.Comments.Length > 0)
+                    {
+                        foreach (ReservationService.ReservationComment GC in GRResponse.GuestRequests.Comments)
+                        {
+                            Models.OWS.GuestComments GuestComments = new Models.OWS.GuestComments();
+                            GuestComments.commentID = GC.CommentIdSpecified ?  GC.CommentId.ToString() : "";
+                            if (GC.Items.Length > 0)
+                            {
+                                ReservationService.Text obj = (ReservationService.Text)GC.Items.First();
+                                if (obj != null)
+                                {
+                                    GuestComments.Comment = obj.Value;
+                                }
+                            }
+                            GuestComments.isGuestViewable = GC.guestViewableSpecified ? GC.guestViewable : false;
+                            GuestComments.CommentType = GC.CommentType;
+                            GuestComments.isInternal = GC.InternalYnSpecified ? GC.InternalYn : false;
+                            LGC.Add(GuestComments);
+                        }
+
+                        return new Models.OWS.OwsResponseModel
+                        {
+                            responseData = LGC,
+                            responseMessage = "Success",
+                            result = true,
+                            statusCode = 101
+                        };
+                    }
+                    else
+                    {
+                        return new Models.OWS.OwsResponseModel
+                        {
+                            responseData = null,
+                            responseMessage = "No guest comments found",
+                            result = true,
+                            statusCode = 101
+                        };
+                    }
+
+                }
+                else
+                {
+                    return new Models.OWS.OwsResponseModel
+                    {
+                        responseData = null,
+                        responseMessage = GRResponse.Result != null ? GRResponse.Result.Text[0].Value : "Failled",
+                        result = false,
+                        statusCode = 102
+                    };
+
+                }
+            }
+            catch (Exception ex)
+            {
+                return new Models.OWS.OwsResponseModel
+                {
+                    responseData = null,
+                    responseMessage = ex.Message,
+                    result = false,
+                    statusCode = -1
+                };
+
+            }
+        }
+
+
 
         public Models.OWS.OwsResponseModel GetReservationDetailsFromPMS(Models.OWS.OwsRequestModel Request)
         {
@@ -6275,6 +6410,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
         {
             try
             {
+                new LogHelper().Debug("Checkout request : " + JsonConvert.SerializeObject(Request), Request.OperaReservation.ReservationNameID, "GuestCheckOut", "API", "OWS");
                 #region Request
 
                 #region Request Header
@@ -6649,6 +6785,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
         {
             try
             {
+                new LogHelper().Debug("Assignroom request : " + JsonConvert.SerializeObject(Request), Request.AssignRoomRequest.ReservationNameID, "AssignRoomToReservation", "API", "OWS");
                 ReservationService.AssignRoomRequest assignRoomReq = new ReservationService.AssignRoomRequest();
                 ReservationService.AssignRoomResponse assignRoomRes = new ReservationService.AssignRoomResponse();
                 
@@ -6744,6 +6881,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
             #region Getting BusinessDate
             try
             {
+                new LogHelper().Debug("Get Business Date request : " + JsonConvert.SerializeObject(Request), "", "GetBusinessDate", "API", "OWS");
                 #region Request Header
                 string temp1 = Helper.Helper.Get8Digits();
                 InformationService.OGHeader OG = new InformationService.OGHeader();
@@ -7084,6 +7222,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
         {
             try
             {
+                
                 #region Request
 
                 #region Request Header
@@ -7404,6 +7543,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
         {
             try
             {
+                new LogHelper().Debug("Update Address request : " + JsonConvert.SerializeObject(Request), Request.UpdateProileRequest.ProfileID, "UpdateAddress", "API", "OWS");
                 #region Request Header
                 string temp = Helper.Helper.Get8Digits();
                 NameService.OGHeader OGHeader = new NameService.OGHeader();
@@ -7495,7 +7635,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                             NAddress.countryCode = address.country != null ? address.country : "US";
                             NAddress.displaySequenceSpecified = true;
                             NAddress.postalCode = address.zip;
-                            //NAddress.stateProv = "FL";
+                            NAddress.stateProv = address.state;
                             AddressRequest.NameAddress = NAddress;
                             NameService.UniqueID UId = new NameService.UniqueID();
                             UId.type = NameService.UniqueIDType.INTERNAL;
@@ -7561,6 +7701,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
         {
             try
             {
+                new LogHelper().Debug("Update Email request : " + JsonConvert.SerializeObject(Request), Request.UpdateProileRequest.ProfileID, "UpdateEmail", "API", "OWS");
                 #region Request Header
                 string temp = Helper.Helper.Get8Digits();
                 NameService.OGHeader OGHeader = new NameService.OGHeader();
@@ -7702,6 +7843,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
         {
             try
             {
+                new LogHelper().Debug("Update Phone request : " + JsonConvert.SerializeObject(Request), Request.UpdateProileRequest.ProfileID, "UpdatePhone", "API", "OWS");
                 #region Request Header
                 string temp = Helper.Helper.Get8Digits();
                 NameService.OGHeader OGHeader = new NameService.OGHeader();

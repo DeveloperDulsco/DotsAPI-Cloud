@@ -343,6 +343,7 @@
     <Compile Include="Models\Header\OGHeader.cs" />
     <Compile Include="Models\Header\SecurityHeader.cs" />
     <Compile Include="Models\KIOSK\AuditRequestModel.cs" />
+    <Compile Include="Models\KIOSK\DB\ProfileDocumentImageDataTableModel.cs" />
     <Compile Include="Models\KIOSK\KiokManualAuthorizationModel.cs" />
     <Compile Include="Models\KIOSK\DB\DocumentTypeMasterModel.cs" />
     <Compile Include="Models\KIOSK\DB\ProfileDataTableModel.cs" />
@@ -352,6 +353,7 @@
     <Compile Include="Models\KIOSK\NotificationRequestModel.cs" />
     <Compile Include="Models\KIOSK\PackageMasterModel.cs" />
     <Compile Include="Models\KIOSK\PaymentTypeMasterModel.cs" />
+    <Compile Include="Models\KIOSK\ProfileDocumentImageRequestModel.cs" />
     <Compile Include="Models\KIOSK\ProfileDocumentRequestModel.cs" />
     <Compile Include="Models\KIOSK\ReservationModel.cs" />
     <Compile Include="Models\KIOSK\ReservationRequestModel.cs" />

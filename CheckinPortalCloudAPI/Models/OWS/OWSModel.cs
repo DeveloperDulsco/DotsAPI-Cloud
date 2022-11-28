@@ -65,6 +65,15 @@ namespace CheckinPortalCloudAPI.Models.OWS
         public string MessageStatus { get; set; }
     }
 
+    public class GuestComments
+    {
+        public bool isGuestViewable { get; set; }
+        public string Comment { get; set; }
+        public string commentID { get; set; }
+        public bool isInternal { get; set; }
+        public string CommentType { get; set; }
+    }
+
     public class CreateAccompanyingProfileRequest
     {
         public string ReservationNumber { get; set; }

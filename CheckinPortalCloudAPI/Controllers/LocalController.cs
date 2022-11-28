@@ -934,6 +934,7 @@ namespace CheckinPortalCloudAPI.Controllers
         {
             try
             {
+                new LogHelper().Debug("Push document details request : " + JsonConvert.SerializeObject(localRequest), "", "PushDocumentDetails", "API", "Local");
                 //HttpResponseMessage response = await httpClient.PostAsync($"/v52/payments", requestContent);
                 List<Models.Local.DB.ProfileDocumentDetailsModel> profileDocumentList = new List<Models.Local.DB.ProfileDocumentDetailsModel>();
                 List<Models.Local.DB.ProfileDocuments> ProfileDocuments = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Models.Local.DB.ProfileDocuments>>(localRequest.RequestObject.ToString());
