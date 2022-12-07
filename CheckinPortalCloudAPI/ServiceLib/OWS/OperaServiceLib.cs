@@ -6736,7 +6736,12 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                             parameter = new ReportParameter("GuestSignature", reservation.GuestSignature);
                             reportParameters.Add(parameter);
                             break;
-                    }
+                                case "ChildCount":
+                                    parameter = new ReportParameter("ChildCount", reservation.Child != null ? reservation.Child.Value.ToString() : "");
+                                    reportParameters.Add(parameter);
+                                    break;
+
+                            }
                 }
 
 

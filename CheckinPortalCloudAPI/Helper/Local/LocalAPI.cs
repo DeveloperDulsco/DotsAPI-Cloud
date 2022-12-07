@@ -3853,8 +3853,13 @@ namespace CheckinPortalCloudAPI.Helper.Local
                 isOPIEnabled = (ConfigurationManager.AppSettings["OPIEnabled"] != null
                                 && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OPIEnabled"].ToString())
                                 && bool.TryParse(ConfigurationManager.AppSettings["OPIEnabled"].ToString(), out isOPIEnabled)) ? isOPIEnabled : false;
-                if (isOPIEnabled)
+                bool IsPaymentDisabled = false;
+                IsPaymentDisabled = (ConfigurationManager.AppSettings["IsPaymentDisabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["IsPaymentDisabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["IsPaymentDisabled"].ToString(), out IsPaymentDisabled)) ? IsPaymentDisabled : false;
+                if (isOPIEnabled || IsPaymentDisabled)
                 {
+                    
                     if ((paymentHeaders == null || paymentHeaders.Count == 0) && guestFolio.BalanceAmount > 0)
                     {
                         new LogHelper().Log("Not able to process reservation No. : " + Reservation.ReservationNumber + " because there is no payment details in the saavy pay as well as current balance is greater than 0", Reservation.ReservationNameID, "PushDueOutReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
@@ -3953,27 +3958,29 @@ namespace CheckinPortalCloudAPI.Helper.Local
                 }
                 new LogHelper().Log("Reservation pushed to cloud successfully", Reservation.ReservationNameID, "PushDueOutReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
 
-                #endregion
-
-                #region Pushing Payment Details
-                new LogHelper().Log("Pushing payment details to the cloud, reservation No. : " + Reservation.ReservationNumber, Reservation.ReservationNameID, "PushDueOutReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
-                cloudResponse = await new WSClientHelper().PushPaymentDetails(Reservation.ReservationNameID, new Models.Cloud.CloudRequestModel()
-                {
-                    RequestObject = paymentHeaders
-                }, "Due-Out push", pushReservationRequest.ServiceParameters);
-                if (!cloudResponse.result)
-                {
-                    new LogHelper().Log("Failled to push the payment details to cloud, so skipping the reservation ", Reservation.ReservationNameID, "PushDueOutReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
-                    return new Models.Local.LocalResponseModel()
+                    #endregion
+                    if (!IsPaymentDisabled)
                     {
-                        result = false,
-                        responseMessage = "Failled to push the payment details to cloud, so skipping the reservation "
-                    };
-                }
-                new LogHelper().Log("Payment details to cloud successfully", Reservation.ReservationNameID, "PushDueOutReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
-                #endregion
+                        #region Pushing Payment Details
 
+                        new LogHelper().Log("Pushing payment details to the cloud, reservation No. : " + Reservation.ReservationNumber, Reservation.ReservationNameID, "PushDueOutReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                        cloudResponse = await new WSClientHelper().PushPaymentDetails(Reservation.ReservationNameID, new Models.Cloud.CloudRequestModel()
+                        {
+                            RequestObject = paymentHeaders
+                        }, "Due-Out push", pushReservationRequest.ServiceParameters);
+                        if (!cloudResponse.result)
+                        {
+                            new LogHelper().Log("Failled to push the payment details to cloud, so skipping the reservation ", Reservation.ReservationNameID, "PushDueOutReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                            return new Models.Local.LocalResponseModel()
+                            {
+                                result = false,
+                                responseMessage = "Failled to push the payment details to cloud, so skipping the reservation "
+                            };
+                        }
+                        new LogHelper().Log("Payment details to cloud successfully", Reservation.ReservationNameID, "PushDueOutReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                        #endregion
 
+                    }
 
                 #region Sending Email
                 try
