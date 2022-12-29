@@ -1290,3 +1290,4 @@ C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCl
 C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\bin\Microsoft.IdentityModel.Tokens.xml
 C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\bin\System.IdentityModel.Tokens.Jwt.xml
 C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\obj\Release\CheckinPortalCloudAPI.csproj.AssemblyReference.cache
+C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\obj\Release\CheckinPortalCloudAPI.csproj.CopyComplete

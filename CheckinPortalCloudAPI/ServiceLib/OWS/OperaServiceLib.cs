@@ -2381,10 +2381,13 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                             {
                                 foreach (InformationService.LovValueType lovValue in lovQueryResult.LovValue)
                                 {
-                                    Models.OWS.PhoneTypeMaster phoneType = new Models.OWS.PhoneTypeMaster();
-                                    phoneType.PhoneTypeDescription = lovValue.description;
-                                    phoneType.PhoneTypeCode = lovValue.Value;
-                                    phoneTypes.Add(phoneType);
+                                    if (!string.IsNullOrEmpty(lovValue.Value) && !lovValue.Value.Equals("EMAIL"))
+                                    {
+                                        Models.OWS.PhoneTypeMaster phoneType = new Models.OWS.PhoneTypeMaster();
+                                        phoneType.PhoneTypeDescription = lovValue.description;
+                                        phoneType.PhoneTypeCode = lovValue.Value;
+                                        phoneTypes.Add(phoneType);
+                                    }
                                 }
                             }
                         }
@@ -2736,7 +2739,9 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 #endregion
 
                 //ResSoapCLient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour("Test USE", "Request.WSSEPassword", "Request.KioskUserName", "Request.KioskPassword", "Request.HotelDomain"));
-
+                ResSoapCLient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            Request.Username, Request.Password, Request.HotelDomain));
                 fetchBookingSummaryRes = ResSoapCLient.FutureBookingSummary(ref OGHeader, fetchBookingSummaryReq);
                 ReservationService.GDSResultStatus status = fetchBookingSummaryRes.Result;
 
@@ -3611,23 +3616,35 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         {
                             Models.OWS.RoomDetails RT = new Models.OWS.RoomDetails();
 
-                            if ((RS.RoomStatus1 == "CL" || RS.RoomStatus1 == "IP") 
-                                && RS.FrontOfficeStatus == "VAC")//|| RSResponse.RoomStatus[0].RoomStatus1 == "IP"
+                            if(string.IsNullOrEmpty(Request.FetchRoomList.RoomStatus))
                             {
-                                if (RS.NextReservationDateSpecified)
-                                {
-                                    
-                                    if (Request.FetchRoomList.DepartureDate != null)
-                                    {
-                                        DateTime dt = Request.FetchRoomList.DepartureDate.Value;//DateTime.ParseExact(Request.DepartureDate, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
 
-                                        if (DateTime.Compare(dt, RS.NextReservationDate) < 0)
+                                if ((RS.RoomStatus1 == "CL" || RS.RoomStatus1 == "IP") 
+                                    && RS.FrontOfficeStatus == "VAC")//|| RSResponse.RoomStatus[0].RoomStatus1 == "IP"
+                                {
+                                    if (RS.NextReservationDateSpecified)
+                                    {
+                                    
+                                        if (Request.FetchRoomList.DepartureDate != null)
+                                        {
+                                            DateTime dt = Request.FetchRoomList.DepartureDate.Value;//DateTime.ParseExact(Request.DepartureDate, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+
+                                            if (DateTime.Compare(dt, RS.NextReservationDate) < 0)
+                                            {
+                                                RT.RoomNumber = RS.RoomNumber;
+                                                RT.RoomType = RS.RoomType;
+                                                RT.RoomStatus = RS.RoomStatus1;
+                                                RT.Floor = RS.Floor;
+                                            
+                                                LRoomTypes.Add(RT);
+                                            }
+                                        }
+                                        else
                                         {
                                             RT.RoomNumber = RS.RoomNumber;
                                             RT.RoomType = RS.RoomType;
-                                            RT.RoomStatus = RS.RoomStatus1;
                                             RT.Floor = RS.Floor;
-                                            
+                                            RT.RoomStatus = RS.RoomStatus1;
                                             LRoomTypes.Add(RT);
                                         }
                                     }
@@ -3640,13 +3657,46 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                         LRoomTypes.Add(RT);
                                     }
                                 }
-                                else
+                            }
+                            else
+                            {
+                                if ((RS.RoomStatus1 == Request.FetchRoomList.RoomStatus)
+                                    && RS.FrontOfficeStatus == "VAC")//|| RSResponse.RoomStatus[0].RoomStatus1 == "IP"
                                 {
-                                    RT.RoomNumber = RS.RoomNumber;
-                                    RT.RoomType = RS.RoomType;
-                                    RT.Floor = RS.Floor;
-                                    RT.RoomStatus = RS.RoomStatus1;
-                                    LRoomTypes.Add(RT);
+                                    if (RS.NextReservationDateSpecified)
+                                    {
+
+                                        if (Request.FetchRoomList.DepartureDate != null)
+                                        {
+                                            DateTime dt = Request.FetchRoomList.DepartureDate.Value;//DateTime.ParseExact(Request.DepartureDate, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+
+                                            if (DateTime.Compare(dt, RS.NextReservationDate) < 0)
+                                            {
+                                                RT.RoomNumber = RS.RoomNumber;
+                                                RT.RoomType = RS.RoomType;
+                                                RT.RoomStatus = RS.RoomStatus1;
+                                                RT.Floor = RS.Floor;
+
+                                                LRoomTypes.Add(RT);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            RT.RoomNumber = RS.RoomNumber;
+                                            RT.RoomType = RS.RoomType;
+                                            RT.Floor = RS.Floor;
+                                            RT.RoomStatus = RS.RoomStatus1;
+                                            LRoomTypes.Add(RT);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        RT.RoomNumber = RS.RoomNumber;
+                                        RT.RoomType = RS.RoomType;
+                                        RT.Floor = RS.Floor;
+                                        RT.RoomStatus = RS.RoomStatus1;
+                                        LRoomTypes.Add(RT);
+                                    }
                                 }
                             }
                         }
@@ -4523,6 +4573,147 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
             }
         }
 
+        public Models.OWS.OwsResponseModel GetAlerts(Models.OWS.OwsRequestModel Request)
+        {
+            try
+            {
+                #region Request Header
+                string temp = Helper.Helper.Get8Digits();
+                ReservationService.OGHeader OGHeader = new ReservationService.OGHeader();
+                OGHeader.transactionID = temp;
+                OGHeader.timeStamp = DateTime.Now;
+                OGHeader.primaryLangID = Request.Language; //English
+                ReservationService.EndPoint orginEndPOint = new ReservationService.EndPoint();
+                orginEndPOint.entityID = Request.KioskID; //Kiosk Identifier
+                orginEndPOint.systemType = Request.SystemType;
+                OGHeader.Origin = orginEndPOint;
+                ReservationService.EndPoint destEndPOint = new ReservationService.EndPoint();
+                destEndPOint.entityID = "TI";
+                destEndPOint.systemType = "PMS";
+                OGHeader.Destination = destEndPOint;
+                ReservationService.OGHeaderAuthentication Auth = new ReservationService.OGHeaderAuthentication();
+                ReservationService.OGHeaderAuthenticationUserCredentials userCredentials = new ReservationService.OGHeaderAuthenticationUserCredentials();
+                userCredentials.UserName = Request.Username;
+                userCredentials.UserPassword = Request.Password;
+                userCredentials.Domain = Request.HotelDomain;
+                Auth.UserCredentials = userCredentials;
+                OGHeader.Authentication = Auth;
+                #endregion
+
+                #region Request Body
+
+                ReservationService.GuestRequestsRequest GRRequest = new ReservationService.GuestRequestsRequest();
+
+                GRRequest.ActionType = ReservationService.RequestActionType.FETCH;
+
+                ReservationService.UniqueID uID = new ReservationService.UniqueID();
+                uID.type = ReservationService.UniqueIDType.INTERNAL;
+
+                uID.Value = Request.FetchGuestRequest.ReservationNumber;
+                GRRequest.ConfirmationNumber = uID;
+
+                ReservationService.HotelReference HF = new ReservationService.HotelReference();
+                HF.hotelCode = Request.HotelDomain;
+                GRRequest.HotelReference = HF;
+
+                GRRequest.RequestType = "ALERTS";
+
+
+
+
+                ReservationService.ReservationServiceSoapClient ResPortClient = new ReservationService.ReservationServiceSoapClient();
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    ResPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            Request.Username, Request.Password, Request.HotelDomain));
+                }
+                ReservationService.GuestRequestsResponse GRResponse = new ReservationService.GuestRequestsResponse();
+                #endregion
+
+                GRResponse = ResPortClient.GuestRequests(ref OGHeader, GRRequest);
+                if (GRResponse.Result.resultStatusFlag == ReservationService.ResultStatusFlag.SUCCESS)
+                {
+
+
+                    List<Models.OWS.Alert> LGA = new List<Models.OWS.Alert>();
+
+                    if (GRResponse.GuestRequests != null && GRResponse.GuestRequests.Alerts.Length > 0)
+                    {
+                        foreach (ReservationService.ReservationAlert GA in GRResponse.GuestRequests.Alerts)
+                        {
+                            Models.OWS.Alert GuestAlert = new Models.OWS.Alert();
+                            GuestAlert.AlertCode = GA.Code;
+
+                            ReservationService.Paragraph p = GA.Description;
+                            if (p != null)
+                            {
+                                ReservationService.Text obj = (ReservationService.Text)p.Items[0];
+                                if (obj != null)
+                                {
+                                    GuestAlert.Description = obj.Value;
+                                }
+                            }
+
+                            GuestAlert.AlertID = GA.AlertIDSpecified ? GA.AlertID.ToString() : "0";
+
+                            GuestAlert.Area = GA.Area;
+
+                            GuestAlert.isPrinterNotificationEnabled = GA.printNotificationSpecified ? GA.printNotification : false;
+
+                            GuestAlert.isScreenNotificationEnabled = GA.screenNotificationSpecified ? GA.screenNotification : false;
+                            LGA.Add(GuestAlert);
+                        }
+
+                        return new Models.OWS.OwsResponseModel
+                        {
+                            responseData = LGA,
+                            responseMessage = "Success",
+                            result = true,
+                            statusCode = 101
+                        };
+                    }
+                    else
+                    {
+                        return new Models.OWS.OwsResponseModel
+                        {
+                            responseData = null,
+                            responseMessage = "No alerts found",
+                            result = true,
+                            statusCode = 101
+                        };
+                    }
+
+                }
+                else
+                {
+                    return new Models.OWS.OwsResponseModel
+                    {
+                        responseData = null,
+                        responseMessage = GRResponse.Result != null ? GRResponse.Result.Text[0].Value : "Failled",
+                        result = false,
+                        statusCode = 102
+                    };
+
+                }
+            }
+            catch (Exception ex)
+            {
+                return new Models.OWS.OwsResponseModel
+                {
+                    responseData = null,
+                    responseMessage = ex.Message,
+                    result = false,
+                    statusCode = -1
+                };
+
+            }
+        }
+
 
 
         public Models.OWS.OwsResponseModel GetReservationDetailsFromPMS(Models.OWS.OwsRequestModel Request)
@@ -4597,7 +4788,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         LegNumber = string.IsNullOrEmpty(Request.LegNumber) ? 0 : Int32.Parse(Request.LegNumber),
                         LegNumberSpecified = string.IsNullOrEmpty(Request.LegNumber) ? false : true,
                         ReferenceNumber = Request.FetchBookingRequest.CRSNumber,
-                        ReferenceType = "OWS"
+                        ReferenceType = Request.FetchBookingRequest.ExternalRefernceType//"OWS"
                     };
                     //uID.Value = Request.FetchBookingRequest.CRSNumber;
                     //fetchBookingReq.ResvNameId = uID;
@@ -4658,6 +4849,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         Reservation.isInQueue = hReservation.queueExists;
                         Reservation.ReservationStatus = hReservation.computedReservationStatus.ToString();
                         Reservation.ComputedReservationStatus = hReservation.computedReservationStatus.ToString();
+                        
 
                         ReservationService.Paragraph p;
 

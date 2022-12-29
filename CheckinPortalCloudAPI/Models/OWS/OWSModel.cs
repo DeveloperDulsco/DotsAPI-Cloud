@@ -176,6 +176,7 @@ namespace CheckinPortalCloudAPI.Models.OWS
         public DateTime? DepartureDate { get; set; }
         public string RoomNumber { get; set; }
         public string RoomType { get; set; }
+        public string RoomStatus { get; set; }
 
     }
 
@@ -266,6 +267,7 @@ namespace CheckinPortalCloudAPI.Models.OWS
         public string ReservationNumber { get; set; }
         public string ReservationNameID { get; set; }
         public string CRSNumber { get; set; }
+        public string ExternalRefernceType { get; set; }
     }
 
     public class FetchBookedPackagesRequestModel

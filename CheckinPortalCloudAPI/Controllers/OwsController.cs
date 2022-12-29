@@ -32,7 +32,14 @@ namespace CheckinPortalCloudAPI.Controllers
             return new ServiceLib.OWS.OperaServiceLib().GetComments(Request);
         }
 
-        
+        [HttpPost]
+        [ActionName("FetchReservationAlerts")]
+        public Models.OWS.OwsResponseModel FetchReservationAlerts(Models.OWS.OwsRequestModel Request)
+        {
+            return new ServiceLib.OWS.OperaServiceLib().GetAlerts(Request);
+        }
+
+
 
         [HttpPost]
         [ActionName("AddToReservationQueue")]
