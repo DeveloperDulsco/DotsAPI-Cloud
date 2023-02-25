@@ -137,6 +137,8 @@ namespace CheckinPortalCloudAPI.Models.OWS
         public string ItemName { get; set; }
         public decimal Amount { get; set; }
         public int? WindowNumber { get; set; }
+        public string TransactionCode { get; set; }
+        public string TransactionNumber { get; set; }
     }
 
     public class AssignRoomRequest

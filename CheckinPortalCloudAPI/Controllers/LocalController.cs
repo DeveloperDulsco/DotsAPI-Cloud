@@ -2302,7 +2302,13 @@ namespace CheckinPortalCloudAPI.Controllers
 
         }
 
-
+        [HttpPost]
+        [ActionName("PushReservationLocally")]
+        public async Task<Models.Local.LocalResponseModel> PushReservationLocally(Models.Local.LocalRequestModel localRequest)
+        {
+            Models.Local.PushReservationRequest reservationRequest = JsonConvert.DeserializeObject<Models.Local.PushReservationRequest>(localRequest.RequestObject.ToString());
+            return await new Helper.Local.LocalAPI().PushReservationLocally(reservationRequest);
+        }
     }
 }
 

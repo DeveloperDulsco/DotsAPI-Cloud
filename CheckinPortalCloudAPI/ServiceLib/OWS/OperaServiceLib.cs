@@ -660,6 +660,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                                     
                                                     FolioTaxItems.ItemName = BTaxItems.Description;
                                                     
+                                                    
                                                     if (GFolio.TaxItems != null)
                                                         GFolio.TaxItems.Add(FolioTaxItems);
                                                     else
@@ -675,7 +676,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                             folioWindow.TaxItems = ListFolioTaxItems;
                                             try
                                             {
-                                                ReservationAdvancedService.Amount Balance = new ReservationAdvancedService.Amount();
+                                                ReservationAdvancedService.Amount Balance = new              ReservationAdvancedService.Amount();
                                                 Balance = Invoices.CurrentBalance;
                                                 GFolio.BalanceAmount += Balance != null ? (decimal)Balance.Value : 0;
                                                 GFolio.ReservationBalance += Balance != null ? (decimal)Balance.Value : 0;
@@ -777,7 +778,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
             }
         }
 
-       
+
 
         public Models.OWS.OwsResponseModel FetchFolio(Models.OWS.OwsRequestModel reservationRequest)
         {
@@ -785,13 +786,13 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
             {
                 //Models.OWS.OwsResponseModel owsResponse = getFolioAsAList(reservationRequest);
                 Models.OWS.FetchFolioRequest fetchFolioRequest = reservationRequest.FetchFolioRequest;
-                if (fetchFolioRequest.FolioList == null )
-                    // serviceResponse.IsFolioContains == false && //this condition need to be added once muhammed added
-                    {
+                if (fetchFolioRequest.FolioList == null)
+                // serviceResponse.IsFolioContains == false && //this condition need to be added once muhammed added
+                {
                     if (fetchFolioRequest != null && fetchFolioRequest.OperaReservation != null && fetchFolioRequest.OperaReservation.RateDetails != null)
                     {
 
-                       
+
                         {
 
                             if (fetchFolioRequest.OperaReservation.RateDetails.DailyRates != null && fetchFolioRequest.OperaReservation.RateDetails.DailyRates.Count > 0)
@@ -861,6 +862,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                                                 {
                                                                     TaxAmount += items.Amount;
                                                                 }
+
                                                                 else
                                                                 {
                                                                     folioRow["Charges"] = items.Amount.ToString("0.00");
@@ -1033,6 +1035,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                     decimal TotalAmount = 0;
                                     decimal TotalCredit = 0;
                                     decimal TaxAmount = 0;
+                                    decimal TaxAmount8GST = 0;
                                     int group = 1;
                                     int itemCount = 0;
                                     #endregion
@@ -1068,6 +1071,10 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                                 if (items.description.Contains("0195"))
                                                 {
                                                     TaxAmount += items.Amount;
+                                                }
+                                                else if (items.description.Contains("0196"))
+                                                {
+                                                    TaxAmount8GST += items.Amount;
                                                 }
                                                 else
                                                 {
@@ -1106,6 +1113,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                     reportParameters.Columns.Add("BalanceDue", typeof(string));
                                     reportParameters.Columns.Add("TotalBeforeGST", typeof(string));
                                     reportParameters.Columns.Add("GST7Per", typeof(string));
+                                    reportParameters.Columns.Add("GST8Per", typeof(string));
                                     reportParameters.Columns.Add("ZeroRatedSupplies", typeof(string));
                                     reportParameters.Columns.Add("NonHotelSupplies", typeof(string));
                                     reportParameters.Columns.Add("PaidoutCreditRefund", typeof(string));
@@ -1147,6 +1155,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                     parameterRow["BalanceDue"] = (TotalAmount).ToString("0.00");
                                     parameterRow["TotalBeforeGST"] = (TotalAmount - TaxAmount).ToString("0.00");
                                     parameterRow["GST7Per"] = ((7 / 100) * TotalAmount).ToString("0.00");
+                                    parameterRow["GST8Per"] = TaxAmount8GST.ToString("0.00");
                                     parameterRow["ZeroRatedSupplies"] = "0.00";
                                     parameterRow["NonHotelSupplies"] = "0.00";
                                     parameterRow["PaidoutCreditRefund"] = "0.00";
@@ -1212,7 +1221,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                 };
                             }
                         }
-                        
+
                     }
                     else
                     {
@@ -1237,7 +1246,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                             responseMessage = "RDLC file not found"
                         };
                     rv.LocalReport.ReportPath = System.Web.Hosting.HostingEnvironment.MapPath("~/Resources/RDLC/FolioTemplate.rdlc");
-                    
+
 
 
                     string GSTRegNo = ConfigurationManager.AppSettings["GSTRegNo"].ToString();
@@ -1265,6 +1274,8 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                             {
                                 decimal totalAmount = 0;
                                 decimal totalCredit = 0;
+                                decimal GST7 = 0;
+                                decimal GST8 = 0;
                                 foreach (DataTable dataTable in ds.Tables)
                                 {
                                     if (dataTable.TableName.Equals("FolioItems"))
@@ -1300,6 +1311,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                                 }
                                                 if (dataTable.Columns.Contains("ItemGroup"))
                                                     folioRow["ItemGroup"] = 1;
+
+                                                if (items.TransactionCode != null && items.TransactionCode.Contains("0195"))
+                                                {
+                                                    GST7 += items.Amount;
+                                                }
+                                                else if (items.TransactionCode != null && items.TransactionCode.Contains("0196"))
+                                                {
+                                                    GST8 += items.Amount;
+                                                }
+
                                                 dataTable.Rows.Add(folioRow);
                                             }
 
@@ -1351,9 +1372,11 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                         if (dataTable.Columns.Contains("TotalBeforeGST"))
                                             ParameterRow["TotalBeforeGST"] = (totalAmount - (totalAmount - (totalAmount / (decimal)1.07))).ToString("0.00");
                                         if (dataTable.Columns.Contains("GST7Per"))
-                                            ParameterRow["GST7Per"] = GST;//TaxAmount.ToString("0.00");
+                                            ParameterRow["GST7Per"] = GST7;//TaxAmount.ToString("0.00");
+                                        if (dataTable.Columns.Contains("GST8Per"))
+                                            ParameterRow["GST8Per"] = GST8;//TaxAmount.ToString("0.00");
                                         if (dataTable.Columns.Contains("ZeroRatedSupplies"))
-                                            ParameterRow["ZeroRatedSupplies"] = ServiceCharge; 
+                                            ParameterRow["ZeroRatedSupplies"] = ServiceCharge;
                                         if (dataTable.Columns.Contains("NonHotelSupplies"))
                                             ParameterRow["NonHotelSupplies"] = "0.00";
                                         if (dataTable.Columns.Contains("PaidoutCreditRefund"))
@@ -1434,7 +1457,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                 };
                             }
                         }
-                        catch(Exception ex)
+                        catch (Exception ex)
                         {
                             return new Models.OWS.OwsResponseModel()
                             {
@@ -1458,6 +1481,8 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         FolioItemsTable.Columns.Add("ItemGroup", typeof(string));
                         decimal TotalAmount = 0;
                         decimal TotalCredit = 0;
+                        decimal GST7 = 0;
+                        decimal GST8 = 0;
 
                         if (GuestFolio != null && GuestFolio.Items != null && GuestFolio.Items.Count > 0)
                         {
@@ -1481,6 +1506,14 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                     TotalAmount += items.Amount;
                                 }
 
+                                if (items.TransactionCode != null && items.TransactionCode.Contains("0195"))
+                                {
+                                    GST7 += items.Amount;
+                                }
+                                else if (items.TransactionCode != null && items.TransactionCode.Contains("0196"))
+                                {
+                                    GST8 += items.Amount;
+                                }
 
                                 folioRow["ItemGroup"] = 1;
                                 FolioItemsTable.Rows.Add(folioRow);
@@ -1488,7 +1521,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
 
                             }
                         }
-                        
+
                         string FullAddress = "";
                         FullAddress = GuestFolio.GuestName + "\n";
                         FullAddress = FullAddress + GuestFolio.AddressLine + "\n";
@@ -1511,6 +1544,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         reportParameters.Columns.Add("BalanceDue", typeof(string));
                         reportParameters.Columns.Add("TotalBeforeGST", typeof(string));
                         reportParameters.Columns.Add("GST7Per", typeof(string));
+                        reportParameters.Columns.Add("GST8Per", typeof(string));
                         reportParameters.Columns.Add("ZeroRatedSupplies", typeof(string));
                         reportParameters.Columns.Add("NonHotelSupplies", typeof(string));
                         reportParameters.Columns.Add("PaidoutCreditRefund", typeof(string));
@@ -1519,7 +1553,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         reportParameters.Columns.Add("SignatureImagePath", typeof(string));
                         reportParameters.Columns.Add("TotalAmount", typeof(string));
                         reportParameters.Columns.Add("TotalCredit", typeof(string));
-                        
+
                         #endregion
 
 
@@ -1545,7 +1579,9 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         parameterRow["MembershipNo"] = (fetchFolioRequest.OperaReservation.GuestProfiles != null && fetchFolioRequest.OperaReservation.GuestProfiles.Count > 0) ? fetchFolioRequest.OperaReservation.GuestProfiles[0].MembershipNumber : "";
                         parameterRow["BalanceDue"] = GuestFolio.BalanceAmount.ToString("0.00");
                         parameterRow["TotalBeforeGST"] = (TotalAmount - TaxAmount).ToString("0.00");
-                        parameterRow["GST7Per"] = TaxAmount.ToString("0.00");
+                        //parameterRow["GST7Per"] = TaxAmount.ToString("0.00");
+                        parameterRow["GST7Per"] = GST7.ToString("0.00");
+                        parameterRow["GST8Per"] = GST8.ToString("0.00");
                         parameterRow["ZeroRatedSupplies"] = "0.00";
                         parameterRow["NonHotelSupplies"] = "0.00";
                         parameterRow["PaidoutCreditRefund"] = "0.00";
@@ -1604,11 +1640,10 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 return new Models.OWS.OwsResponseModel()
                 {
                     result = false,
-                    responseMessage = err.ToString()                    
+                    responseMessage = err.ToString()
                 };
             }
         }
-
         Models.OWS.OwsResponseModel GetPassport(Models.OWS.OwsRequestModel Request)
         {
             try

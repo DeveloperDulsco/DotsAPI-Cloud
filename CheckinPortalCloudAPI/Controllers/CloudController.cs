@@ -106,7 +106,7 @@ namespace CheckinPortalCloudAPI.Controllers
                     var textField = response.Text().GetField(TextFieldType.SURNAME);
                     if (textField != null)
                     {
-                        readDocumentResponse.firstName = string.IsNullOrEmpty(textField.GetValue(Source.VISUAL)) ? textField.GetValue(Source.MRZ)
+                        readDocumentResponse.lastName = string.IsNullOrEmpty(textField.GetValue(Source.VISUAL)) ? textField.GetValue(Source.MRZ)
                                             : textField.GetValue(Source.VISUAL);
                     }
                     textField = response.Text().GetField(TextFieldType.MIDDLE_NAME);
@@ -118,7 +118,7 @@ namespace CheckinPortalCloudAPI.Controllers
                     textField = response.Text().GetField(TextFieldType.GIVEN_NAME);
                     if (textField != null)
                     {
-                        readDocumentResponse.lastName = string.IsNullOrEmpty(textField.GetValue(Source.VISUAL)) ? textField.GetValue(Source.MRZ)
+                        readDocumentResponse.firstName = string.IsNullOrEmpty(textField.GetValue(Source.VISUAL)) ? textField.GetValue(Source.MRZ)
                                             : textField.GetValue(Source.VISUAL);
                     }
                     if (string.IsNullOrEmpty(readDocumentResponse.lastName))

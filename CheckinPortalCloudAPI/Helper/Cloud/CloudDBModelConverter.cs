@@ -20,7 +20,7 @@ namespace CheckinPortalCloudAPI.Helper.Cloud
                 operaReservationDataTable.DepartureDate = operaReservation.DepartureDate != null ? operaReservation.DepartureDate.Value : new DateTime(1900, 01, 01);
                 operaReservationDataTable.ETA = operaReservation.ExpectedArrivalTime != null ? operaReservation.ExpectedArrivalTime.Value.Equals(DateTime.MinValue) ? new DateTime(1900, 01, 01) : operaReservation.ExpectedArrivalTime.Value : new DateTime(1900, 01, 01);
                 operaReservationDataTable.IsCardDetailPresent = false;
-                operaReservationDataTable.IsDepositAvailable = operaReservation.DepositDetail != null && operaReservation.DepositDetail.Count > 0 ? true : false;
+                operaReservationDataTable.IsDepositAvailable = operaReservation.IsDepositAvailable != null? operaReservation.IsDepositAvailable.Value : false;
                 operaReservationDataTable.IsSaavyPaid = false;
                 operaReservationDataTable.MembershipNo = operaReservation.GuestProfiles[0].MembershipNumber;
                 operaReservationDataTable.MembershipType = operaReservation.GuestProfiles[0].MembershipType;

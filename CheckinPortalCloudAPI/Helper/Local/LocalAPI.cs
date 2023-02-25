@@ -2861,10 +2861,12 @@ namespace CheckinPortalCloudAPI.Helper.Local
                         PaymentType = null
                     }
                 };
+                        Reservation.IsDepositAvailable = true;
                     }
                     else if (Reservation.userDefinedFields.Find(x => x.FieldName.Equals(pushReservationRequest.ServiceParameters.PreAuthAmntUDF)) != null &&
                         Reservation.userDefinedFields.Find(x => x.FieldName.Equals(pushReservationRequest.ServiceParameters.PreAuthAmntUDF)).FieldValue.Equals("NO"))
                     {
+                        
                         new LogHelper().Log("Reservation is flagged not to take payment", Reservation.ReservationNameID, "PushDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
                         Reservation.DepositDetail = new List<Models.OWS.DepositDetail>()
                         {
@@ -2877,6 +2879,8 @@ namespace CheckinPortalCloudAPI.Helper.Local
                                 PaymentType = null
                             }
                         };
+
+                        Reservation.IsDepositAvailable = true;
                     }
                 }
                 new LogHelper().Log("Verifying reservation VIP status in UDF field completed", Reservation.ReservationNameID, "PushDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
@@ -2897,6 +2901,7 @@ namespace CheckinPortalCloudAPI.Helper.Local
                         PaymentType = null
                     }
                 };
+                    Reservation.IsDepositAvailable = true;
                 }
                 #endregion
 
@@ -4450,5 +4455,390 @@ namespace CheckinPortalCloudAPI.Helper.Local
                 };
             }
         }
+        public async Task<Models.Local.LocalResponseModel> PushReservationLocally(Models.Local.PushReservationRequest pushReservationRequest)
+        {
+
+            #region Variables
+            List<Models.OWS.OperaReservation> operaReservationList = null;
+            Models.OWS.OperaReservation Reservation = null;
+            #endregion
+
+            try
+            {
+                new LogHelper().Log("Pushing due in reservation list", null, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+
+
+                bool? isEmailSent = null;
+
+                List<Models.OWS.OperaReservation> temp_operaReservations = null;
+
+                #region Fetching Reservation from OWS
+                //new LogHelper().Log("Fetching opera reservation", null, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                Models.OWS.OwsResponseModel owsResponse1 = await new WSClientHelper().FetchReservationAsync(pushReservationRequest.ReservationNumber, new Models.OWS.OwsRequestModel()
+                {
+                    ChainCode = pushReservationRequest.ServiceParameters.ChainCode,
+                    DestinationEntityID = pushReservationRequest.ServiceParameters.DestinationEntityID,
+                    HotelDomain = pushReservationRequest.ServiceParameters.HotelDomain,
+                    KioskID = pushReservationRequest.ServiceParameters.KioskID,
+                    Language = pushReservationRequest.ServiceParameters.Language,
+                    LegNumber = pushReservationRequest.ServiceParameters.Legnumber,
+                    Password = pushReservationRequest.ServiceParameters.Password,
+                    SystemType = pushReservationRequest.ServiceParameters.SystemType,
+                    Username = pushReservationRequest.ServiceParameters.Username,
+                    FetchBookingRequest = new Models.OWS.FetchBookingRequestModel()
+                    {
+                        ReservationNumber = pushReservationRequest.ReservationNumber
+                        //ReservationNameID = pushReservationRequest.ReservationNameID
+                    }
+                }, "Local Manual", pushReservationRequest.ServiceParameters);
+                if (!owsResponse1.result)
+                {
+                    new LogHelper().Log("Fetching opera reservation", null, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                    new LogHelper().Warn("Failled to fetch opera reservation with reason :- " + owsResponse1.responseMessage, pushReservationRequest.ReservationNumber, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Failled to fetch opera reservation with reason :- " + owsResponse1.responseMessage
+                    };
+                }
+                if (owsResponse1.responseData == null)
+                {
+                    new LogHelper().Log("Failled to fetch opera reservation with reason :- API response data is NULL" + owsResponse1.responseMessage, pushReservationRequest.ReservationNumber, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Failled to fetch opera reservation with reason :- API response data is NULL" + owsResponse1.responseMessage
+                    };
+                }
+                else
+                {
+                    new LogHelper().Debug("Converting API json to object", pushReservationRequest.ReservationNumber, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                    try
+                    {
+                        temp_operaReservations = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Models.OWS.OperaReservation>>(owsResponse1.responseData.ToString());
+                        Reservation = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Models.OWS.OperaReservation>>(owsResponse1.responseData.ToString())[0];
+                        new LogHelper().Log("Opera reservation fetched successfully", Reservation.ReservationNameID, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                    }
+                    catch (Exception ex)
+                    {
+                        new LogHelper().Error(ex, pushReservationRequest.ReservationNumber, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                        new LogHelper().Log("Failled to covert API response to object", pushReservationRequest.ReservationNumber, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                        new LogHelper().Warn("Failled to fetch opera reservation with reason :- " + ex.Message, pushReservationRequest.ReservationNumber, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                        new LogHelper().Debug("Failled to fetch opera reservation with reason :- " + ex.Message, pushReservationRequest.ReservationNumber, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Due-IN push");
+                        return new Models.Local.LocalResponseModel()
+                        {
+                            result = false,
+                            responseMessage = ex.Message
+                        };
+                    }
+                }
+
+                #endregion
+                #region Processing SHarers to Local DB
+
+                try
+                {
+                    List<Models.OWS.OperaReservation> tempList = null;
+                    if (temp_operaReservations[0].SharerReservations != null && temp_operaReservations[0].SharerReservations.Count > 0)
+                    {
+                        //MessageBox.Show("Sharer present");
+                        string shareID = temp_operaReservations[0].ReservationNumber;
+                        temp_operaReservations[0].ReservationNumber += "||" + temp_operaReservations[0].ReservationNumber;
+
+                        foreach (Models.OWS.OperaReservation sharerReservation in temp_operaReservations[0].SharerReservations)
+                        {
+                            owsResponse1 = await new WSClientHelper().FetchReservationAsync(pushReservationRequest.ReservationNumber, new Models.OWS.OwsRequestModel()
+                            {
+                                ChainCode = pushReservationRequest.ServiceParameters.ChainCode,
+                                DestinationEntityID = pushReservationRequest.ServiceParameters.DestinationEntityID,
+                                HotelDomain = pushReservationRequest.ServiceParameters.HotelDomain,
+                                KioskID = pushReservationRequest.ServiceParameters.KioskID,
+                                Language = pushReservationRequest.ServiceParameters.Language,
+                                LegNumber = pushReservationRequest.ServiceParameters.Legnumber,
+                                Password = pushReservationRequest.ServiceParameters.Password,
+                                SystemType = pushReservationRequest.ServiceParameters.SystemType,
+                                Username = pushReservationRequest.ServiceParameters.Username,
+                                FetchBookingRequest = new Models.OWS.FetchBookingRequestModel()
+                                {
+                                    ReservationNumber = pushReservationRequest.ReservationNumber
+                                }
+                            }, "Local Manual", pushReservationRequest.ServiceParameters);
+
+                            if (owsResponse1.result && owsResponse1.responseData != null)
+                            {
+                                tempList = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Models.OWS.OperaReservation>>(owsResponse1.responseData.ToString());
+                                tempList[0].ReservationNumber += "||" + shareID;
+                                temp_operaReservations.AddRange(tempList);
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    new LogHelper().Error(ex, pushReservationRequest.ReservationNumber, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                }
+                #endregion
+                #region Pushing record copy in local DB
+                new LogHelper().Log("Updating the reservation in Local DB", Reservation.ReservationNameID, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+
+                Models.Local.LocalResponseModel localResponse = await new WSClientHelper().PushRecordLocally(new Models.Local.LocalRequestModel()
+                {
+                    SyncFromCloud = false,
+                    RequestObject = temp_operaReservations,
+                }, Reservation.ReservationNameID, "Local Manual", pushReservationRequest.ServiceParameters);
+                if (!localResponse.result)
+                {
+                    new LogHelper().Log("Updating the reservation in Local DB with email send flag failled with reason :- " + localResponse.responseMessage, Reservation.ReservationNameID, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                }
+                else
+                    new LogHelper().Log("Updating the reservation in Local DB with email send flag fsucceeded", Reservation.ReservationNameID, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                #endregion
+               
+
+                #region Validating Reservation
+                new LogHelper().Log("Validating reservation", Reservation.ReservationNameID, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+
+                if (Reservation == null)
+                {
+                    new LogHelper().Log("Reservation returned as NULL", Reservation.ReservationNameID, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                    //return new Models.Local.LocalResponseModel()
+                    //{
+                    //    result = false,
+                    //    responseMessage = "Reservation returned as NULL"
+                    //};
+                }
+                else if (Reservation.Adults == null && Reservation.Adults == 0)
+                {
+                    new LogHelper().Log("Reservation adult count is NULL or 0", Reservation.ReservationNameID, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                    //return new Models.Local.LocalResponseModel()
+                    //{
+                    //    result = false,
+                    //    responseMessage = "Reservation adult count is NULL or 0"
+                    //};
+                }
+                else if (string.IsNullOrEmpty(Reservation.ReservationStatus) && (!Reservation.ReservationStatus.ToUpper().Equals("DUEIN") || !Reservation.ReservationStatus.ToUpper().Equals("RESERVED")))
+                {
+                    new LogHelper().Debug("Reservation status is : " + Reservation.ReservationStatus + " not elogible for pre-checkin", Reservation.ReservationNameID, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                    //return new Models.Local.LocalResponseModel()
+                    //{
+                    //    result = false,
+                    //    responseMessage = "Reservation adult count is NULL or 0"
+                    //};
+                }
+                new LogHelper().Log("Reservation Validated ", Reservation.ReservationNameID, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                #endregion
+                #region Processing sharer Profiles
+                new LogHelper().Log("Processing sharer in the reservation", Reservation.ReservationNameID, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                if (Reservation.SharerReservations != null && Reservation.SharerReservations.Count > 0)
+                {
+                    foreach (Models.OWS.OperaReservation sharer in Reservation.SharerReservations)
+                    {
+                        if (sharer.GuestProfiles != null && sharer.GuestProfiles.Count > 0)
+                        {
+                            foreach (Models.OWS.GuestProfile guestProfile in sharer.GuestProfiles)
+                            {
+                                Reservation.GuestProfiles.Add(guestProfile);
+                            }
+                        }
+                    }
+                    new LogHelper().Log("Processing sharer in the reservation completed", Reservation.ReservationNameID, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                }
+                else
+                    new LogHelper().Log("No sharers found", Reservation.ReservationNameID, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                #endregion
+                #region Processing RoomRate
+                new LogHelper().Log("Updating rate details", Reservation.ReservationNameID, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                if (Reservation.RateDetails != null && Reservation.RateDetails.DailyRates != null && Reservation.RateDetails.DailyRates.Count > 0)
+                {
+                    decimal total_roomrate = Reservation.RateDetails.DailyRates.Sum(x => x.Amount);
+                    if (Reservation.PrintRate != null && Reservation.PrintRate.Value)
+                        Reservation.RateDetails.RateAmount = total_roomrate;
+                    else
+                        Reservation.TotalAmount = 0;
+                    new LogHelper().Log("Updating rate details completed", Reservation.ReservationNameID, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                }
+                else
+                    new LogHelper().Log("Updating rate details failed because Rate details are blank in the reservation", Reservation.ReservationNameID, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                #endregion
+                #region Processing MealPlan
+                if (pushReservationRequest.ServiceParameters.IsBreakFastValidationWithUDF != null && pushReservationRequest.ServiceParameters.IsBreakFastValidationWithUDF.Value)
+                {
+                    new LogHelper().Debug("Processing meal plan from UDF fields", Reservation.ReservationNameID, "PushReservationLocally", "Grabber", "Local Manual");
+                    if (Reservation.userDefinedFields != null && Reservation.userDefinedFields.Count > 0)
+                    {
+                        if (Reservation.userDefinedFields.Find(x => x.FieldName.Equals(pushReservationRequest.ServiceParameters.MealPlanFieldName)) != null)
+                        {
+
+                            if (!Reservation.userDefinedFields.Find(x => x.FieldName.Equals(pushReservationRequest.ServiceParameters.MealPlanFieldName)).FieldValue.Equals("NP"))
+                            {
+                                string tempUDFValue = Reservation.userDefinedFields.Find(x => x.FieldName.Equals(pushReservationRequest.ServiceParameters.MealPlanFieldName)).FieldValue;
+                                if (!string.IsNullOrEmpty(tempUDFValue))
+                                {
+                                    bool isPackageFound = false;
+                                    if (pushReservationRequest.ServiceParameters.PackageCodes.Split(';').ToList().Contains(tempUDFValue))
+                                        isPackageFound = true;
+                                    if (isPackageFound)
+                                    {
+                                        Reservation.IsBreakFastAvailable = true;
+                                        new LogHelper().Debug("Meal plan updated", Reservation.ReservationNameID, "PushReservationLocally", "Grabber", "Local Manual");
+                                    }
+                                }
+                            }
+                            else
+                                new LogHelper().Log("Processing meal plan not updated (NP not present in UDF)", Reservation.ReservationNameID, "PushReservationLocally", "Grabber", "Local Manual");
+                        }
+                    }
+                    else
+                        new LogHelper().Log("No UDF fields for meal plan not found", Reservation.ReservationNameID, "PushReservationLocally", "Grabber", "Local Manual");
+                }
+                if (pushReservationRequest.ServiceParameters.IsBreakFastValidationWithPackage != null && pushReservationRequest.ServiceParameters.IsBreakFastValidationWithPackage.Value)
+                {
+                    new LogHelper().Debug("Processing package list in the reservation for meal plan", Reservation.ReservationNameID, "PushReservationLocally", "Grabber", "Local Manual");
+                    if (((Reservation.PackageDetails != null && Reservation.PackageDetails.Count > 0) || (Reservation.PreferanceDetails != null && Reservation.PreferanceDetails.Count > 0)) && (!string.IsNullOrEmpty(pushReservationRequest.ServiceParameters.PackageCodes) && pushReservationRequest.ServiceParameters.PackageCodes.Split(';').ToList() != null))
+                    {
+                        if (Reservation.PackageDetails != null && Reservation.PackageDetails.Count > 0)
+                        {
+                            bool isPackageFound = false;
+                            foreach (Models.OWS.PackageDetails package in Reservation.PackageDetails)
+                            {
+                                if (pushReservationRequest.ServiceParameters.PackageCodes.Split(';').ToList().Contains(package.PackageCode))
+                                {
+                                    isPackageFound = true;
+                                    break;
+                                }
+                            }
+                            if (isPackageFound)
+                            {
+                                Reservation.IsBreakFastAvailable = true;
+                                new LogHelper().Debug("Meal plan updated", Reservation.ReservationNameID, "PushReservationLocally", "Grabber", "Local Manual");
+                            }
+                        }
+                        if (Reservation.PreferanceDetails != null && Reservation.PreferanceDetails.Count > 0)
+                        {
+                            if (Reservation.IsBreakFastAvailable == null || !Reservation.IsBreakFastAvailable.Value)
+                            {
+                                bool isPrefernceFound = false;
+                                foreach (Models.OWS.PreferanceDetails prefernce in Reservation.PreferanceDetails)
+                                {
+                                    if (pushReservationRequest.ServiceParameters.PackageCodes.Split(';').ToList().Contains(prefernce.PreferanceCode))
+                                    {
+                                        isPrefernceFound = true;
+                                        break;
+                                    }
+                                }
+                                if (isPrefernceFound)
+                                {
+                                    Reservation.IsBreakFastAvailable = true;
+                                    new LogHelper().Debug("Meal plan updated", Reservation.ReservationNameID, "PushReservationLocally", "Grabber", "Local Manual");
+                                }
+                            }
+                        }
+                    }
+                    else
+                        new LogHelper().Log("No package or prefernce list in the reservation for meal plan not found", Reservation.ReservationNameID, "PushReservationLocally", "Grabber", "Local Manual");
+                }
+                #endregion
+                #region VerifyVIPReservationOrNot
+                new LogHelper().Log("Verifying reservation VIP status in UDF field", Reservation.ReservationNameID, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                if (Reservation.userDefinedFields != null && Reservation.userDefinedFields.Count > 0)
+                {
+                    if (Reservation.userDefinedFields.Find(x => x.FieldName.Equals(pushReservationRequest.ServiceParameters.PreAuthUDF)) != null &&
+                        Reservation.userDefinedFields.Find(x => x.FieldName.Equals(pushReservationRequest.ServiceParameters.PreAuthUDF)).FieldValue.Equals("NO"))
+                    {
+                        new LogHelper().Log("Reservation is flagged not to take payment", Reservation.ReservationNameID, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                        Reservation.DepositDetail = new List<Models.OWS.DepositDetail>()
+                {
+                    new Models.OWS.DepositDetail()
+                    {
+                        Amount = 0,
+                        CardExpiryDate = null,
+                        CreditCardNumber = null,
+                        IsCreditCardDeposit = false,
+                        PaymentType = null
+                    }
+                };
+                    }
+                    else if (Reservation.userDefinedFields.Find(x => x.FieldName.Equals(pushReservationRequest.ServiceParameters.PreAuthAmntUDF)) != null &&
+                        Reservation.userDefinedFields.Find(x => x.FieldName.Equals(pushReservationRequest.ServiceParameters.PreAuthAmntUDF)).FieldValue.Equals("NO"))
+                    {
+                        new LogHelper().Log("Reservation is flagged not to take payment", Reservation.ReservationNameID, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                        Reservation.DepositDetail = new List<Models.OWS.DepositDetail>()
+                        {
+                            new Models.OWS.DepositDetail()
+                            {
+                                Amount = 0,
+                                CardExpiryDate = null,
+                                CreditCardNumber = null,
+                                IsCreditCardDeposit = false,
+                                PaymentType = null
+                            }
+                        };
+                    }
+                }
+                new LogHelper().Log("Verifying reservation VIP status in UDF field completed", Reservation.ReservationNameID, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                #endregion
+
+                #region PaymentDesabling
+                if (pushReservationRequest.ServiceParameters.IsPaymentDisabled)
+                {
+                    new LogHelper().Log("Disabling the payment as per the config", Reservation.ReservationNameID, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                    Reservation.DepositDetail = new List<Models.OWS.DepositDetail>()
+                {
+                    new Models.OWS.DepositDetail()
+                    {
+                        Amount = 0,
+                        CardExpiryDate = null,
+                        CreditCardNumber = null,
+                        IsCreditCardDeposit = false,
+                        PaymentType = null
+                    }
+                };
+                }
+                #endregion
+
+                #region Update ETA
+                if (pushReservationRequest.ServiceParameters.IsETADefault)
+                {
+                    new LogHelper().Log("Assigning NULL value to ETA as per the config", Reservation.ReservationNameID, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                    Reservation.ExpectedArrivalTime = null;
+                }
+                #endregion              
+
+                #region Pushing record copy in local DB
+                new LogHelper().Log("Updating the reservation in Local DB with email send flag ", Reservation.ReservationNameID, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                Reservation.IsEmailSend = isEmailSent;
+                Reservation.reservationDocument = null;
+                localResponse = await new WSClientHelper().PushRecordLocally(new Models.Local.LocalRequestModel()
+                {
+                    SyncFromCloud = false,
+                    RequestObject = new List<Models.OWS.OperaReservation>() { Reservation }
+                }, Reservation.ReservationNameID, "Local Manual", pushReservationRequest.ServiceParameters);
+                if (!localResponse.result)
+                {
+                    new LogHelper().Log("Updating the reservation in Local DB with email send flag failled with reason :- " + localResponse.responseMessage, Reservation.ReservationNameID, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                }
+                else
+                    new LogHelper().Log("Updating the reservation in Local DB with email send flag fsucceeded", Reservation.ReservationNameID, "PushReservationLocally", pushReservationRequest.ServiceParameters.ClientID, "Local Manual");
+                #endregion
+
+
+
+                return new Models.Local.LocalResponseModel()
+                {
+                    result = true,
+                    responseMessage = "Success"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Models.Local.LocalResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message
+                };
+            }
+
+        }
+
     }
 }

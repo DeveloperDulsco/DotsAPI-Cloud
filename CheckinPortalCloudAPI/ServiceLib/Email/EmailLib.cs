@@ -425,6 +425,29 @@ namespace CheckinPortalCloudAPI.ServiceLib.Email
                     message.From = new MailAddress(FromEmail, displayFromEmail);
                     return message;
                 }
+                else if (emailType == Models.Email.EmailType.ServiceError)
+                {
+                    MailMessage message = new MailMessage();
+                    string header_content_id = Guid.NewGuid().ToString();
+                    string buton_content_id = Guid.NewGuid().ToString();
+                    string header_image_path = System.Web.HttpContext.Current.Request.MapPath("~\\Resources\\Images\\ServiceError\\hotel-logo.png");
+                    string htmlBody = System.IO.File.ReadAllText(System.Web.HttpContext.Current.Request.MapPath("~\\Resources\\HTML\\ServiceError.html"));
+                    htmlBody = htmlBody.Replace("$$HEADER_IMAGE$$", header_content_id);
+                    htmlBody = htmlBody.Replace("$$GUEST_NAME$$", GuestName);
+                    htmlBody = htmlBody.Replace("$$ERROR_MESSAGE$$", "");
+                    htmlBody = htmlBody.Replace("$$DATE_DETAILS$$", DateTime.Now.ToString("dd/MM/yyyy"));
+
+
+                    AlternateView avHtml = AlternateView.CreateAlternateViewFromString(htmlBody, null, MediaTypeNames.Text.Html);
+                    LinkedResource inline = new LinkedResource(header_image_path, MediaTypeNames.Image.Jpeg);
+                    inline.ContentId = header_content_id;
+                    avHtml.LinkedResources.Add(inline);
+                    message.AlternateViews.Add(avHtml);
+                    message.Subject = Subject;
+                    message.IsBodyHtml = true;
+                    message.From = new MailAddress(FromEmail, displayFromEmail);
+                    return message;
+                }
                 else
                 {
                     MailMessage message = new MailMessage();

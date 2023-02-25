@@ -33,7 +33,8 @@ namespace CheckinPortalCloudAPI.Models.Email
             GuestFolio,
             AcceptRequest,
             RejectRequest,
-            CheckinSlip
+            CheckinSlip,
+        ServiceError
     }
 
 
