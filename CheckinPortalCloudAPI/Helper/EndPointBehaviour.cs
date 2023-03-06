@@ -43,7 +43,7 @@ namespace CheckinPortalCloudAPI.Helper
         public object BeforeSendRequest(ref System.ServiceModel.Channels.Message request, IClientChannel channel)
         {
             Helper HelperClass = new Helper();
-            //System.IO.File.WriteAllText(System.Web.Hosting.HostingEnvironment.MapPath(@"~\request1.txt"), Newtonsoft.Json.JsonConvert.SerializeObject(request));
+            System.IO.File.WriteAllText(System.Web.Hosting.HostingEnvironment.MapPath(@"~\request1.txt"), Newtonsoft.Json.JsonConvert.SerializeObject(request));
             request.Headers.Add(HelperClass.getSecurityHeader(wsdl_usr_name, wsdl_paswd));
 
             request.Headers.RemoveAt(request.Headers.FindHeader("OGHeader", "http://webservices.micros.com/og/4.3/Core/"));
