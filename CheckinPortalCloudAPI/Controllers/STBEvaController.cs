@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using CheckinPortalCloudAPI.Helper;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +19,7 @@ namespace CheckinPortalCloudAPI.Controllers
         {
             try
             {
-                
+                new LogHelper().Debug("Generating access token", "", "GetAccessToken", "API", "EVA");
                 if (evaRequest != null
                     && !string.IsNullOrEmpty(evaRequest.ClientId)
                     && !string.IsNullOrEmpty(evaRequest.ClientSecert))
@@ -36,6 +37,7 @@ namespace CheckinPortalCloudAPI.Controllers
                         {
                             try
                             {
+                                new LogHelper().Debug("Access token generated successfully", "", "GetAccessToken", "API", "EVA");
                                 return new Models.EVA.EVAResponseModel()
                                 {
                                     Response = JsonConvert.DeserializeObject<Models.EVA.AccessTokenResponse>(responseString),
@@ -44,6 +46,8 @@ namespace CheckinPortalCloudAPI.Controllers
                             }
                             catch (Exception ex) 
                             {
+                                new LogHelper().Debug($"Request : - {JsonConvert.SerializeObject(evaRequest)}", "", "GetAccessToken", "API", "EVA");
+                                new LogHelper().Debug($"Access token generation failled with reason : - {ex.Message}", "", "GetAccessToken", "API", "EVA");
                                 return new Models.EVA.EVAResponseModel()
                                 {
                                     ResponseCode = null,
@@ -54,6 +58,8 @@ namespace CheckinPortalCloudAPI.Controllers
                         }
                         else
                         {
+                            new LogHelper().Debug($"Request : - {JsonConvert.SerializeObject(evaRequest)}", "", "GetAccessToken", "API", "EVA");
+                            new LogHelper().Debug($"Access token generation failled with reason : - Service returned blank", "", "GetAccessToken", "API", "EVA");
                             return new Models.EVA.EVAResponseModel()
                             {
                                 ResponseCode = null,
@@ -64,6 +70,8 @@ namespace CheckinPortalCloudAPI.Controllers
                     }
                     else
                     {
+                        new LogHelper().Debug($"Request : - {JsonConvert.SerializeObject(evaRequest)}", "", "GetAccessToken", "API", "EVA");
+                        new LogHelper().Debug($"Access token generation failled with reason : - {responseMessage.ReasonPhrase}", "", "GetAccessToken", "API", "EVA");
                         return new Models.EVA.EVAResponseModel()
                         {
                             ResponseCode = responseMessage.StatusCode.ToString(),
@@ -74,6 +82,8 @@ namespace CheckinPortalCloudAPI.Controllers
                 }
                 else
                 {
+                    new LogHelper().Debug($"Request : - {JsonConvert.SerializeObject(evaRequest)}", "", "GetAccessToken", "API", "EVA");
+                    new LogHelper().Debug($"Access token generation failled with reason : - Client ID and Client Secret can not be blank", "", "GetAccessToken", "API", "EVA");
                     return new Models.EVA.EVAResponseModel()
                     {
                         result = false,
@@ -85,6 +95,8 @@ namespace CheckinPortalCloudAPI.Controllers
             }
             catch (Exception ex)
             {
+                new LogHelper().Debug($"Request : - {JsonConvert.SerializeObject(evaRequest)}", "", "GetAccessToken", "API", "EVA");
+                new LogHelper().Debug($"Access token generation failled with reason : - {ex.Message}", "", "GetAccessToken", "API", "EVA");
                 return new Models.EVA.EVAResponseModel()
                 {
                     ResponseCode = null,
@@ -101,12 +113,13 @@ namespace CheckinPortalCloudAPI.Controllers
         {
             try
             {
+                new LogHelper().Debug("Guest checking in (EVA)", "", "VisitorCheckin", "API", "EVA");
                 string token = evaRequest.accessToken;
                 if (!string.IsNullOrEmpty(token))
                 {
                     Models.EVA.VisitorCheckInRequest visitorCheckInRequest = JsonConvert.DeserializeObject<Models.EVA.VisitorCheckInRequest>(evaRequest.RequestObject.ToString());
                     //Models.EVA.VisitorCheckInRequest visitorCheckInRequest = (Models.EVA.VisitorCheckInRequest)evaRequest.RequestObject;
-                    System.IO.File.WriteAllText(System.Web.Hosting.HostingEnvironment.MapPath(@"~\Request.txt"), JsonConvert.SerializeObject(visitorCheckInRequest));
+                    //System.IO.File.WriteAllText(System.Web.Hosting.HostingEnvironment.MapPath(@"~\Request.txt"), JsonConvert.SerializeObject(visitorCheckInRequest));
                     HttpResponseMessage responseMessage = await new Helper.Helper().ExecutePostAsync(evaRequest.webUrl, visitorCheckInRequest, null, token, null);
 
                     if (responseMessage.IsSuccessStatusCode)
@@ -116,6 +129,7 @@ namespace CheckinPortalCloudAPI.Controllers
                         {
                             try
                             {
+                                new LogHelper().Debug($"Guest checked in successsfully in EVA", "", "GetAccessToken", "API", "EVA");
                                 return new Models.EVA.EVAResponseModel()
                                 {
                                     Response = JsonConvert.DeserializeObject<Models.EVA.VisitorCheckInResponse>(responseString),
@@ -124,6 +138,8 @@ namespace CheckinPortalCloudAPI.Controllers
                             }
                             catch (Exception ex)
                             {
+                                new LogHelper().Debug($"Request : - {JsonConvert.SerializeObject(evaRequest)}", "", "GetAccessToken", "API", "EVA");
+                                new LogHelper().Debug($"Guest check in failed(EVA) : - {ex.Message}", "", "GetAccessToken", "API", "EVA");
                                 return new Models.EVA.EVAResponseModel()
                                 {
                                     ResponseCode = null,
@@ -134,6 +150,8 @@ namespace CheckinPortalCloudAPI.Controllers
                         }
                         else
                         {
+                            new LogHelper().Debug($"Request : - {JsonConvert.SerializeObject(evaRequest)}", "", "GetAccessToken", "API", "EVA");
+                            new LogHelper().Debug($"Guest check in failed(EVA) : - Service returned blank", "", "GetAccessToken", "API", "EVA");
                             return new Models.EVA.EVAResponseModel()
                             {
                                 ResponseCode = null,
@@ -145,6 +163,8 @@ namespace CheckinPortalCloudAPI.Controllers
                     else if (responseMessage.Content != null)
                     {
                         string responseString = await responseMessage.Content.ReadAsStringAsync();
+                        new LogHelper().Debug($"Request : - {JsonConvert.SerializeObject(evaRequest)}", "", "GetAccessToken", "API", "EVA");
+                        new LogHelper().Debug($"Guest check in failed(EVA) : - {JsonConvert.DeserializeObject<Models.EVA.VisitorCheckInResponse>(responseString)}", "", "GetAccessToken", "API", "EVA");
                         return new Models.EVA.EVAResponseModel()
                         {
                             Response = JsonConvert.DeserializeObject<Models.EVA.VisitorCheckInResponse>(responseString),
@@ -153,6 +173,8 @@ namespace CheckinPortalCloudAPI.Controllers
                     }
                     else
                     {
+                        new LogHelper().Debug($"Request : - {JsonConvert.SerializeObject(evaRequest)}", "", "GetAccessToken", "API", "EVA");
+                        new LogHelper().Debug($"Guest check in failed(EVA) : - { responseMessage.ReasonPhrase}", "", "GetAccessToken", "API", "EVA");
                         return new Models.EVA.EVAResponseModel()
                         {
                             ResponseCode = responseMessage.StatusCode.ToString(),
@@ -163,6 +185,8 @@ namespace CheckinPortalCloudAPI.Controllers
                 }
                 else
                 {
+                    new LogHelper().Debug($"Request : - {JsonConvert.SerializeObject(evaRequest)}", "", "GetAccessToken", "API", "EVA");
+                    new LogHelper().Debug($"Guest check in failed(EVA) : - Access token can not be blank", "", "GetAccessToken", "API", "EVA");
                     return new Models.EVA.EVAResponseModel()
                     {
                         result = false,

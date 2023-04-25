@@ -884,6 +884,12 @@
     <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.ExternalPaymentResponse1.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Content>
+    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.FetchAuthorizationsHistoryResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.FetchAuthorizationsHistoryResponse1.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
     <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.FetchKeyDataResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Content>
@@ -939,6 +945,12 @@
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Content>
     <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.InsertPayRoutingResponse1.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.InstantPaymentNotificationResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.InstantPaymentNotificationResponse1.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Content>
     <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.InvoiceResponse.datasource">
@@ -1022,82 +1034,12 @@
     <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.UpdatePayRoutingResponse1.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.AddPaymentResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.AddPaymentResponse1.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.CreateFixedChargesResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.CreateFixedChargesResponse1.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.CreateGuestLocatorResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.CreateGuestLocatorResponse1.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.DeleteFixedChargesResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.DeleteFixedChargesResponse1.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.DeleteGuestLocatorResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.DeleteGuestLocatorResponse1.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.DeletePayRoutingResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.DeletePayRoutingResponse1.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.FetchFixedChargesResponse1.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.FetchSignedRegCardResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.FetchSignedRegCardResponse1.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.InsertSignedRegCardResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.InsertSignedRegCardResponse1.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.ToggleTurndownFlagResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.ToggleTurndownFlagResponse1.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.UpdateFixedChargesResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.UpdateFixedChargesResponse1.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.UpdateGuestLocatorResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.UpdateGuestLocatorResponse1.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
     <None Include="Connected Services\ReservationAdvancedService\configuration91.svcinfo" />
     <None Include="Connected Services\ReservationAdvancedService\configuration.svcinfo" />
     <None Include="Connected Services\ReservationAdvancedService\Reference.svcmap">
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
-    <None Include="Connected Services\ReservationAdvancedService\ResvAdvanced1.disco" />
     <Content Include="Connected Services\ReservationService\CheckinPortalCloudAPI.ReservationService.AddAccompanyGuestResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Content>
@@ -1341,7 +1283,7 @@
     <Content Include="Connected Services\ReservationService\CheckinPortalCloudAPI.ReservationService.RoomMoveResponse1.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Content>
-    <None Include="Connected Services\ReservationAdvancedService\ResvAdvanced1.wsdl" />
+    <None Include="Connected Services\ReservationAdvancedService\ResvAdvanced.wsdl" />
     <None Include="Connected Services\ReservationService\configuration91.svcinfo" />
     <None Include="Connected Services\ReservationService\configuration.svcinfo" />
     <None Include="Connected Services\ReservationService\Reference.svcmap">

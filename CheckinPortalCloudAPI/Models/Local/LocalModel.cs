@@ -20,6 +20,7 @@ namespace CheckinPortalCloudAPI.Models.Local
         public string ReservationNumber { get; set; }
         public string QRCode { get; set; }
         public string LugaggeTagNo { get; set; }
+        public string WifiPassword { get; set; }
     }
 
     public partial class PaymentDetails

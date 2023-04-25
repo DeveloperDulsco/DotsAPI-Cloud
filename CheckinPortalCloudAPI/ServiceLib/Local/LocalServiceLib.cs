@@ -52,16 +52,44 @@ namespace CheckinPortalCloudAPI.ServiceLib.Local
 
                     rv.LocalReport.LoadReportDefinition(rdlcSR);// = System.Web.Hosting.HostingEnvironment.MapPath("~/Resources/RDLC/RegCard.rdlc");
                     rv.LocalReport.EnableExternalImages = true;
+                    List<ReportParameter> reportParameters = new List<ReportParameter>();
+                    ReportParameter parameter = null;
+                    foreach (ReportParameterInfo reportParameterInfos in rv.LocalReport.GetParameters())
+                    {
+                        switch (reportParameterInfos.Name)
+                        {
+                            case "RoomNumber":
+                                parameter = new ReportParameter("RoomNumber", (receiptRequest.RoomNumber != null ? receiptRequest.RoomNumber : ""));
+                                reportParameters.Add(parameter);
+                                break;
+
+                            case "ReservationNumber":
+                                parameter = new ReportParameter("ReservationNumber", (receiptRequest.ReservationNumber != null ? receiptRequest.ReservationNumber : ""));
+                                reportParameters.Add(parameter);
+                                break;
+
+                            case "ReservationNoInQRCode":
+                                parameter = new ReportParameter("ReservationNoInQRCode", (receiptRequest.QRCode != null ? receiptRequest.QRCode : ""));
+                                reportParameters.Add(parameter);
+                                break;
+
+                            case "LuggageTagNo":
+                                parameter = new ReportParameter("LuggageTagNo", (receiptRequest.QRCode != null ? receiptRequest.QRCode : ""));
+                                reportParameters.Add(parameter);
+                                break;
+
+                            case "WifiPassword":
+                                parameter = new ReportParameter("WifiPassword", (receiptRequest.WifiPassword != null ? receiptRequest.WifiPassword : ""));
+                                reportParameters.Add(parameter);
+                                break;
+                        }
+                    }
+
+                                 
 
 
-                    ReportParameter p1 = new ReportParameter("RoomNumber", receiptRequest.RoomNumber);
-                    ReportParameter p2 = new ReportParameter("ReservationNumber", receiptRequest.ReservationNumber);
-                    ReportParameter p3 = new ReportParameter("ReservationNoInQRCode", receiptRequest.QRCode);
-                    ReportParameter p4 = new ReportParameter("LugaggeTagNo", receiptRequest.LugaggeTagNo);
 
-
-
-                    rv.LocalReport.SetParameters(new ReportParameter[] { p1,p2,p3,p4 });
+                    rv.LocalReport.SetParameters(reportParameters);
                     rv.LocalReport.Refresh();
                     byte[] streamBytes = null;
                     string mimeType = "";

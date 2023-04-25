@@ -118,6 +118,15 @@ namespace CheckinPortalCloudAPI.Controllers
             return new ServiceLib.OWS.OperaServiceLib().MakePayment(owsRequest);
         }
 
+
+        [HttpPost]
+        [ActionName("AddPayment")]
+        public async Task<Models.OWS.OwsResponseModel> AddPayment(Models.OWS.OwsRequestModel owsRequest)
+        {
+            return new ServiceLib.OWS.OperaServiceLib().AddPayment(owsRequest);
+        }
+
+
         [HttpPost]
         [ActionName("GuestCheckIn")]
         public Models.OWS.OwsResponseModel GuestCheckIn(Models.OWS.OwsRequestModel Request)

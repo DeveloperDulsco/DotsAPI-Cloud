@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="d0bce8ca-bf57-4efd-a08c-2deaac68dd2c" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="70a1fb9c-f27b-416a-94b7-c67c6740b4db" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
   <ClientOptions>
     <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
     <GenerateTaskBasedAsynchronousMethod>true</GenerateTaskBasedAsynchronousMethod>
@@ -19,11 +19,10 @@
     <ServiceContractMappings />
   </ClientOptions>
   <MetadataSources>
-    <MetadataSource Address="https://operademo1.microsdc.us:4430/OWS_WS_51/ResvAdvanced.asmx" Protocol="http" SourceId="1" />
+    <MetadataSource Address="http://94.203.133.74:8083/ows_ws_51/ResvAdvanced.asmx?wsdl" Protocol="http" SourceId="1" />
   </MetadataSources>
   <Metadata>
-    <MetadataFile FileName="ResvAdvanced1.disco" MetadataType="Disco" ID="43b69869-02d6-418a-89f6-a5fc5df05a69" SourceId="1" SourceUrl="https://operademo1.microsdc.us:4430/OWS_WS_51/ResvAdvanced.asmx?disco" />
-    <MetadataFile FileName="ResvAdvanced1.wsdl" MetadataType="Wsdl" ID="120b5bff-d1b0-4737-ac33-9db874205544" SourceId="1" SourceUrl="https://operademo1.microsdc.us:4430/OWS_WS_51/ResvAdvanced.asmx?wsdl" />
+    <MetadataFile FileName="ResvAdvanced.wsdl" MetadataType="Wsdl" ID="a36dfac2-f711-44a8-8ab2-152eafe24f5a" SourceId="1" SourceUrl="http://94.203.133.74:8083/ows_ws_51/ResvAdvanced.asmx?wsdl" />
   </Metadata>
   <Extensions>
     <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />

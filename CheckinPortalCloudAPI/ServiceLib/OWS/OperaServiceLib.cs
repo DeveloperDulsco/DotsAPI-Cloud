@@ -15,6 +15,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI.WebControls;
 using System.Xml;
@@ -1733,6 +1734,17 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
             try
             {
                 new LogHelper().Debug("Update Passport request : " + JsonConvert.SerializeObject(Request), Request.UpdateProileRequest.ProfileID, "UpdatePassport", "API", "OWS");
+
+                if (string.IsNullOrEmpty(Request.UpdateProileRequest.DocumentType))
+                {
+                    return new Models.OWS.OwsResponseModel
+                    {
+                        responseMessage = "Document type can not be blank to update the passport details",
+                        statusCode = -1,
+                        result = false
+                    };
+                }
+
                 #region Request Header
                 string temp = Helper.Helper.Get8Digits();
                 NameService.OGHeader OGHeader = new NameService.OGHeader();
@@ -1906,10 +1918,12 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
 
                 //}
 
-               
-                
-                UpdateNameReq.Birthdate = Request.UpdateProileRequest.DOB != null ? Request.UpdateProileRequest.DOB.Value : new DateTime() ;
-                UpdateNameReq.BirthdateSpecified = Request.UpdateProileRequest.DOB != null ? true : false;
+
+                if (Request.UpdateProileRequest.DOB != null && !Request.UpdateProileRequest.DOB.Value.Equals(new DateTime(1900, 01, 01)))
+                {
+                    UpdateNameReq.Birthdate = Request.UpdateProileRequest.DOB.Value ;
+                    UpdateNameReq.BirthdateSpecified =  true;
+                }
                 
                 //UpdateNameReq.Birthdate = DateTime.Now;
                 //UpdateNameReq.BirthdateSpecified = true;
@@ -1922,61 +1936,65 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 }
                 UpdateNameReq.nationality = Request.UpdateProileRequest.Nationality;
 
-                #region Call Get Passport
-                Models.OWS.OwsResponseModel PassportResponse = new Models.OWS.OwsResponseModel();
-                PassportResponse = GetPassport(Request);
-                if (PassportResponse.result)
+                //if (!string.IsNullOrEmpty(Request.UpdateProileRequest.DocumentType))
                 {
-                    NameService.GovernmentID GovID = (NameService.GovernmentID)PassportResponse.responseData;
-                    if (GovID != null && !string.IsNullOrEmpty(GovID.documentType))
+                    #region Call Get Passport
+                    Models.OWS.OwsResponseModel PassportResponse = new Models.OWS.OwsResponseModel();
+                    PassportResponse = GetPassport(Request);
+                    if (PassportResponse.result)
                     {
-                        GovID.documentType = GovID.documentType.ToUpper();
-                        if (!string.IsNullOrEmpty(GovID.documentNumber))
+                        NameService.GovernmentID GovID = (NameService.GovernmentID)PassportResponse.responseData;
+                        if (GovID != null && !string.IsNullOrEmpty(GovID.documentType))
                         {
-                            UpdateNameReq.Id = (NameService.GovernmentID)PassportResponse.responseData;
-                            UpdateNameReq.Id.primary = true;
-                            UpdateNameReq.Id.primarySpecified = true;
+                            GovID.documentType = GovID.documentType.ToUpper();
+                            if (!string.IsNullOrEmpty(GovID.documentNumber))
+                            {
+                                UpdateNameReq.Id = (NameService.GovernmentID)PassportResponse.responseData;
+                                //UpdateNameReq.Id.primary = true;
+                                //UpdateNameReq.Id.primarySpecified = true;
 
-                        }
-                        else
-                        {
-                            GovID = new NameService.GovernmentID();
-                            GovID.countryOfIssue = Request.UpdateProileRequest.IssueCountry;
-                            GovID.displaySequence = 1;
-                            GovID.displaySequenceSpecified = true;
-                            GovID.documentNumber = Request.UpdateProileRequest.DocumentNumber;
-                            if (!string.IsNullOrEmpty(Request.UpdateProileRequest.DocumentType))
-                                GovID.documentType = Request.UpdateProileRequest.DocumentType.ToUpper();
-                            //GovID.documentType = GovID.documentType.ToUpper();
-                            
-                            
-                            GovID.effectiveDate = Request.UpdateProileRequest.IssueDate != null ? Request.UpdateProileRequest.IssueDate.Value : new DateTime() ;
-                            GovID.effectiveDateSpecified = Request.UpdateProileRequest.IssueDate != null ? true : false;
-                            
-                            GovID.primary = true;
-                            GovID.primarySpecified = true;
-                            UpdateNameReq.Id = GovID;
+                            }
+                            else
+                            {
+                                GovID = new NameService.GovernmentID();
+                                GovID.countryOfIssue = Request.UpdateProileRequest.IssueCountry;
+                                GovID.displaySequence = 1;
+                                GovID.displaySequenceSpecified = true;
+                                GovID.documentNumber = Request.UpdateProileRequest.DocumentNumber;
+                                if (!string.IsNullOrEmpty(Request.UpdateProileRequest.DocumentType))
+                                    GovID.documentType = Request.UpdateProileRequest.DocumentType.ToUpper();
+                                //GovID.documentType = GovID.documentType.ToUpper();
+
+
+                                GovID.effectiveDate = Request.UpdateProileRequest.IssueDate != null ? Request.UpdateProileRequest.IssueDate.Value : new DateTime();
+                                GovID.effectiveDateSpecified = Request.UpdateProileRequest.IssueDate != null ? true : false;
+
+                                //GovID.primary = true;
+                                //GovID.primarySpecified = true;
+                                UpdateNameReq.Id = GovID;
+                            }
                         }
                     }
+                    else
+                    {
+                        NameService.GovernmentID GovID = new NameService.GovernmentID();
+                        GovID.countryOfIssue = Request.UpdateProileRequest.IssueCountry;
+                        GovID.displaySequence = 1;
+                        GovID.displaySequenceSpecified = true;
+                        GovID.documentNumber = Request.UpdateProileRequest.DocumentNumber;
+                        GovID.documentType = Request.UpdateProileRequest.DocumentType;
+
+
+                        GovID.effectiveDate = Request.UpdateProileRequest.IssueDate != null ? Request.UpdateProileRequest.IssueDate.Value : new DateTime();
+                        GovID.effectiveDateSpecified = Request.UpdateProileRequest.IssueDate != null ? true : false;
+
+                        GovID.primary = true;
+                        GovID.primarySpecified = true;
+                        UpdateNameReq.Id = GovID;
+                    }
+                    #endregion
                 }
-                else
-                {
-                    NameService.GovernmentID GovID = new NameService.GovernmentID();
-                    GovID.countryOfIssue = Request.UpdateProileRequest.IssueCountry;
-                    GovID.displaySequence = 1;
-                    GovID.displaySequenceSpecified = true;
-                    GovID.documentNumber = Request.UpdateProileRequest.DocumentNumber;
-                    GovID.documentType = Request.UpdateProileRequest.DocumentType;
-                    
-                    
-                    GovID.effectiveDate = Request.UpdateProileRequest.IssueDate != null ? Request.UpdateProileRequest.IssueDate.Value : new DateTime();
-                    GovID.effectiveDateSpecified = Request.UpdateProileRequest.IssueDate != null ? true:false;
-                    
-                    GovID.primary = true;
-                    GovID.primarySpecified = true;
-                    UpdateNameReq.Id = GovID;
-                }
-                #endregion
+                
 
 
                 #region Response
@@ -3654,7 +3672,8 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                             if(string.IsNullOrEmpty(Request.FetchRoomList.RoomStatus))
                             {
 
-                                if ((RS.RoomStatus1 == "CL" || RS.RoomStatus1 == "IP") 
+                                //if ((RS.RoomStatus1 == "CL" || RS.RoomStatus1 == "IP") 
+                                if ((RS.RoomStatus1 == "IP")
                                     && RS.FrontOfficeStatus == "VAC")//|| RSResponse.RoomStatus[0].RoomStatus1 == "IP"
                                 {
                                     if (RS.NextReservationDateSpecified)
@@ -3844,6 +3863,8 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 UIDLIST[0] = uID;
                 RB.ReservationID = UIDLIST;
                 CIRequest.ReservationRequest = RB;
+
+                CIRequest.CreditCardInfo = new ReservationAdvancedService.CreditCardInfo();
 
                 if (Request.paymentMethod != null)
                 {
@@ -6492,7 +6513,22 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                     CC.chipAndPin = false;
                     CC.chipAndPinSpecified = true;
                     CC.cardType = modifyReservation.modifyBookingRequest.PaymentMethod.PaymentType;//"WEB";
-                    CC.Item = modifyReservation.modifyBookingRequest.PaymentMethod.MaskedCardNumber.ToLower() ;// "4687560100136162";
+                    
+                    bool isOPIEnabled = false;
+                    isOPIEnabled = (ConfigurationManager.AppSettings["OPIEnabled"] != null
+                                    && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OPIEnabled"].ToString())
+                                    && bool.TryParse(ConfigurationManager.AppSettings["OPIEnabled"].ToString(), out isOPIEnabled)) ? isOPIEnabled : false;
+
+                    if (isOPIEnabled)
+                    {
+                        Regex rgx = new Regex("[^a-zA-Z0-9 -]");
+                        modifyReservation.modifyBookingRequest.PaymentMethod.MaskedCardNumber = rgx.Replace(modifyReservation.modifyBookingRequest.PaymentMethod.MaskedCardNumber, "");
+                        CC.Item = modifyReservation.modifyBookingRequest.PaymentMethod.MaskedCardNumber;
+                    }
+                    else
+                    {
+                        CC.Item = modifyReservation.modifyBookingRequest.PaymentMethod.MaskedCardNumber.ToLower();// "4687560100136162";
+                    }
                     CC.expirationDate =  !string.IsNullOrEmpty(modifyReservation.modifyBookingRequest.PaymentMethod.ExpiryDate) ? 
                         DateTime.ParseExact(modifyReservation.modifyBookingRequest.PaymentMethod.ExpiryDate,"d/M/yyyy", CultureInfo.InvariantCulture,
     DateTimeStyles.None) : DateTime.Now.AddYears(2);
@@ -7450,6 +7486,124 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 
             }
         }
+
+        public Models.OWS.OwsResponseModel AddPayment(Models.OWS.OwsRequestModel Request)
+        {
+            try
+            {
+
+                new LogHelper().Debug("AddPayment request : " + JsonConvert.SerializeObject(Request), Request.MakePaymentRequest.ReservationNameID, "AddPayment", "API", "OWS");
+                DateTime? PostingDate = null;
+
+                #region Request Header
+                string temp = Helper.Helper.Get8Digits();
+                ReservationAdvancedService.OGHeader OGHeader = new ReservationAdvancedService.OGHeader();
+                OGHeader.transactionID = temp;
+                OGHeader.timeStamp = DateTime.Now;
+                OGHeader.primaryLangID = Request.Language; //English
+                ReservationAdvancedService.EndPoint orginEndPOint = new ReservationAdvancedService.EndPoint();
+                orginEndPOint.entityID = Request.KioskID; //Kiosk Identifier
+                orginEndPOint.systemType = Request.SystemType;
+                OGHeader.Origin = orginEndPOint;
+                ReservationAdvancedService.EndPoint destEndPOint = new ReservationAdvancedService.EndPoint();
+                destEndPOint.entityID = Request.DestinationEntityID;
+                destEndPOint.systemType = Request.DestinationSystemType;
+                OGHeader.Destination = destEndPOint;
+                ReservationAdvancedService.OGHeaderAuthentication Auth = new ReservationAdvancedService.OGHeaderAuthentication();
+                ReservationAdvancedService.OGHeaderAuthenticationUserCredentials userCredentials = new ReservationAdvancedService.OGHeaderAuthenticationUserCredentials();
+                userCredentials.UserName = Request.Username;
+                userCredentials.UserPassword = Request.Password;
+                userCredentials.Domain = Request.HotelDomain;
+                Auth.UserCredentials = userCredentials;
+                OGHeader.Authentication = Auth;
+                #endregion
+
+                #region Request Body
+
+
+                ReservationAdvancedService.AddPaymentRequest APRequest = new ReservationAdvancedService.AddPaymentRequest();
+
+                APRequest.HotelReference = new ReservationAdvancedService.HotelReference()
+                {
+                    chainCode = Request.ChainCode,
+                    hotelCode = Request.HotelDomain
+                };
+
+                APRequest.Action = "KIOSK CHECKIN";
+
+                APRequest.PaymentType = ConfigurationManager.AppSettings["OPIDefaultPaymentCode"].ToString();
+
+                ReservationAdvancedService.UniqueID uID = new ReservationAdvancedService.UniqueID();
+                uID.type = ReservationAdvancedService.UniqueIDType.EXTERNAL;
+                uID.source = "OPERA_RESV_ID";
+                uID.Value = Request.MakePaymentRequest.ReservationNameID;
+                APRequest.ResvNameID = uID;
+
+                APRequest.TerminalCode = Request.MakePaymentRequest.PaymentTerminalID;
+
+                APRequest.Window = Request.MakePaymentRequest.WindowNumber.Value;
+
+                APRequest.AuthorizationRule = new ReservationAdvancedService.AuthorizationInfo()
+                {
+                    Rule = "5",
+                    Amount = new ReservationAdvancedService.Amount()
+                    {
+                        Value = (double)Request.MakePaymentRequest.Amount
+
+                    }
+                };
+
+
+
+
+                ReservationAdvancedService.ResvAdvancedServiceSoapClient ResAdvPortClient = new ReservationAdvancedService.ResvAdvancedServiceSoapClient();
+                
+                ReservationAdvancedService.AddPaymentResponse RSResponse = new ReservationAdvancedService.AddPaymentResponse();
+                #endregion
+                //ResAdvPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour("Test USE", "Request.WSSEPassword", "Request.KioskUserName", "Request.KioskPassword", "Request.HotelDomain"));
+                RSResponse = ResAdvPortClient.AddPayment(ref OGHeader, APRequest);
+
+                if (RSResponse.Result.resultStatusFlag == ReservationAdvancedService.ResultStatusFlag.SUCCESS)
+                {
+                   
+                    return new Models.OWS.OwsResponseModel()
+                    {
+                        responseData = new Models.OWS.OPIPaymentResponseModel()
+                        {
+                            PaymentTypeCode = RSResponse.PaymentType,
+                            AprovalCode = RSResponse.ApprovalCode,
+                            ApprovalAmount = RSResponse.ApprovalAmount.Value.ToString("0.00")
+                        },
+                        responseMessage = "Success",
+                        statusCode = 101,
+                        result = true
+                    };
+
+                }
+                else
+                {
+                    //System.IO.File.WriteAllText(System.Web.Hosting.HostingEnvironment.MapPath(@"~\Log.txt"), Newtonsoft.Json.JsonConvert.SerializeObject(RSResponse));
+                    return new Models.OWS.OwsResponseModel()
+                    {
+                        responseMessage = RSResponse.Result != null ? RSResponse.Result.Text != null ? string.Join(" ", RSResponse.Result.Text.Select(x => x.Value).ToArray()) : "Failled" : "Failled",
+                        statusCode = -1,
+                        result = false
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new Models.OWS.OwsResponseModel()
+                {
+                    responseMessage = "Generic Exception : " + ex.Message,
+                    statusCode = -1,
+                    result = false
+                };
+
+            }
+        }
+
+
         public Models.OWS.OwsResponseModel GetEmaillistForProfile(Models.OWS.OwsRequestModel Request)
         {
             try

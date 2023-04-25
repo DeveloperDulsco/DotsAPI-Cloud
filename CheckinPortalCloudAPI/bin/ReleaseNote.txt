@@ -107,3 +107,8 @@ v4.1
 
 Added InsertUpdateKioskManualAuthorizeDetails api method in Local controller on 52022022
 Added FetchProfileDocumentByReservationNumber api method in local controller 0n 5202022
+
+
+v5.2.0
+
+Added deposit variable change in getOperaReservationDataTable in CloudDBModelConverter on 2522023

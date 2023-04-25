@@ -195,7 +195,16 @@ namespace CheckinPortalCloudAPI.Models.OWS
         public string UserName { get; set; }
         public string PaymentRefernce { get; set; }
         public string ApprovalCode { get; set; }
+        public string PaymentTerminalID { get; set; }
 
+    }
+
+    public class OPIPaymentResponseModel
+    {
+        public string PaymentTypeCode { get; set; }
+        public string AprovalCode { get; set; }
+        public string ApprovalAmount { get; set; }
+        public string MaskedCardNumber { get; set; }
     }
 
     public class ModifyBookingRequest

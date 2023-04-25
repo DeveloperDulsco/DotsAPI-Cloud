@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -215,17 +216,26 @@ namespace CheckinPortalCloudAPI.Helper
         {
             try
             {
-                using (var client = new HttpClient())
+                HttpClient httpClient = null;
+                if (!string.IsNullOrEmpty(ConfigurationManager.AppSettings["IsEVAProxyEnabled"]) && (Convert.ToBoolean(ConfigurationManager.AppSettings["IsEVAProxyEnabled"])))
                 {
-                    client.BaseAddress = new Uri(web_url + (web_url.EndsWith("/") ? "" : "/"));
+                    httpClient = new Helper().getProxyClient("EVA", ConfigurationManager.AppSettings["EVAProxyURL"], ConfigurationManager.AppSettings["EVAProxyUN"],
+                        ConfigurationManager.AppSettings["EVAProxyPSWD"]);
+                }
+                else
+                    httpClient = new HttpClient();
 
-                    client.DefaultRequestHeaders.Clear();
+                //using (var client = new HttpClient())
+                {
+                    httpClient.BaseAddress = new Uri(web_url + (web_url.EndsWith("/") ? "" : "/"));
+
+                    httpClient.DefaultRequestHeaders.Clear();
 
                     if (headers != null && headers.Count > 0)
                     {
                         foreach (var header in headers)
                         {
-                            client.DefaultRequestHeaders.Add(header.Key, header.Value);
+                            httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
                         }
                     }
 
@@ -233,7 +243,7 @@ namespace CheckinPortalCloudAPI.Helper
                     
                     if (!string.IsNullOrEmpty(accesToken))
                     {
-                        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accesToken);
+                        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accesToken);
                     }
                     HttpResponseMessage response = new HttpResponseMessage();
                     if (body != null)
@@ -242,7 +252,7 @@ namespace CheckinPortalCloudAPI.Helper
                         string jsondata = JsonConvert.SerializeObject(body);
                         StringContent content = new StringContent(jsondata, Encoding.UTF8, "application/json");
                         content.Headers.ContentType.CharSet = "";
-                        response = await client.PostAsync(web_url, content);
+                        response = await httpClient.PostAsync(web_url, content);
                     }
                     else
                     {
@@ -250,10 +260,10 @@ namespace CheckinPortalCloudAPI.Helper
                         {
                             var req = new HttpRequestMessage(HttpMethod.Post, web_url);
                             req.Content = new FormUrlEncodedContent(formDataBody);
-                            response = await client.SendAsync(req);
+                            response = await httpClient.SendAsync(req);
                         }
                         else
-                            response = await client.PostAsync(web_url, null);
+                            response = await httpClient.PostAsync(web_url, null);
                     }
 
                     
