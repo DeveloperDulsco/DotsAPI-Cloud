@@ -1747,4 +1747,3 @@ C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCl
 C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\obj\Debug\CheckinPortalCloudAPI.dll
 C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\obj\Debug\CheckinPortalCloudAPI.pdb
 C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\obj\Debug\CheckinPortalCloudAPI.csproj.AssemblyReference.cache
-C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\obj\Debug\CheckinPortalCloudAPI.csproj.CopyComplete

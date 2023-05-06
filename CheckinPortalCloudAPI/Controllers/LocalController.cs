@@ -408,15 +408,31 @@ namespace CheckinPortalCloudAPI.Controllers
                 Models.KIOSK.ReservationRequestModel reservationRequests = Newtonsoft.Json.JsonConvert.DeserializeObject<Models.KIOSK.ReservationRequestModel>(localDataRequest.RequestObject.ToString());
 
                 List<Models.KIOSK.DB.ReservationDataTableModel> resultSet = Helper.KIOSK.DBHelper.Instance.FetchReservationDetails(reservationRequests.ReferenceNumber, reservationRequests.ArrivalDate, ConfigurationManager.AppSettings["LocalConnectionString"]);
-                if (resultSet != null)
+                if (resultSet != null && resultSet.Count > 0)
                 {
-                    return new Models.Local.LocalResponseModel()
+                    var statusResult = await FetchPreCheckedinReservationStatus(new LocalRequestModel()
                     {
-                        responseData = resultSet,
-                        result = true,
-                        responseMessage = "Success",
-                        statusCode = 101
-                    };
+                        RequestObject = reservationRequests.ReferenceNumber
+                    });
+                    if(statusResult != null && statusResult.result)
+                    {
+                        return new Models.Local.LocalResponseModel()
+                        {
+                            responseData = resultSet,
+                            result = true,
+                            responseMessage = "Success",
+                            statusCode = 101
+                        };
+                    }
+                    else
+                    {
+                        return new Models.Local.LocalResponseModel()
+                        {
+                            result = false,
+                            responseMessage = "Not allowed for pre checked in",
+                            statusCode = -1
+                        };
+                    }
                 }
                 else
                     return new Models.Local.LocalResponseModel()
@@ -622,6 +638,43 @@ namespace CheckinPortalCloudAPI.Controllers
                     {
                         result = false,
                         responseMessage = "Failled to Fetch the document master",
+                        statusCode = -1
+                    };
+            }
+            catch (Exception ex)
+            {
+                return new Models.Local.LocalResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message,
+                    statusCode = -1
+                };
+            }
+
+        }
+
+        [HttpPost]
+        [ActionName("FetchPreCheckedinReservationStatus")]
+        public async Task<Models.Local.LocalResponseModel> FetchPreCheckedinReservationStatus(Models.Local.LocalRequestModel localDataRequest)
+        {
+            try
+            {
+                bool resultSet = Helper.KIOSK.DBHelper.Instance.fetchPrecheckedinStatus(ConfigurationManager.AppSettings["LocalConnectionString"],localDataRequest.RequestObject.ToString());
+                if (resultSet )
+                {
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        responseData = resultSet,
+                        result = true,
+                        responseMessage = "Success",
+                        statusCode = 101
+                    };
+                }
+                else
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Reservation is no pre-checked in",
                         statusCode = -1
                     };
             }

@@ -7414,6 +7414,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                     }
                     else
                     {
+                        Request.MakePaymentRequest.MaskedCardNumber = Regex.Replace(Request.MakePaymentRequest.MaskedCardNumber, @"[^\d]", "x");
                         CC.Item = Request.MakePaymentRequest.MaskedCardNumber;// "4687560100136162";
                         CC.cardCode = Request.MakePaymentRequest.PaymentTypeCode;
                     }
@@ -7961,97 +7962,122 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         NameService.InsertAddressResponse InsertAddressResponse = new NameService.InsertAddressResponse();
                         if (address.operaId != 0)
                         {
-                            NameService.UpdateAddressRequest AddressRequest = new NameService.UpdateAddressRequest();
-                            NameService.NameAddress NAddress = new NameService.NameAddress();
-                            NAddress.primary = address.primary != null ? (bool)address.primary : false;
-                            NAddress.primarySpecified = NAddress.primary;
-                            NAddress.displaySequence = address.displaySequence != null ? (int)address.displaySequence : 1;
-                            NAddress.addressType = address.addressType;
-                            string[] AddressLines = new string[2];
-                            AddressLines[0] = address.address1 != null ? address.address1 : "";
-                            AddressLines[1] = address.address2 != null ? address.address2 : "";
-                            NAddress.AddressLine = AddressLines;
-                            NAddress.addressType = address.addressType;
-                            NAddress.cityName = address.city;
-                            NAddress.countryCode = address.country != null ? address.country : "US";
-                            NAddress.displaySequenceSpecified = true;
-                            NAddress.operaId = address.operaId;
-                            NAddress.operaIdSpecified = true;
-                            NAddress.postalCode = address.zip;
-                            NAddress.stateProv = address.state;
-                            AddressRequest.NameAddress = NAddress;
-                            #region Response
+                            if (!string.IsNullOrEmpty(address.address1))
+                            {
+                                NameService.UpdateAddressRequest AddressRequest = new NameService.UpdateAddressRequest();
+                                NameService.NameAddress NAddress = new NameService.NameAddress();
+                                NAddress.primary = address.primary != null ? (bool)address.primary : false;
+                                NAddress.primarySpecified = NAddress.primary;
+                                NAddress.displaySequence = address.displaySequence != null ? (int)address.displaySequence : 1;
+                                NAddress.addressType = address.addressType;
+                                string[] AddressLines = new string[2];
+                                AddressLines[0] = address.address1 != null ? address.address1 : "";
+                                AddressLines[1] = address.address2 != null ? address.address2 : "";
+                                NAddress.AddressLine = AddressLines;
+                                NAddress.addressType = address.addressType;
+                                NAddress.cityName = address.city;
+                                NAddress.countryCode = address.country != null ? address.country : "US";
+                                NAddress.displaySequenceSpecified = true;
+                                NAddress.operaId = address.operaId;
+                                NAddress.operaIdSpecified = true;
+                                NAddress.postalCode = address.zip;
+                                NAddress.stateProv = address.state;
+                                AddressRequest.NameAddress = NAddress;
+                                #region Response
 
-                            NameService.NameServiceSoapClient NamePortClient = new NameService.NameServiceSoapClient();
-                            bool isOperaCloudEnabled = false;
-                            isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
-                                            && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
-                                            && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
-                            if (isOperaCloudEnabled)
-                            {
-                                NamePortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
-                                                        ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
-                                                        Request.Username, Request.Password, Request.HotelDomain));
-                            }
-                            AddressResponse = NamePortClient.UpdateAddress(ref OGHeader, AddressRequest);
-                            if (AddressResponse.Result.resultStatusFlag != NameService.ResultStatusFlag.SUCCESS)
-                            {
-                                return new Models.OWS.OwsResponseModel()
+                                NameService.NameServiceSoapClient NamePortClient = new NameService.NameServiceSoapClient();
+                                bool isOperaCloudEnabled = false;
+                                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                                if (isOperaCloudEnabled)
                                 {
-                                    result = false,
-                                    responseMessage = AddressResponse.Result.Text != null ? AddressResponse.Result.Text[0].Value: "Error returned by opera"
-                                };
-                            }
-                            #endregion
-                        }
-                        else
-                        {
-                            NameService.InsertAddressRequest AddressRequest = new NameService.InsertAddressRequest();
-                            NameService.NameAddress NAddress = new NameService.NameAddress();
-                            NAddress.primary = true;
-                            NAddress.primarySpecified = true;
-                            NAddress.displaySequence = address.displaySequence != null ? address.displaySequence.Value :0;
-                            NAddress.displaySequenceSpecified = address.displaySequence != null ? true : false;
-                            NAddress.addressType = address.addressType;
-                            string[] AddressLines = new string[2];
-                            AddressLines[0] = address.address1 != null ? address.address1 : "";
-                            AddressLines[1] = address.address2 != null ? address.address2 : "";
-                            NAddress.AddressLine = AddressLines;
-                            NAddress.cityName = address.city;
-                            NAddress.countryCode = address.country != null ? address.country : "US";
-                            NAddress.displaySequenceSpecified = true;
-                            NAddress.postalCode = address.zip;
-                            NAddress.stateProv = address.state;
-                            AddressRequest.NameAddress = NAddress;
-                            NameService.UniqueID UId = new NameService.UniqueID();
-                            UId.type = NameService.UniqueIDType.INTERNAL;
-                            UId.Value = Request.UpdateProileRequest.ProfileID;
-                            AddressRequest.NameID = UId;
-                            #region Response
-                            NameService.NameServiceSoapClient NamePortClient = new NameService.NameServiceSoapClient();
-                            bool isOperaCloudEnabled = false;
-                            isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
-                                            && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
-                                            && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
-                            if (isOperaCloudEnabled)
-                            {
-                                NamePortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
-                                                        ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
-                                                        Request.Username, Request.Password, Request.HotelDomain));
-                            }
-                            InsertAddressResponse = NamePortClient.InsertAddress(ref OGHeader, AddressRequest);
-                            if (InsertAddressResponse.Result.resultStatusFlag != NameService.ResultStatusFlag.SUCCESS)
-                            {
-                                //if (AddressResponse.Result.resultStatusFlag != NameService.ResultStatusFlag.SUCCESS)
+                                    NamePortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                                            Request.Username, Request.Password, Request.HotelDomain));
+                                }
+                                AddressResponse = NamePortClient.UpdateAddress(ref OGHeader, AddressRequest);
+                                if (AddressResponse.Result.resultStatusFlag != NameService.ResultStatusFlag.SUCCESS)
                                 {
                                     return new Models.OWS.OwsResponseModel()
                                     {
                                         result = false,
-                                        responseMessage = InsertAddressResponse.Result.Text != null ? InsertAddressResponse.Result.Text[0].Value : "Error returned by opera"
+                                        responseMessage = AddressResponse.Result.Text != null ? AddressResponse.Result.Text[0].Value : "Error returned by opera"
                                     };
                                 }
+                                #endregion
                             }
-                            #endregion
+                            else
+                            {
+                                return new Models.OWS.OwsResponseModel()
+                                {
+                                    result = false,
+                                    responseMessage = "Empty Address passed",
+                                    statusCode = -1
+                                };
+                            }
+
+                        }
+                        else
+                        {
+                            if (!string.IsNullOrEmpty(address.address1))
+                            {
+                                NameService.InsertAddressRequest AddressRequest = new NameService.InsertAddressRequest();
+                                NameService.NameAddress NAddress = new NameService.NameAddress();
+                                NAddress.primary = true;
+                                NAddress.primarySpecified = true;
+                                NAddress.displaySequence = address.displaySequence != null ? address.displaySequence.Value : 0;
+                                NAddress.displaySequenceSpecified = address.displaySequence != null ? true : false;
+                                NAddress.addressType = address.addressType;
+                                string[] AddressLines = new string[2];
+                                AddressLines[0] = address.address1 != null ? address.address1 : "";
+                                AddressLines[1] = address.address2 != null ? address.address2 : "";
+                                NAddress.AddressLine = AddressLines;
+                                NAddress.cityName = address.city;
+                                NAddress.countryCode = address.country != null ? address.country : "US";
+                                NAddress.displaySequenceSpecified = true;
+                                NAddress.postalCode = address.zip;
+                                NAddress.stateProv = address.state;
+                                AddressRequest.NameAddress = NAddress;
+                                NameService.UniqueID UId = new NameService.UniqueID();
+                                UId.type = NameService.UniqueIDType.INTERNAL;
+                                UId.Value = Request.UpdateProileRequest.ProfileID;
+                                AddressRequest.NameID = UId;
+                                #region Response
+                                NameService.NameServiceSoapClient NamePortClient = new NameService.NameServiceSoapClient();
+                                bool isOperaCloudEnabled = false;
+                                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                                if (isOperaCloudEnabled)
+                                {
+                                    NamePortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                                            Request.Username, Request.Password, Request.HotelDomain));
+                                }
+                                InsertAddressResponse = NamePortClient.InsertAddress(ref OGHeader, AddressRequest);
+                                if (InsertAddressResponse.Result.resultStatusFlag != NameService.ResultStatusFlag.SUCCESS)
+                                {
+                                    //if (AddressResponse.Result.resultStatusFlag != NameService.ResultStatusFlag.SUCCESS)
+                                    {
+                                        return new Models.OWS.OwsResponseModel()
+                                        {
+                                            result = false,
+                                            responseMessage = InsertAddressResponse.Result.Text != null ? InsertAddressResponse.Result.Text[0].Value : "Error returned by opera"
+                                        };
+                                    }
+                                }
+                                #endregion
+                            }
+                            else
+                            {
+                                return new Models.OWS.OwsResponseModel()
+                                {
+                                    result = false,
+                                    responseMessage = "Empty Address passed",
+                                    statusCode = -1
+                                };
+                            }
                         }
                     }
                     return new Models.OWS.OwsResponseModel()
@@ -8118,83 +8144,107 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                     {
                         if (email.operaId != 0)
                         {
-                            NameService.UpdateEmailRequest EmailRequest = new NameService.UpdateEmailRequest();
-                            NameService.NameEmail NEmail = new NameService.NameEmail();
-                            NEmail.primary = email.primary != null ? (bool)email.primary : false;
-                            NEmail.primarySpecified = NEmail.primary;
-                            NEmail.displaySequence = email.displaySequence != null ? (int)email.displaySequence : 1;
-                            //NEmail.emailType = Email.emailType;
-                            NEmail.operaId = email.operaId;
-                            NEmail.Value = email.email;
-                            NEmail.operaIdSpecified = true;
-                            EmailRequest.NameEmail = NEmail;
-
-                            #region Response
-
-                            NameService.NameServiceSoapClient NamePortClient = new NameService.NameServiceSoapClient();
-                            bool isOperaCloudEnabled = false;
-                            isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
-                                            && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
-                                            && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
-                            if (isOperaCloudEnabled)
+                            if (!string.IsNullOrEmpty(email.email))
                             {
-                                NamePortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
-                                                        ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
-                                                        Request.Username, Request.Password, Request.HotelDomain));
-                            }
-                            EMailResponse = NamePortClient.UpdateEmail(ref OGHeader, EmailRequest);
-                            if (EMailResponse.Result.resultStatusFlag != NameService.ResultStatusFlag.SUCCESS)
-                            {
-                                return new Models.OWS.OwsResponseModel()
+                                NameService.UpdateEmailRequest EmailRequest = new NameService.UpdateEmailRequest();
+                                NameService.NameEmail NEmail = new NameService.NameEmail();
+                                NEmail.primary = email.primary != null ? (bool)email.primary : false;
+                                NEmail.primarySpecified = NEmail.primary;
+                                NEmail.displaySequence = email.displaySequence != null ? (int)email.displaySequence : 1;
+                                //NEmail.emailType = Email.emailType;
+                                NEmail.operaId = email.operaId;
+                                NEmail.Value = email.email;
+                                NEmail.operaIdSpecified = true;
+                                EmailRequest.NameEmail = NEmail;
+
+                                #region Response
+
+                                NameService.NameServiceSoapClient NamePortClient = new NameService.NameServiceSoapClient();
+                                bool isOperaCloudEnabled = false;
+                                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                                if (isOperaCloudEnabled)
                                 {
-                                    result = false,
-                                    responseMessage = EMailResponse.Result.Text != null ? EMailResponse.Result.Text[0].ToString(): null
+                                    NamePortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                                            Request.Username, Request.Password, Request.HotelDomain));
+                                }
+                                EMailResponse = NamePortClient.UpdateEmail(ref OGHeader, EmailRequest);
+                                if (EMailResponse.Result.resultStatusFlag != NameService.ResultStatusFlag.SUCCESS)
+                                {
+                                    return new Models.OWS.OwsResponseModel()
+                                    {
+                                        result = false,
+                                        responseMessage = EMailResponse.Result.Text != null ? EMailResponse.Result.Text[0].ToString() : null
+                                    };
+                                }
+                                #endregion
+                            }
+                            else
+                            {
+                                return new Models.OWS.OwsResponseModel
+                                {
+                                    responseMessage = "Blank email address provided",
+                                    statusCode = 9002,
+                                    result = false
                                 };
                             }
-                            #endregion
                         }
                         else
                         {
-                            NameService.InsertEmailRequest EmailRequest = new NameService.InsertEmailRequest();
-                            NameService.NameEmail NEmail = new NameService.NameEmail();
-                            NEmail.primary = true;
-                            NEmail.primarySpecified = true;
-                            //NEmail.displaySequence = 1;
-                            NEmail.emailType = email.emailType;
-                            NEmail.Value = email.email;
-                            NameService.UniqueID UId = new NameService.UniqueID();
-                            UId.type = NameService.UniqueIDType.INTERNAL;
-                            UId.Value = Request.UpdateProileRequest.ProfileID;
-                            NEmail.displaySequence = email.displaySequence != null ? (int)email.displaySequence : 1;
-                            NEmail.displaySequenceSpecified = email.displaySequence != null ? true: false;
-                            EmailRequest.NameID = UId;
-                            EmailRequest.NameEmail = NEmail;
-
-
-
-                            #region Response
-                            NameService.InsertEmailResponse InsertEmailResponse = new NameService.InsertEmailResponse();
-                            NameService.NameServiceSoapClient NamePortClient = new NameService.NameServiceSoapClient();
-                            bool isOperaCloudEnabled = false;
-                            isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
-                                            && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
-                                            && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
-                            if (isOperaCloudEnabled)
+                            if (!string.IsNullOrEmpty(email.email))
                             {
-                                NamePortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
-                                                        ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
-                                                        Request.Username, Request.Password, Request.HotelDomain));
-                            }
-                            InsertEmailResponse = NamePortClient.InsertEmail(ref OGHeader, EmailRequest);
-                            if (InsertEmailResponse.Result.resultStatusFlag != NameService.ResultStatusFlag.SUCCESS)
-                            {
-                                return new Models.OWS.OwsResponseModel()
+                                NameService.InsertEmailRequest EmailRequest = new NameService.InsertEmailRequest();
+                                NameService.NameEmail NEmail = new NameService.NameEmail();
+                                NEmail.primary = true;
+                                NEmail.primarySpecified = true;
+                                //NEmail.displaySequence = 1;
+                                NEmail.emailType = email.emailType;
+                                NEmail.Value = email.email;
+                                NameService.UniqueID UId = new NameService.UniqueID();
+                                UId.type = NameService.UniqueIDType.INTERNAL;
+                                UId.Value = Request.UpdateProileRequest.ProfileID;
+                                NEmail.displaySequence = email.displaySequence != null ? (int)email.displaySequence : 1;
+                                NEmail.displaySequenceSpecified = email.displaySequence != null ? true : false;
+                                EmailRequest.NameID = UId;
+                                EmailRequest.NameEmail = NEmail;
+                            
+
+
+                                #region Response
+                                NameService.InsertEmailResponse InsertEmailResponse = new NameService.InsertEmailResponse();
+                                NameService.NameServiceSoapClient NamePortClient = new NameService.NameServiceSoapClient();
+                                bool isOperaCloudEnabled = false;
+                                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                                if (isOperaCloudEnabled)
                                 {
-                                    result = false,
-                                    responseMessage = InsertEmailResponse.Result.Text != null ? InsertEmailResponse.Result.Text[0].Value : null
+                                    NamePortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                                            Request.Username, Request.Password, Request.HotelDomain));
+                                }
+                                InsertEmailResponse = NamePortClient.InsertEmail(ref OGHeader, EmailRequest);
+                                if (InsertEmailResponse.Result.resultStatusFlag != NameService.ResultStatusFlag.SUCCESS)
+                                {
+                                    return new Models.OWS.OwsResponseModel()
+                                    {
+                                        result = false,
+                                        responseMessage = InsertEmailResponse.Result.Text != null ? InsertEmailResponse.Result.Text[0].Value : null
+                                    };
+                                }
+                                #endregion
+                            }
+                            else
+                            {
+                                return new Models.OWS.OwsResponseModel
+                                {
+                                    responseMessage = "Blank email address provided",
+                                    statusCode = 9002,
+                                    result = false
                                 };
                             }
-                            #endregion
                         }
                     }
                     return new Models.OWS.OwsResponseModel
@@ -8261,84 +8311,108 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                     {
                         if (phone.operaId != 0)
                         {
-                            NameService.UpdatePhoneRequest PhoneRequest = new NameService.UpdatePhoneRequest();
-                            NameService.NamePhone NPhone = new NameService.NamePhone();
-                            NPhone.primary = phone.primary != null ? (bool)phone.primary : false;
-                            NPhone.primarySpecified = NPhone.primary;
-                            NPhone.displaySequence = phone.displaySequence != null ? (int)phone.displaySequence : 1;
-                            NPhone.displaySequenceSpecified = true;
-                            NPhone.phoneType = phone.phoneType;
-                            NPhone.phoneRole = phone.phoneRole;
-                            NPhone.operaId = phone.operaId;
-                            NPhone.operaIdSpecified = true;
-                            NPhone.Item = phone.PhoneNumber;
-                            PhoneRequest.NamePhone = NPhone;
-
-                            #region Response
-
-                            NameService.NameServiceSoapClient NamePortClient = new NameService.NameServiceSoapClient();
-                            bool isOperaCloudEnabled = false;
-                            isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
-                                            && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
-                                            && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
-                            if (isOperaCloudEnabled)
+                            if (!string.IsNullOrEmpty(phone.PhoneNumber))
                             {
-                                NamePortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
-                                                        ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
-                                                        Request.Username, Request.Password, Request.HotelDomain));
+                                NameService.UpdatePhoneRequest PhoneRequest = new NameService.UpdatePhoneRequest();
+                                NameService.NamePhone NPhone = new NameService.NamePhone();
+                                NPhone.primary = phone.primary != null ? (bool)phone.primary : false;
+                                NPhone.primarySpecified = NPhone.primary;
+                                NPhone.displaySequence = phone.displaySequence != null ? (int)phone.displaySequence : 1;
+                                NPhone.displaySequenceSpecified = true;
+                                NPhone.phoneType = phone.phoneType;
+                                NPhone.phoneRole = phone.phoneRole;
+                                NPhone.operaId = phone.operaId;
+                                NPhone.operaIdSpecified = true;
+                                NPhone.Item = phone.PhoneNumber;
+                                PhoneRequest.NamePhone = NPhone;
+
+                                #region Response
+
+                                NameService.NameServiceSoapClient NamePortClient = new NameService.NameServiceSoapClient();
+                                bool isOperaCloudEnabled = false;
+                                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                                if (isOperaCloudEnabled)
+                                {
+                                    NamePortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                                            Request.Username, Request.Password, Request.HotelDomain));
+                                }
+                                PhoneResponse = NamePortClient.UpdatePhone(ref OGHeader, PhoneRequest);
+                                if (PhoneResponse.Result.resultStatusFlag != NameService.ResultStatusFlag.SUCCESS)
+                                {
+                                    return new Models.OWS.OwsResponseModel()
+                                    {
+                                        result = false,
+                                        responseMessage = PhoneResponse.Result.Text != null ? PhoneResponse.Result.Text[0].Value : null,
+                                        statusCode = -1
+                                    };
+                                }
+                                #endregion
                             }
-                            PhoneResponse = NamePortClient.UpdatePhone(ref OGHeader, PhoneRequest);
-                            if (PhoneResponse.Result.resultStatusFlag != NameService.ResultStatusFlag.SUCCESS)
+                            else
                             {
                                 return new Models.OWS.OwsResponseModel()
                                 {
                                     result = false,
-                                    responseMessage = PhoneResponse.Result.Text != null ? PhoneResponse.Result.Text[0].Value : null,
-                                    statusCode = -1
+                                    responseMessage = "Null phone value passed",
+                                    statusCode = 8002
                                 };
                             }
-                            #endregion
                         }
                         else
                         {
-                            NameService.InsertPhoneRequest PhoneRequest = new NameService.InsertPhoneRequest();
-                            NameService.NamePhone NPhone = new NameService.NamePhone();
-                            NPhone.primary = true;
-                            NPhone.primarySpecified = true;
-                            NPhone.displaySequence = phone.displaySequence != null ? (int)phone.displaySequence.Value:0;
-                            NPhone.displaySequenceSpecified = phone.displaySequence != null ? true : false;
-                            NPhone.phoneType = phone.phoneType;
-                            NPhone.phoneRole = phone.phoneRole;
-                            NPhone.Item = phone.PhoneNumber;
-                            PhoneRequest.NamePhone = NPhone;
-                            NameService.UniqueID UId = new NameService.UniqueID();
-                            UId.type = NameService.UniqueIDType.INTERNAL;
-                            UId.Value = Request.UpdateProileRequest.ProfileID;
-                            PhoneRequest.NameID = UId;
-                            #region Response
-
-                            NameService.NameServiceSoapClient NamePortClient = new NameService.NameServiceSoapClient();
-                            bool isOperaCloudEnabled = false;
-                            isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
-                                            && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
-                                            && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
-                            if (isOperaCloudEnabled)
+                            if (!string.IsNullOrEmpty(phone.PhoneNumber))
                             {
-                                NamePortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
-                                                        ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
-                                                        Request.Username, Request.Password, Request.HotelDomain));
+                                NameService.InsertPhoneRequest PhoneRequest = new NameService.InsertPhoneRequest();
+                                NameService.NamePhone NPhone = new NameService.NamePhone();
+                                NPhone.primary = true;
+                                NPhone.primarySpecified = true;
+                                NPhone.displaySequence = phone.displaySequence != null ? (int)phone.displaySequence.Value : 0;
+                                NPhone.displaySequenceSpecified = phone.displaySequence != null ? true : false;
+                                NPhone.phoneType = phone.phoneType;
+                                NPhone.phoneRole = phone.phoneRole;
+                                NPhone.Item = phone.PhoneNumber;
+                                PhoneRequest.NamePhone = NPhone;
+                                NameService.UniqueID UId = new NameService.UniqueID();
+                                UId.type = NameService.UniqueIDType.INTERNAL;
+                                UId.Value = Request.UpdateProileRequest.ProfileID;
+                                PhoneRequest.NameID = UId;
+                                #region Response
+
+                                NameService.NameServiceSoapClient NamePortClient = new NameService.NameServiceSoapClient();
+                                bool isOperaCloudEnabled = false;
+                                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                                if (isOperaCloudEnabled)
+                                {
+                                    NamePortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                                            Request.Username, Request.Password, Request.HotelDomain));
+                                }
+                                InsertPhoneResponse = NamePortClient.InsertPhone(ref OGHeader, PhoneRequest);
+                                if (InsertPhoneResponse.Result.resultStatusFlag != NameService.ResultStatusFlag.SUCCESS)
+                                {
+                                    return new Models.OWS.OwsResponseModel()
+                                    {
+                                        result = false,
+                                        responseMessage = InsertPhoneResponse.Result.Text != null ? InsertPhoneResponse.Result.Text[0].Value : null,
+                                        statusCode = -1
+                                    };
+                                }
+                                #endregion
                             }
-                            InsertPhoneResponse = NamePortClient.InsertPhone(ref OGHeader, PhoneRequest);
-                            if (InsertPhoneResponse.Result.resultStatusFlag != NameService.ResultStatusFlag.SUCCESS)
+                            else
                             {
                                 return new Models.OWS.OwsResponseModel()
                                 {
                                     result = false,
-                                    responseMessage = InsertPhoneResponse.Result.Text != null ? InsertPhoneResponse.Result.Text[0].Value : null,
-                                    statusCode = -1
+                                    responseMessage = "Null phone value passed",
+                                    statusCode = 8002
                                 };
                             }
-                            #endregion
                         }
                         
                     }

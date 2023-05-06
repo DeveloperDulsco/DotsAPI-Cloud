@@ -174,6 +174,24 @@ namespace CheckinPortalCloudAPI.Helper.KIOSK
             }
         }
 
+        public bool fetchPrecheckedinStatus(string ConnectionString,string ConfirmationNumber)
+        {
+            try
+            {
+
+                var spResponse = new DapperHelper().ExecuteSP<Models.KIOSK.DB.PaymentTypeMasterModel>("Usp_GetPrecheckedInReservationStatus",
+                    ConnectionString,new { ReservationNumber = ConfirmationNumber }).ToList();
+                if (spResponse != null && spResponse.Count > 0)
+                    return true;
+                else
+                    return false;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         public List<Models.KIOSK.DB.CountryCodeMasterModel> FetchCountryMasters(string ConnectionString)
         {
             try
