@@ -127,6 +127,7 @@ namespace CheckinPortalCloudAPI.Controllers
                 else
                     httpClient = new HttpClient();
 
+                httpClient.Timeout = new TimeSpan(0, 5, 0);
                 httpClient.BaseAddress = new Uri(ConfigurationManager.AppSettings["AdyenPOIPaymentURL"]);
                 httpClient.DefaultRequestHeaders.Clear();
                 httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -357,8 +358,8 @@ namespace CheckinPortalCloudAPI.Controllers
                 }
                 else
                     httpClient = new HttpClient();
-                
 
+                httpClient.Timeout = new TimeSpan(0, 5, 0);
 
                 Models.AdyenPayment.TerminalRequest terminalRequest = new Models.AdyenPayment.TerminalRequest()
                 {
@@ -523,6 +524,13 @@ namespace CheckinPortalCloudAPI.Controllers
                                     new LogHelper().Debug("Processing funding source based on schema returned null from the DB", paymentRequest.RequestIdentifier, "CardAcquisition", "API", "Payment");
                                 }
                             }
+                            else if(!string.IsNullOrEmpty(paymentResponseObject.CardType))
+                            {
+                                if(paymentResponseObject.CardType.ToUpper().Equals("CUP") || paymentResponseObject.CardType.ToUpper().Equals("JCB"))
+                                {
+                                    paymentResponseObject.FundingSource = "DEBIT";
+                                }
+                            }
                         }
                         catch(Exception ex)
                         {
@@ -634,6 +642,7 @@ namespace CheckinPortalCloudAPI.Controllers
                 else
                     httpClient = new HttpClient();
 
+                httpClient.Timeout = new TimeSpan(0, 5, 0);
                 httpClient.BaseAddress = new Uri(ConfigurationManager.AppSettings["AdyenCheckoutURL"]);
                 httpClient.DefaultRequestHeaders.Clear();
                 httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -752,7 +761,7 @@ namespace CheckinPortalCloudAPI.Controllers
                 }
                 else
                     httpClient = new HttpClient();
-
+                httpClient.Timeout = new TimeSpan(0, 5, 0);
                 httpClient.BaseAddress = new Uri(ConfigurationManager.AppSettings["AdyenCheckoutURL"]);
                 httpClient.DefaultRequestHeaders.Clear();
                 httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -985,7 +994,7 @@ namespace CheckinPortalCloudAPI.Controllers
                 }
                 else
                     httpClient = new HttpClient();
-
+                httpClient.Timeout = new TimeSpan(0, 5, 0);
                 httpClient.DefaultRequestHeaders.Clear();
                 httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 httpClient.DefaultRequestHeaders.Add("x-api-key", paymentRequest.ApiKey);
@@ -1103,7 +1112,7 @@ namespace CheckinPortalCloudAPI.Controllers
                 }
                 else
                     httpClient = new HttpClient();
-
+                httpClient.Timeout = new TimeSpan(0, 5, 0);
                 httpClient.BaseAddress = new Uri(ConfigurationManager.AppSettings["AdyenCheckoutURL"]);
                 httpClient.DefaultRequestHeaders.Clear();
                 httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -1182,7 +1191,7 @@ namespace CheckinPortalCloudAPI.Controllers
                 }
                 else
                     httpClient = new HttpClient();
-
+                httpClient.Timeout = new TimeSpan(0, 5, 0);
                 //httpClient.BaseAddress = new Uri(ConfigurationManager.AppSettings["AdyenPaymentURL"]);
                 httpClient.DefaultRequestHeaders.Clear();
                 httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -1358,7 +1367,7 @@ namespace CheckinPortalCloudAPI.Controllers
                 }
                 else
                     httpClient = new HttpClient();
-
+                httpClient.Timeout = new TimeSpan(0, 5, 0);
                 //httpClient.BaseAddress = new Uri(ConfigurationManager.AppSettings["AdyenPaymentURL"]);
                 httpClient.DefaultRequestHeaders.Clear();
                 httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -1527,7 +1536,7 @@ namespace CheckinPortalCloudAPI.Controllers
                 }
                 else
                     httpClient = new HttpClient();
-
+                httpClient.Timeout = new TimeSpan(0, 5, 0);
                 httpClient.DefaultRequestHeaders.Clear();
                 httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 httpClient.DefaultRequestHeaders.Add("x-api-key", paymentRequest.ApiKey);
@@ -1639,7 +1648,7 @@ namespace CheckinPortalCloudAPI.Controllers
                 }
                 else
                     httpClient = new HttpClient();
-
+                httpClient.Timeout = new TimeSpan(0, 5, 0);
                 //httpClient.BaseAddress = new Uri(ConfigurationManager.AppSettings["AdyenPaymentURL"]);
                 httpClient.DefaultRequestHeaders.Clear();
                 httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -1968,7 +1977,7 @@ namespace CheckinPortalCloudAPI.Controllers
                 }
                 else
                     httpClient = new HttpClient();
-
+                httpClient.Timeout = new TimeSpan(0, 5, 0);
                 httpClient.BaseAddress = new Uri(ConfigurationManager.AppSettings["AdyenCheckoutURL"]);
                 httpClient.DefaultRequestHeaders.Clear();
                 httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -2297,7 +2306,7 @@ namespace CheckinPortalCloudAPI.Controllers
                 }
                 else
                     httpClient = new HttpClient();
-
+                httpClient.Timeout = new TimeSpan(0, 5, 0);
                 //httpClient.BaseAddress = new Uri(ConfigurationManager.AppSettings["AdyenPaymentURL"]);
                 httpClient.DefaultRequestHeaders.Clear();
                 httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
