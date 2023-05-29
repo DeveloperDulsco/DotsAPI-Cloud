@@ -6673,6 +6673,77 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
         {
             try
             {
+                var ReservationResult = GetReservationDetailsFromPMS(new OwsRequestModel() {
+                    HotelDomain = Request.HotelDomain,
+                    KioskID = Request.KioskID,
+                    Username = Request.Username,
+                    Password = Request.Password,
+                    SystemType = Request.SystemType,
+                    Language = Request.Language,
+                    LegNumber = Request.LegNumber,
+                    ChainCode = Request.ChainCode,
+                    DestinationEntityID = Request.DestinationEntityID,
+                    DestinationSystemType = Request.DestinationSystemType,
+                    FetchBookingRequest = new FetchBookingRequestModel()
+                    {
+                        ReservationNameID = Request.OperaReservation.ReservationNameID
+                    }
+                });
+
+                if (ReservationResult != null && ReservationResult.result )
+                {
+                    var reservationList = (List<Models.OWS.OperaReservation>)ReservationResult.responseData;
+                    var Folioresult = getFolioAsAList(new OwsRequestModel()
+                    {
+                        HotelDomain = Request.HotelDomain,
+                        KioskID = Request.KioskID,
+                        Username = Request.Username,
+                        Password = Request.Password,
+                        SystemType = Request.SystemType,
+                        Language = Request.Language,
+                        LegNumber = Request.LegNumber,
+                        ChainCode = Request.ChainCode,
+                        DestinationEntityID = Request.DestinationEntityID,
+                        DestinationSystemType = Request.DestinationSystemType,
+                        FetchFolioRequest = new FetchFolioRequest()
+                        {
+                            ReservationNameID = Request.OperaReservation.ReservationNameID,
+                            ProfileID = reservationList.First().GuestProfiles.First().PmsProfileID
+                        }
+                    });
+                    if(Folioresult != null && Folioresult.result)
+                    {
+                        var folio = (Models.OWS.FolioModel)Folioresult.responseData;
+                        if(folio.ReservationBalance != 0)
+                        {
+                            return new Models.OWS.OwsResponseModel()
+                            {
+                                responseMessage = "Failled to processing check out because reservation balance is greater than 0",
+                                statusCode = 1003,
+                                result = false
+                            };
+                        }
+                    }
+                    else
+                    {
+                        return new Models.OWS.OwsResponseModel()
+                        {
+                            responseMessage = "Failled to fetch the reservation folio balance before processing check out",
+                            statusCode = 1003,
+                            result = false
+                        };
+                    }
+                }
+                else
+                {
+                    return new Models.OWS.OwsResponseModel()
+                    {
+                        responseMessage = "Failled to fetch the reservation details before processing check out",
+                        statusCode = 1003,
+                        result = false
+                    };
+                }
+
                 new LogHelper().Debug("Checkout request : " + JsonConvert.SerializeObject(Request), Request.OperaReservation.ReservationNameID, "GuestCheckOut", "API", "OWS");
                 #region Request
 
