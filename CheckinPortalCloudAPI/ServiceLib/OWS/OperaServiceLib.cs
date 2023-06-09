@@ -6723,6 +6723,24 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                 result = false
                             };
                         }
+                        else
+                        {
+                            if(folio.FolioWindows != null)
+                            {
+                                foreach(var window in folio.FolioWindows)
+                                {
+                                    if(window.BalanceAmount != 0)
+                                    {
+                                        return new Models.OWS.OwsResponseModel()
+                                        {
+                                            responseMessage = "Failled to processing check out because folio window balance is greater than 0",
+                                            statusCode = 1003,
+                                            result = false
+                                        };
+                                    }
+                                }
+                            }
+                        }
                     }
                     else
                     {

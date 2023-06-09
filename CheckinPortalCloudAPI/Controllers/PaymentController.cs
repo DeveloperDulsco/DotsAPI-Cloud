@@ -71,7 +71,7 @@ namespace CheckinPortalCloudAPI.Controllers
                                 },
                                 TokenRequestedType = request.PaymentTypes != null && request.PaymentTypes.Value.ToString().Equals("wechatpay_pos") ?null : TokenRequestedType.Customer.ToString(),
 
-                                SaleToAcquirerData = request.PaymentTypes != null && request.PaymentTypes.Value.ToString().Equals("wechatpay_pos") ? 
+                                SaleToAcquirerData = request.PaymentTypes != null && (request.PaymentTypes.Value.ToString().Equals("wechatpay_pos")|| request.PaymentTypes.Value.ToString().Equals("alipay")) ? 
                                                             null : 
                                                         request.TransactionType.Equals(Models.AdyenPayment.TransactionType.PreAuth) ? "authorisationType=PreAuth&shopperReference=" + (string.IsNullOrEmpty(request.ReservationNameID) ? request.MerchantReference.Replace("-", "") : request.ReservationNameID) + "&recurringContract=RECURRING,ONECLICK" :
                                                        "captureDelayHours=0&shopperReference=" + (string.IsNullOrEmpty(request.ReservationNameID) ? request.MerchantReference.Replace("-", "") : request.ReservationNameID) + "&recurringContract=RECURRING,ONECLICK"
@@ -84,13 +84,14 @@ namespace CheckinPortalCloudAPI.Controllers
                                     Currency = ConfigurationManager.AppSettings["PaymentCurrency"].ToString(),
                                     RequestedAmount = request.Amount.Value
                                 },
-                                TransactionConditions = request.PaymentTypes != null && request.PaymentTypes.Value.ToString().Equals("wechatpay_pos") ?  new Models.AdyenPayment.TransactionConditions()
+                                TransactionConditions = request.PaymentTypes != null && (request.PaymentTypes.Value.ToString().Equals("wechatpay_pos") || request.PaymentTypes.Value.ToString().Equals("alipay")) ?  new Models.AdyenPayment.TransactionConditions()
                                 {
                                     AllowedPaymentBrand = new string[] { request.PaymentTypes.Value.ToString() }
                                 } :null
 
                             },
-                            PaymentData = request.PaymentTypes != null && request.PaymentTypes.Value.ToString().Equals("wechatpay_pos") ? null : new Models.AdyenPayment.PaymentData()
+                            PaymentData = request.PaymentTypes != null && 
+                            (request.PaymentTypes.Value.ToString().Equals("wechatpay_pos") || request.PaymentTypes.Value.ToString().Equals("alipay")) ? null : new Models.AdyenPayment.PaymentData()
                             {
                                 CardAcquisitionReference = (!string.IsNullOrEmpty(request.CardAquisitionID) && request.CardAquisitionID != "0") ? new Models.AdyenPayment.TransactionIdentification()
                                 {
