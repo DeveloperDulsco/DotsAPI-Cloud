@@ -69,9 +69,14 @@ namespace CheckinPortalCloudAPI.Controllers
                                     TransactionID = request.MerchantReference,
                                     TimeStamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")
                                 },
-                                TokenRequestedType = request.PaymentTypes != null && request.PaymentTypes.Value.ToString().Equals("wechatpay_pos") ?null : TokenRequestedType.Customer.ToString(),
+                                TokenRequestedType = request.PaymentTypes != null && ((request.PaymentTypes.Value.ToString().Equals("wechatpay_pos"))
+                                || (request.PaymentTypes.Value.ToString().Equals("alipay"))
+                                ) 
+                                ? null : TokenRequestedType.Customer.ToString(),
 
-                                SaleToAcquirerData = request.PaymentTypes != null && request.PaymentTypes.Value.ToString().Equals("wechatpay_pos") ? 
+                                SaleToAcquirerData = request.PaymentTypes != null && ((request.PaymentTypes.Value.ToString().Equals("wechatpay_pos"))
+                                || (request.PaymentTypes.Value.ToString().Equals("alipay"))
+                                ) ? 
                                                             null : 
                                                         request.TransactionType.Equals(Models.AdyenPayment.TransactionType.PreAuth) ? "authorisationType=PreAuth&shopperReference=" + (string.IsNullOrEmpty(request.ReservationNameID) ? request.MerchantReference.Replace("-", "") : request.ReservationNameID) + "&recurringContract=RECURRING,ONECLICK" :
                                                        "captureDelayHours=0&shopperReference=" + (string.IsNullOrEmpty(request.ReservationNameID) ? request.MerchantReference.Replace("-", "") : request.ReservationNameID) + "&recurringContract=RECURRING,ONECLICK"
@@ -84,13 +89,15 @@ namespace CheckinPortalCloudAPI.Controllers
                                     Currency = ConfigurationManager.AppSettings["PaymentCurrency"].ToString(),
                                     RequestedAmount = request.Amount.Value
                                 },
-                                TransactionConditions = request.PaymentTypes != null && request.PaymentTypes.Value.ToString().Equals("wechatpay_pos") ?  new Models.AdyenPayment.TransactionConditions()
+                                TransactionConditions = request.PaymentTypes != null && ((request.PaymentTypes.Value.ToString().Equals("wechatpay_pos")) || (request.PaymentTypes.Value.ToString().Equals("alipay"))) ?  new Models.AdyenPayment.TransactionConditions()
                                 {
                                     AllowedPaymentBrand = new string[] { request.PaymentTypes.Value.ToString() }
                                 } :null
 
                             },
-                            PaymentData = request.PaymentTypes != null && request.PaymentTypes.Value.ToString().Equals("wechatpay_pos") ? null : new Models.AdyenPayment.PaymentData()
+                            PaymentData = request.PaymentTypes != null && ((request.PaymentTypes.Value.ToString().Equals("wechatpay_pos"))
+                            || (request.PaymentTypes.Value.ToString().Equals("alipay"))
+                            ) ? null : new Models.AdyenPayment.PaymentData()
                             {
                                 CardAcquisitionReference = (!string.IsNullOrEmpty(request.CardAquisitionID) && request.CardAquisitionID != "0") ? new Models.AdyenPayment.TransactionIdentification()
                                 {
@@ -195,7 +202,7 @@ namespace CheckinPortalCloudAPI.Controllers
                                     Models.AdyenPayment.AdditionalInfo additional = new Models.AdyenPayment.AdditionalInfo();
                                     additional.key = HttpUtility.UrlDecode(subToken[0]);
                                     additional.value = HttpUtility.UrlDecode(subToken[1]);
-                                    if (additional.key.Equals("recurring.recurringDetailReference")) 
+                                    if (additional.key.Equals("recurring.recurringDetailReference"))
                                         paymentResponseObject.PaymentToken = additional.value;
                                     if (additional.key.Equals("paymentMethod"))
                                         paymentResponseObject.CardType = additional.value;
@@ -212,7 +219,7 @@ namespace CheckinPortalCloudAPI.Controllers
                             }
                             paymentResponseObject.additionalInfos = additionalInfos;
                         }
-                        
+
 
                         if (PaymentResp.PaymentReceipt != null && PaymentResp.PaymentReceipt.Length > 0)
                         {
@@ -266,8 +273,8 @@ namespace CheckinPortalCloudAPI.Controllers
                         paymentResponseObject.Amount = PaymentResp.PaymentResult.AmountsResp != null ? PaymentResp.PaymentResult.AmountsResp.AuthorizedAmount : null;
                         paymentResponseObject.AuthCode = PaymentResp.PaymentResult.PaymentAcquirerData != null ? PaymentResp.PaymentResult.PaymentAcquirerData.ApprovalCode : null;
                         paymentResponseObject.MaskCardNumber = PaymentResp.PaymentResult.PaymentInstrumentData != null ? (PaymentResp.PaymentResult.PaymentInstrumentData.CardData != null ? PaymentResp.PaymentResult.PaymentInstrumentData.CardData.MaskedPAN : null) : null;
-                        paymentResponseObject.MaskCardNumber = paymentResponseObject.CardType != null && paymentResponseObject.CardType.Equals("wechatpay_pos") ? paymentResponseObject.PspReference : paymentResponseObject.MaskCardNumber;
-                        paymentResponseObject.FundingSource = paymentResponseObject.CardType != null && paymentResponseObject.CardType.Equals("wechatpay_pos") ? "DEBIT" : null;
+                        paymentResponseObject.MaskCardNumber = paymentResponseObject.CardType != null && ((paymentResponseObject.CardType.Equals("wechatpay_pos"))|| (paymentResponseObject.CardType.Equals("alipay"))) ? paymentResponseObject.PspReference : paymentResponseObject.MaskCardNumber;
+                        paymentResponseObject.FundingSource = paymentResponseObject.CardType != null && ((paymentResponseObject.CardType.Equals("wechatpay_pos"))|| (paymentResponseObject.CardType.Equals("alipay"))) ? "DEBIT" : null;
                         new LogHelper().Debug("Payment response : " + JsonConvert.SerializeObject(paymentResponseObject), paymentRequest.RequestIdentifier, "POIMakePayment", "API", "Payment");
                         new LogHelper().Debug("Make Payment response completed", paymentRequest.RequestIdentifier, "POIMakePayment", "API", "Payment");
                         return new Models.AdyenPayment.AdyenEcomResponse()
@@ -616,6 +623,41 @@ namespace CheckinPortalCloudAPI.Controllers
                 };
             }
 
+        }
+        [HttpPost]
+        [ActionName("GetPaymentList")]
+        public async Task<Models.Local.LocalResponseModel> FetchPaymentList(Models.Local.DB.PaymentListRequestModel listRequestModel)
+        {
+            try
+            {
+                List<Models.KIOSK.PaymentTypeMasterModel> resultSet = Helper.KIOSK.DBHelper.Instance.FetchPaymentTypeMasters(ConfigurationManager.AppSettings["SaavyConnectionString"]);
+                if (resultSet != null)
+                {
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        responseData = resultSet,
+                        result = true,
+                        responseMessage = "Success",
+                        statusCode = 101
+                    };
+                }
+                else
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Failled to Fetch the document master",
+                        statusCode = -1
+                    };
+            }
+            catch (Exception ex)
+            {
+                return new Models.Local.LocalResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message,
+                    statusCode = -1
+                };
+            }
         }
 
 

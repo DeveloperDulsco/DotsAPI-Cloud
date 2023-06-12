@@ -1013,6 +1013,63 @@ namespace CheckinPortalCloudAPI.Helper.Local
             }
 
         }
+        public List<Models.Local.DB.PaymentTransactionDetails> FetchPaymentTransactionDetailsByPaging(Models.Local.DB.PaymentListRequestModel paymentList, string ConnectionString)
+        {
+            try
+            {
+                SQLHelpers.Instance.SetConnectionString(ConnectionString);
+                #region Parameters
+                SqlParameter reservationNoParameter = new SqlParameter()
+                {
+                    ParameterName = "@ReservationNumber",
+                    Value = paymentList.ReservationNumber,
+                    SqlDbType = SqlDbType.VarChar
+                };
+                SqlParameter pageNumberParameter = new SqlParameter()
+                {
+                    ParameterName = "@PageNumber",
+                    Value = paymentList.PageNumber,
+                    SqlDbType = SqlDbType.Int
+                };
+                SqlParameter pageSizeParameter = new SqlParameter()
+                {
+                    ParameterName = "@PageSize",
+                    Value = paymentList.Length,
+                    SqlDbType = SqlDbType.Int
+                };
+                SqlParameter searchParameter = new SqlParameter()
+                {
+                    ParameterName = "@search",
+                    Value = paymentList.FilterBy,
+                    SqlDbType = SqlDbType.NVarChar
+                };
+                SqlParameter sortParameter = new SqlParameter()
+                {
+                    ParameterName = "@Sort",
+                    Value = paymentList.SortingOrder,
+                    SqlDbType = SqlDbType.VarChar
+                };
+                SqlParameter sortByParameter = new SqlParameter()
+                {
+                    ParameterName = "@SortBy",
+                    Value = paymentList.SortBy,
+                    SqlDbType = SqlDbType.NVarChar
+                };
+                SqlParameter activeParameter = new SqlParameter()
+                {
+                    ParameterName = "@IsActive",
+                    Value = true,
+                    SqlDbType = SqlDbType.Bit
+                };
+                #endregion
 
+                var ResultTable = SQLHelpers.Instance.ExecuteSP("Usp_FetchPaymentTransactionsForPortal_Test_WithPaging", reservationNoParameter, pageNumberParameter, pageSizeParameter, searchParameter, sortParameter, sortByParameter, activeParameter);
+                return this.DataTableToList<Models.Local.DB.PaymentTransactionDetails>(ResultTable);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
     }
 }

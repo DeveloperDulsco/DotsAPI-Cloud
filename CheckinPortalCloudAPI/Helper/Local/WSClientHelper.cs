@@ -2609,6 +2609,131 @@ namespace CheckinPortalCloudAPI.Helper.Local
                 };
             }
         }
+        public async Task<Models.Local.LocalResponseModel> TopUpPayment(string reservationNameID, Models.AdyenPayment.PaymentRequest paymentRequest, string groupName, Models.Local.ServiceParameters serviceParameters)
+        {
+            try
+            {
+                new LogHelper().Debug("Posting payment using web api", reservationNameID, "MakePayment", serviceParameters.ClientID, groupName);
+                HttpClient httpClient = serviceParameters.isProxyEnableForLocalAPI ? getProxyClient(groupName, serviceParameters.LocalAPIProxyHost, serviceParameters.LocalAPIProxyUN, serviceParameters.LocalAPIProxyPswd, serviceParameters.ClientID) : new HttpClient();
+                if (httpClient == null)
+                {
+                    new LogHelper().Debug("Failled to top up payment using web api due to proxy error", reservationNameID, "TopUpPayment", serviceParameters.ClientID, groupName);
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Failled to generate the proxy http client"
+                    };
+                }
+                httpClient.DefaultRequestHeaders.Clear();
+                string requestString = JsonConvert.SerializeObject(paymentRequest, Formatting.None);
+                new LogHelper().Debug("web api url :- " + serviceParameters.LocalAPIURL + @"/ows/TopUpPayment", reservationNameID, "TopUpPayment", serviceParameters.ClientID, groupName);
+                new LogHelper().Debug("web api request :- " + requestString, reservationNameID, "TopUpPayment", serviceParameters.ClientID, groupName);
+                var requestContent = new StringContent(requestString, Encoding.UTF8, "application/json");
+                HttpResponseMessage response = await httpClient.PostAsync(serviceParameters.LocalAPIURL + @"/Payment/PaymentTopUp", requestContent);
+                if (response != null)
+                {
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string apiResponse = await response.Content.ReadAsStringAsync();
+                        new LogHelper().Debug("web API response :- " + apiResponse, reservationNameID, "TopUpPayment", serviceParameters.ClientID, groupName);
+                        Models.Local.DB.OnlinePaymentResponseModel AdyenResponse = JsonConvert.DeserializeObject<Models.Local.DB.OnlinePaymentResponseModel>(apiResponse);
 
+                        return new Models.Local.LocalResponseModel()
+                        {
+                            result = true,
+                            responseData = AdyenResponse.ResponseObject,
+                            responseMessage = response.ReasonPhrase
+                        };
+                    }
+                    else
+                    {
+                        new LogHelper().Debug("Failled to post payment using web api due to HTTP error : " + response.ReasonPhrase, reservationNameID, "TopUpPayment", serviceParameters.ClientID, groupName);
+                        return new Models.Local.LocalResponseModel()
+                        {
+                            result = false,
+                            responseMessage = response.ReasonPhrase
+                        };
+                    }
+                }
+                else
+                {
+                    new LogHelper().Debug("Failled to post payment using web api due to null returned from the local web api", reservationNameID, "TopUpPayment", serviceParameters.ClientID, groupName);
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Local web API returned null"
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                new LogHelper().Error(ex, reservationNameID, "TopUpPayment", serviceParameters.ClientID, groupName);
+                return new Models.Local.LocalResponseModel()
+                {
+                    result = false,
+                    responseMessage = "Generic Exception : " + ex.Message
+                };
+            }
+        }
+        public async Task<Models.Local.LocalResponseModel> FetchPaymentTransactionDetails(string reservationNameID, Models.Local.LocalRequestModel localRequest, string groupName, Models.Local.ServiceParameters serviceParameters)
+        {
+            try
+            {
+                new LogHelper().Debug("Fetching transaction in local DB using web api", reservationNameID, "FetchPaymentTransactionDetails", serviceParameters.ClientID, groupName);
+                HttpClient httpClient = serviceParameters.isProxyEnableForLocalAPI ? getProxyClient(groupName, serviceParameters.LocalAPIProxyHost, serviceParameters.LocalAPIProxyUN, serviceParameters.LocalAPIProxyPswd, serviceParameters.ClientID) : new HttpClient();
+                if (httpClient == null)
+                {
+                    new LogHelper().Debug("Failled to fetch transaciondetails in local DB using web api due to proxy error", reservationNameID, "FetchPaymentTransactionDetails", serviceParameters.ClientID, groupName);
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Failled to generate the proxy http client"
+                    };
+                }
+                httpClient.DefaultRequestHeaders.Clear();
+                string requestString = JsonConvert.SerializeObject(localRequest, Formatting.None);
+                new LogHelper().Debug("web api url :- " + serviceParameters.LocalAPIURL + @"/local/FetchReservationTrackDetailStatus", reservationNameID, "FetchPaymentTransactionDetails", serviceParameters.ClientID, groupName);
+                new LogHelper().Debug("web api request :- " + requestString, reservationNameID, "FetchPaymentTransactionDetails", serviceParameters.ClientID, groupName);
+                var requestContent = new StringContent(requestString, Encoding.UTF8, "application/json");
+                HttpResponseMessage response = await httpClient.PostAsync(serviceParameters.LocalAPIURL + @"/local/FetchPaymentTransactionDetails", requestContent);
+                if (response != null)
+                {
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string apiResponse = await response.Content.ReadAsStringAsync();
+                        new LogHelper().Debug("web API response :- " + apiResponse, reservationNameID, "FetchPaymentTransactionDetails", serviceParameters.ClientID, groupName);
+                        Models.Local.LocalResponseModel localResponse = JsonConvert.DeserializeObject<Models.Local.LocalResponseModel>(apiResponse);
+                        return localResponse;
+                    }
+                    else
+                    {
+                        new LogHelper().Debug("Failled to fetch transaction details in local DB using web api due to HTTP error : " + response.ReasonPhrase, reservationNameID, "FetchPaymentTransactionDetails", serviceParameters.ClientID, groupName);
+                        return new Models.Local.LocalResponseModel()
+                        {
+                            result = false,
+                            responseMessage = response.ReasonPhrase
+                        };
+                    }
+                }
+                else
+                {
+                    new LogHelper().Debug("Failled to fetch reservation track in local DB using web api due to null returned from the local web api", reservationNameID, "FetchReservationTracjLocally", serviceParameters.ClientID, groupName);
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Local web API returned null"
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                new LogHelper().Error(ex, reservationNameID, "FetchReservationTracjLocally", serviceParameters.ClientID, groupName);
+                return new Models.Local.LocalResponseModel()
+                {
+                    result = false,
+                    responseMessage = "Generic Exception : " + ex.Message
+                };
+            }
+        }
     }
 }

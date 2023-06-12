@@ -2362,6 +2362,356 @@ namespace CheckinPortalCloudAPI.Controllers
             Models.Local.PushReservationRequest reservationRequest = JsonConvert.DeserializeObject<Models.Local.PushReservationRequest>(localRequest.RequestObject.ToString());
             return await new Helper.Local.LocalAPI().PushReservationLocally(reservationRequest);
         }
+        [HttpPost]
+        [ActionName("FetchPaymentTransactionDetailsByPaging")]
+        public async Task<Models.Local.LocalResponseModel> FetchPaymentTransactionDetailsByPaging(Models.Local.LocalRequestModel localRequest)
+        {
+            try
+            {
+                Models.Local.DB.PaymentListRequestModel fetchPaymentRequest = JsonConvert.DeserializeObject<Models.Local.DB.PaymentListRequestModel>(localRequest.RequestObject.ToString());
+                if (fetchPaymentRequest != null)
+                {
+                    List<Models.Local.DB.PaymentTransactionDetails> transactionlist = Helper.Local.DBHelper.Instance.FetchPaymentTransactionDetailsByPaging(fetchPaymentRequest, ConfigurationManager.AppSettings["SaavyConnectionString"]);
+                    if (transactionlist != null)
+                    {
+                        return new Models.Local.LocalResponseModel()
+                        {
+                            result = true,
+                            responseMessage = "Success",
+                            statusCode = 101,
+                            responseData = transactionlist
+
+                        };
+                    }
+                    else
+                        return new Models.Local.LocalResponseModel()
+                        {
+                            result = false,
+                            responseMessage = "Failled to insert the data",
+                            statusCode = -1
+                        };
+                }
+                else
+                {
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Request object can not be null",
+                        statusCode = -1
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new Models.Local.LocalResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message,
+                    statusCode = -1
+                };
+            }
+
+        }
+        public async Task<Models.Local.LocalResponseModel> RenewTopAndUpdateOpera(Models.Local.LocalRequestModel localRequest)
+        {
+            try
+            {
+                Models.Local.DB.FetchPaymentTransactionList PaymentTransactionList = null;
+                #region Fetching Transaction Details
+                Models.Local.PaymentTopUpRequests reservationRequest = JsonConvert.DeserializeObject<Models.Local.PaymentTopUpRequests>(localRequest.RequestObject.ToString());
+                new LogHelper().Log("Fetching Transaction Details", reservationRequest.PaymentTopUpRequest.ReservationNameID, "RenewTopAndUpdateOpera", reservationRequest.ServiceParameters.ClientID, "RenewTopAndUpdateOpera");
+
+                var localResponse = await new WSClientHelper().FetchPaymentTransactionDetails(reservationRequest.PaymentTopUpRequest.ReservationNameID, new Models.Local.LocalRequestModel
+                    ()
+                {
+                    RequestObject = new FetchPaymentRequest() { ReservationNameID = reservationRequest.PaymentTopUpRequest.ReservationNameID }
+                }, "RenewTopAndUpdateOpera", reservationRequest.ServiceParameters);
+                if (!localResponse.result)
+                {
+                    new LogHelper().Log("Failled to fetch transactiondetails with reason :- " + localResponse.responseMessage, reservationRequest.PaymentTopUpRequest.ReservationNameID, "RenewTopAndUpdateOpera", reservationRequest.ServiceParameters.ClientID, "RenewTopAndUpdateOpera");
+                    new LogHelper().Warn("Failled to fetch transactiondetails with reason :- " + localResponse.responseMessage, reservationRequest.PaymentTopUpRequest.ReservationNameID, "RenewTopAndUpdateOpera", reservationRequest.ServiceParameters.ClientID, "RenewTopAndUpdateOpera");
+                }
+
+                if (localResponse.responseData == null)
+                {
+                    new LogHelper().Log("Failled to fetch transactiondetails with reason :- API response data is NULL" + localResponse.responseMessage, reservationRequest.PaymentTopUpRequest.ReservationNameID, "RenewTopAndUpdateOpera", reservationRequest.ServiceParameters.ClientID, "RenewTopAndUpdateOpera");
+                    new LogHelper().Warn("Failled to fetch transactiondetails with reason :- API response data is NULL" + localResponse.responseMessage, reservationRequest.PaymentTopUpRequest.ReservationNameID, "RenewTopAndUpdateOpera", reservationRequest.ServiceParameters.ClientID, "RenewTopAndUpdateOpera");
+                }
+                else
+                {
+                    new LogHelper().Debug("Converting API json to object", reservationRequest.PaymentTopUpRequest.ReservationNameID, "RenewTopAndUpdateOpera", reservationRequest.ServiceParameters.ClientID, "RenewTopAndUpdateOpera");
+                    try
+                    {
+                        PaymentTransactionList = JsonConvert.DeserializeObject<List<Models.Local.DB.FetchPaymentTransactionList>>(localResponse.responseData.ToString()).FirstOrDefault();
+                        new LogHelper().Log("Transactiondetails fetched successfully", reservationRequest.PaymentTopUpRequest.ReservationNameID, "RenewTopAndUpdateOpera", reservationRequest.ServiceParameters.ClientID, "RenewTopAndUpdateOpera");
+                    }
+                    catch (Exception ex)
+                    {
+                        new LogHelper().Error(ex, reservationRequest.PaymentTopUpRequest.ReservationNameID, "RenewTopAndUpdateOpera", reservationRequest.ServiceParameters.ClientID, "RenewTopAndUpdateOpera");
+                        new LogHelper().Log("Failled to covert API response to object", reservationRequest.PaymentTopUpRequest.ReservationNameID, "RenewTopAndUpdateOpera", reservationRequest.ServiceParameters.ClientID, "RenewTopAndUpdateOpera");
+                        new LogHelper().Warn("Failled to fetch profile documents with reason :- " + ex.Message, reservationRequest.PaymentTopUpRequest.ReservationNameID, "RenewTopAndUpdateOpera", reservationRequest.ServiceParameters.ClientID, "RenewTopAndUpdateOpera");
+                        new LogHelper().Debug("Failled to fetch profile documents with reason :- " + ex.Message, reservationRequest.PaymentTopUpRequest.ReservationNameID, "RenewTopAndUpdateOpera", reservationRequest.ServiceParameters.ClientID, "RenewTopAndUpdateOpera");
+                    }
+
+                }
+                #endregion
+                if (PaymentTransactionList != null)
+                {
+                    #region TopUp Payment
+
+                    new LogHelper().Debug("Top up payment  for Payment No. : " + reservationRequest.PaymentTopUpRequest.PaymentID + " in Saavy Pay", reservationRequest.PaymentTopUpRequest.ReservationNameID, "RenewTopAndUpdateOpera", reservationRequest.ServiceParameters.ClientID, "RenewTopAndUpdateOpera");
+                    localResponse = await new WSClientHelper().TopUpPayment(reservationRequest.PaymentTopUpRequest.ReservationNameID, new Models.AdyenPayment.PaymentRequest()
+                    {
+
+                        ApiKey = reservationRequest.PaymentTopUpRequest.PaymentConfig.apiKey,//"AQE8hmfxKYPNbx1Gw0m/n3Q5qf3Ve4pMG4poTXZfyH24jVVSjdNzHdVRECNNGvR76GfRHRyLpekc3k9gNWVvEMFdWw2+5HzctViMSCJMYAc=-LH/Sw5IzPwRarzJ079F156FVhdr56r5Nte/Dm6QgWzM=-Bx(zZ8J,,]VTQkd.",
+                        merchantAccount = reservationRequest.PaymentTopUpRequest.PaymentConfig.MerchantAccount,
+                        //"SBS_POS",
+                        RequestIdentifier = reservationRequest.PaymentTopUpRequest.ReservationNameID,//"309445",
+                        RequestObject = new Models.AdyenPayment.CaptureRequest()
+                        {
+                            Amount = Convert.ToDecimal(reservationRequest.PaymentTopUpRequest.Amount.ToString("0.00")),//100, 
+                            OrginalPSPRefernce = PaymentTransactionList.ParentPspRefereceNumber,//"MJXQ48LWRRWZNN82",
+                            adjustAuthorisationData = PaymentTransactionList.AdjustAuthorisationData
+
+                        }
+
+
+
+                    }, "RenewTopAndUpdateOpera", reservationRequest.ServiceParameters);
+                    string ResponsePaymentMessage = "";
+
+
+                    if (localResponse.result)
+                    {
+                        if (localResponse.responseData != null)
+                        {
+                            Models.Local.PaymentResponse responsedata = (Models.Local.PaymentResponse)localResponse.responseData;
+                            if (responsedata != null)
+                            {
+                                ResponsePaymentMessage = "Transaction topup successfull";
+                                new LogHelper().Debug("Transaction topup successfull. : " + reservationRequest.PaymentTopUpRequest.PaymentID + " ", reservationRequest.PaymentTopUpRequest.ReservationNameID, "RenewTopAndUpdateOpera", reservationRequest.ServiceParameters.ClientID, "RenewTopAndUpdateOpera");
+                                string transactionType = Models.Local.TransactionType.PreAuth.ToString();
+                                Models.Local.PaymentHeader payment = new Models.Local.PaymentHeader();
+                                payment.TransactionID = PaymentTransactionList.TransactionID.ToString();
+                                payment.TransactionType = transactionType;
+                                payment.IsActive = false;
+                                payment.ResponseMessage = "Transction modified";
+                                payment.Amount = PaymentTransactionList.Amount.ToString("0.00");
+                                payment.ReservationNumber = reservationRequest.PaymentTopUpRequest.ConfirmationNumber.ToString();
+                                var updateTransctionToDB = Helper.Local.DBHelper.Instance.UpdatePaymentHeaderData(payment, ConfigurationManager.AppSettings["SaavyConnectionString"]);
+
+                                //Models.Local.PaymentResponse response = new Models.Local.PaymentResponse();
+                                //response = JsonConvert.DeserializeObject<Models.Local.PaymentResponse>(localResponse.responseData.ToString());
+                                //Models.Local.DB.OnlinePaymentResponseModel response = (Models.Local.DB.OnlinePaymentResponseModel)localResponse.responseData;
+                                string TransactionID = DateTime.Now.ToString("yyMMddHHss");
+                                #region create payment insert model
+                                Models.Local.DB.PaymentDetails paymentDetails = new Models.Local.DB.PaymentDetails();
+                                paymentDetails.paymentHeaders = new List<Models.Local.DB.PushPaymentHeaderModel> { new Models.Local.DB.PushPaymentHeaderModel()   {
+                            TransactionID=TransactionID,
+                            Amount = PaymentTransactionList.Amount.ToString("0.00"),
+                            AuthorisationCode = PaymentTransactionList.AuthorisationCode,
+                            ExpiryDate = PaymentTransactionList.ExpiryDate,
+                            RecurringIdentifier = PaymentTransactionList.RecurringIdentifier,
+                            CardType = PaymentTransactionList.CardType != null ? PaymentTransactionList.CardType : "",
+                            Currency = PaymentTransactionList.Currency,
+                            FundingSource = PaymentTransactionList.FundingSource,
+                            MaskedCardNumber = PaymentTransactionList.MaskedCardNumber,
+                            ParentPspRefereceNumber = PaymentTransactionList.ParentPspRefereceNumber,
+                            pspReferenceNumber = responsedata.PspReference,
+                            ResponseMessage = PaymentTransactionList.ResponseMessage!=null?PaymentTransactionList.ResponseMessage:"",
+                            ResultCode = transactionType.ToString(),
+                            ReservationNameID=PaymentTransactionList.ReservationNameID,
+                            ReservationNumber=PaymentTransactionList.ReservationNumber,
+                            IsActive=true,
+                            TransactionType=transactionType
+                        }};
+                                //paymentDetails.paymentAdditionalInfos = new List<Models.Local.DB.PaymentAdditionalInfo>(response.ResponseObject.additionalInfos.Cast<Models.Local.DB.PaymentAdditionalInfo>());
+                                paymentDetails.paymentHistories = new List<Models.Local.DB.PaymentHistory>();
+                                if (responsedata.additionalInfos != null && responsedata.additionalInfos.Count > 0)
+                                {
+                                    paymentDetails.paymentAdditionalInfos = new List<Models.Local.DB.PaymentAdditionalInfo>();
+
+                                    foreach (var item in responsedata.additionalInfos)
+                                    {
+
+                                        paymentDetails.paymentAdditionalInfos.Add(new Models.Local.DB.PaymentAdditionalInfo()
+                                        {
+
+                                            KeyHeader = item.key,
+                                            KeyValue = item.value,
+                                            TransactionID = TransactionID
+                                        });
+                                    }
+                                }
+
+                                #region Pushing Payment details in LOcal Db
+
+                                new LogHelper().Log("Updating payment details in local DB", reservationRequest.PaymentTopUpRequest.ReservationNameID, "RenewTopAndUpdateOpera", reservationRequest.ServiceParameters.ClientID, "RenewTopAndUpdateOpera");
+                                localResponse = await new WSClientHelper().PushPaymentDetails(reservationRequest.PaymentTopUpRequest.ReservationNameID, new Models.Local.LocalRequestModel()
+                                {
+                                    RequestObject = paymentDetails
+                                }, "RenewTopAndUpdateOpera", reservationRequest.ServiceParameters);
+                                if (!localResponse.result)
+                                {
+                                    new LogHelper().Log("Failled to update payment details in Local DB with reason :- " + localResponse.responseMessage, reservationRequest.PaymentTopUpRequest.ReservationNameID, "paymentConfiguration", reservationRequest.ServiceParameters.ClientID, "paymentConfiguration");
+                                    new LogHelper().Warn("Failled to update payment details in local DB with reason :- " + localResponse.responseMessage, reservationRequest.PaymentTopUpRequest.ReservationNameID, "paymentConfiguration", reservationRequest.ServiceParameters.ClientID, "paymentConfiguration");
+                                }
+                                else
+                                    new LogHelper().Log("Payment details updated successfully", reservationRequest.PaymentTopUpRequest.ReservationNameID, "paymentConfiguration", reservationRequest.ServiceParameters.ClientID, "paymentConfiguration");
+                                #endregion
+                                #region Update payment in opera
+                                if (localResponse.responseData != null)
+                                {
+                                    new LogHelper().Log("Converting Json string to object", reservationRequest.PaymentTopUpRequest.ReservationNameID, "RenewTopAndUpdateOpera", reservationRequest.ServiceParameters.ClientID, "RenewTopAndUpdateOpera");
+
+                                    if (paymentDetails == null)
+                                    {
+                                        new LogHelper().Log("payment detail object is null, skipping the payment update", reservationRequest.PaymentTopUpRequest.ReservationNameID, "RenewTopAndUpdateOpera", reservationRequest.ServiceParameters.ClientID, "RenewTopAndUpdateOpera");
+                                    }
+                                    else
+                                    {
+                                        int x = 0;
+                                        new LogHelper().Log("Iterating the payment headers", reservationRequest.PaymentTopUpRequest.ReservationNameID, "RenewTopAndUpdateOpera", reservationRequest.ServiceParameters.ClientID, "RenewTopAndUpdateOpera");
+                                        foreach (Models.Local.DB.PushPaymentHeaderModel paymentHeader in paymentDetails.paymentHeaders)
+                                        {
+                                            if (paymentHeader.IsActive == null)
+                                            {
+                                                new LogHelper().Log("Processing the payment header with psprefernce - " + paymentHeader.pspReferenceNumber + " where IsActive falg is NULL", reservationRequest.PaymentTopUpRequest.ReservationNameID, "RenewTopAndUpdateOpera", reservationRequest.ServiceParameters.ClientID, "RenewTopAndUpdateOpera");
+
+                                                #region Update Opera
+
+                                                new LogHelper().Log("Processing the payment header with psprefernce - " + paymentHeader.pspReferenceNumber + " as a pre-auth transaction", reservationRequest.PaymentTopUpRequest.ReservationNameID, "RenewTopAndUpdateOpera", reservationRequest.ServiceParameters.ClientID, "RenewTopAndUpdateOpera");
+
+                                                paymentDetails.paymentHeaders[x].IsActive = true;
+
+
+                                                #region Updating UDF fields in Opera reservation
+                                                try
+                                                {
+                                                    new LogHelper().Log("Updating pre auth code and amount in UDF fileds", reservationRequest.PaymentTopUpRequest.ReservationNameID, "RenewTopAndUpdateOpera", reservationRequest.ServiceParameters.ClientID, "RenewTopAndUpdateOpera");
+                                                    var owsResponse = await new WSClientHelper().ModifyBooking(reservationRequest.PaymentTopUpRequest.ReservationNameID, new Models.OWS.OwsRequestModel()
+                                                    {
+                                                        ChainCode = reservationRequest.ServiceParameters.ChainCode,
+                                                        DestinationEntityID = reservationRequest.ServiceParameters.DestinationEntityID,
+                                                        HotelDomain = reservationRequest.ServiceParameters.HotelDomain,
+                                                        KioskID = reservationRequest.ServiceParameters.KioskID,
+                                                        Language = reservationRequest.ServiceParameters.Language,
+                                                        LegNumber = reservationRequest.ServiceParameters.Legnumber,
+                                                        Password = reservationRequest.ServiceParameters.Password,
+                                                        SystemType = reservationRequest.ServiceParameters.SystemType,
+                                                        Username = reservationRequest.ServiceParameters.Username,
+                                                        modifyBookingRequest = new Models.OWS.ModifyBookingRequest()
+                                                        {
+                                                            isUDFFieldSpecified = true,
+                                                            ReservationNumber = reservationRequest.PaymentTopUpRequest.ConfirmationNumber,
+                                                            uDFFields = new List<Models.OWS.UDFField>()
+                                                                                {
+                                                                                    new Models.OWS.UDFField()
+                                                                                    {
+                                                                                        FieldName  = reservationRequest.ServiceParameters.PreAuthUDF,
+                                                                                        FieldValue = paymentHeader.pspReferenceNumber
+                                                                                    },
+                                                                                    new Models.OWS.UDFField()
+                                                                                    {
+                                                                                        FieldName  = reservationRequest.ServiceParameters.PreAuthAmntUDF,
+                                                                                        FieldValue = paymentHeader.Amount
+                                                                                    }
+                                                                                }
+                                                        }
+                                                    }, "paymentConfiguration", reservationRequest.ServiceParameters);
+                                                    if (!owsResponse.result)
+                                                    {
+                                                        ResponsePaymentMessage = "Transaction topup successfull and Failed to Update Opera";
+                                                        new LogHelper().Log("Updating pre auth code and amount in UDF fileds failled with reason : - " + owsResponse.responseMessage, reservationRequest.PaymentTopUpRequest.ReservationNameID, "RenewTopAndUpdateOpera", reservationRequest.ServiceParameters.ClientID, "RenewTopAndUpdateOpera");
+                                                        new LogHelper().Warn("Updating pre auth code and amount in UDF fileds failled with reason : - " + owsResponse.responseMessage, reservationRequest.PaymentTopUpRequest.ReservationNameID, "RenewTopAndUpdateOpera", reservationRequest.ServiceParameters.ClientID, "RenewTopAndUpdateOpera");
+                                                    }
+                                                    else
+                                                        ResponsePaymentMessage = "Transaction topup  and Opera Update successfull";
+                                                    new LogHelper().Log("Updating pre auth code and amount in UDF fileds succeeded ", reservationRequest.PaymentTopUpRequest.ReservationNameID, "RenewTopAndUpdateOpera", reservationRequest.ServiceParameters.ClientID, "RenewTopAndUpdateOpera");
+
+
+
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    new LogHelper().Error(ex, reservationRequest.PaymentTopUpRequest.ReservationNameID, "RenewTopAndUpdateOpera", reservationRequest.ServiceParameters.ClientID, "RenewTopAndUpdateOpera");
+                                                }
+                                                #endregion
+
+
+
+
+                                                #endregion
+                                            }
+                                            x++;
+                                        }
+                                        new LogHelper().Log("payment details updated successfully", reservationRequest.PaymentTopUpRequest.ReservationNameID, "RenewTopAndUpdateOpera", reservationRequest.ServiceParameters.ClientID, "RenewTopAndUpdateOpera");
+                                    }
+                                }
+                                #endregion
+
+                                #endregion
+                                return new Models.Local.LocalResponseModel()
+                                {
+                                    result = true,
+                                    responseMessage = ResponsePaymentMessage,
+                                    statusCode = -1
+                                };
+                            }
+                            else
+
+                            {
+                                return new Models.Local.LocalResponseModel()
+                                {
+                                    result = false,
+                                    responseMessage = localResponse.responseMessage,
+                                    statusCode = -1
+                                };
+                            }
+                        }
+                        else
+
+                        {
+                            return new Models.Local.LocalResponseModel()
+                            {
+                                result = false,
+                                responseMessage = localResponse.responseMessage,
+                                statusCode = -1
+                            };
+                        }
+                    }
+                    else
+
+                    {
+                        return new Models.Local.LocalResponseModel()
+                        {
+                            result = false,
+                            responseMessage = localResponse.responseMessage,
+                            statusCode = -1
+                        };
+                    }
+                    #endregion
+                }
+                else
+                {
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Transaction Details Not Exists",
+                        statusCode = -1
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new Models.Local.LocalResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message,
+                    statusCode = -1
+                };
+            }
+        }
     }
 }
 

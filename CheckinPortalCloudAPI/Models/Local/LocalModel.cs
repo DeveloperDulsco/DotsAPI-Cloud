@@ -521,5 +521,36 @@ namespace CheckinPortalCloudAPI.Models.Local
 
 
     }
-   
+    public class PaymentTopUpRequests
+    {
+        public PaymentTopUpRequestModel PaymentTopUpRequest { get; set; }
+        public ServiceParameters ServiceParameters { get; set; }
+    }
+    public class PaymentConfiguration
+    {
+        public string MerchantAccount { get; set; }
+        public string apiKey { get; set; }
+        public string RequestIdentifier { get; set; }
+    }
+    public class PaymentTopUpRequestModel
+    {
+        public int TMID { get; set; }
+        public decimal Amount { get; set; }
+        public string ActionName { get; set; }
+        public string DeviceName { get; set; }
+        public string Uid { get; set; }
+
+        public string ReservationNameID { get; set; }
+        public string RoomNumber { get; set; }
+        public string ParentRefNumber { get; set; }
+        public string ConfirmationNumber { get; set; }
+        public int NoOfNights { get; set; }
+
+        public string WindowID { get; set; }
+
+        public string PaymentID { get; set; }
+        public string ParentPspRefereceNumber { get; set; }
+        public PaymentConfiguration PaymentConfig { get; set; }
+
+    }
 }

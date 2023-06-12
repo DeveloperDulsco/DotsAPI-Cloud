@@ -376,4 +376,48 @@ namespace CheckinPortalCloudAPI.Models.Local.DB
 	{
 		public string ReservationNameID { get; set; }
 	}
+	public class PaymentListRequestModel
+	{
+		public string ReservationNumber { get; set; }
+		public int PageNumber { get; set; }
+		public int Length { get; set; }
+		public string FilterBy { get; set; }
+		public string SortingOrder { get; set; }
+		public string SortBy { get; set; }
+	}
+	public class FetchPaymentTransactionList
+	{
+		public int PaymentID { get; set; }
+		public string TransactionID { get; set; }
+		public string ReservationNumber { get; set; }
+		public string ReservationNameID { get; set; }
+		public string MaskedCardNumber { get; set; }
+		public string ExpiryDate { get; set; }
+		public string FundingSource { get; set; }
+		public decimal Amount { get; set; }
+		public string Currency { get; set; }
+		public string RecurringIdentifier { get; set; }
+		public string AuthorisationCode { get; set; }
+		public string pspReferenceNumber { get; set; }
+		public string ParentPspRefereceNumber { get; set; }
+		public string ResultCode { get; set; }
+		public string ResponseMessage { get; set; }
+		public bool IsActive { get; set; }
+		public string TransactionType { get; set; }
+		public string DisplayTransactionType { get; set; }
+		public string StatusType { get; set; }
+
+		public DateTime CreatedDateTime { get; set; }
+
+		public string CardType { get; set; }
+
+		public string OperaPaymentTypeCode { get; set; }
+		public string AdjustAuthorisationData { get; set; }
+	}
+	public class OnlinePaymentResponseModel
+	{
+		public bool Result { get; set; }
+		public string ResponseMessage { get; set; }
+		public PaymentResponse ResponseObject { get; set; }
+	}
 }
