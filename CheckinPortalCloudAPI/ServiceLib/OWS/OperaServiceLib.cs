@@ -4449,25 +4449,40 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
 
 
                     List<Models.OWS.GuestMessage> LGM = new List<Models.OWS.GuestMessage>();
-                    foreach (ReservationAdvancedService.GuestMessage GM in GMResponse.GuestMessages)
+                    if (GMResponse.GuestMessages != null)
                     {
-                        Models.OWS.GuestMessage GuestMessages = new Models.OWS.GuestMessage();
-                        GuestMessages.MessageDate = GM.Date;
-                        ReservationAdvancedService.UniqueID UID = GM.GuestMessageID;
-                        GuestMessages.MessageID = UID.Value;
-                        GuestMessages.RecepientName = GM.RecipientName;
-                        GuestMessages.Message = GM.Value;
-                        GuestMessages.MessageStatus = GM.StatusFlag;
-                        LGM.Add(GuestMessages);
-                    }
+                        foreach (ReservationAdvancedService.GuestMessage GM in GMResponse.GuestMessages)
+                        {
 
-                    return new Models.OWS.OwsResponseModel
+                            Models.OWS.GuestMessage GuestMessages = new Models.OWS.GuestMessage();
+                            GuestMessages.MessageDate = GM.Date;
+                            ReservationAdvancedService.UniqueID UID = GM.GuestMessageID;
+                            GuestMessages.MessageID = UID.Value;
+                            GuestMessages.RecepientName = GM.RecipientName;
+                            GuestMessages.Message = GM.Value;
+                            GuestMessages.MessageStatus = GM.StatusFlag;
+                            LGM.Add(GuestMessages);
+                        }
+
+
+                        return new Models.OWS.OwsResponseModel
+                        {
+                            responseData = LGM,
+                            responseMessage = "Success",
+                            result = true,
+                            statusCode = 101
+                        };
+                    }
+                    else
                     {
-                        responseData = LGM,
-                        responseMessage = "Success",
-                        result = true,
-                        statusCode = 101
-                    };
+                        return new Models.OWS.OwsResponseModel
+                        {
+                            responseData = null,
+                            responseMessage = "No guest messages found",
+                            result = false,
+                            statusCode = 102
+                        };
+                    }
 
                 }
                 else
@@ -4475,7 +4490,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                     return new Models.OWS.OwsResponseModel
                     {
                         responseData = null,
-                        responseMessage = GMResponse.Result != null ? GMResponse.Result.Text[0].Value : "Failled",
+                        responseMessage = GMResponse.Result != null ? JsonConvert.SerializeObject(GMResponse.Result) : "Failled",
                         result = false,
                         statusCode = 102
                     };
@@ -4484,6 +4499,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
             }
             catch (Exception ex)
             {
+                System.IO.File.WriteAllText(System.Web.Hosting.HostingEnvironment.MapPath(@"~\request1.txt"), ex.ToString());
                 return new Models.OWS.OwsResponseModel
                 {
                     responseData = null,
@@ -4759,6 +4775,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
             }
             catch (Exception ex)
             {
+             
                 return new Models.OWS.OwsResponseModel
                 {
                     responseData = null,
