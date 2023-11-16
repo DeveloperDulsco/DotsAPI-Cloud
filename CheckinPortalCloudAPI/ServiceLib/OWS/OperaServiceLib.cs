@@ -7672,8 +7672,14 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 };
 
                 APRequest.Action = "KIOSK CHECKIN";
-
-                APRequest.PaymentType = ConfigurationManager.AppSettings["OPIDefaultPaymentCode"].ToString();
+                if (Request.MakePaymentRequest.IsSale)
+                {
+                    APRequest.PaymentType = ConfigurationManager.AppSettings["OPISalePaymentCode"].ToString();
+                }
+                else
+                {
+                    APRequest.PaymentType = ConfigurationManager.AppSettings["OPIDefaultPaymentCode"].ToString();
+                }
 
                 ReservationAdvancedService.UniqueID uID = new ReservationAdvancedService.UniqueID();
                 uID.type = ReservationAdvancedService.UniqueIDType.EXTERNAL;

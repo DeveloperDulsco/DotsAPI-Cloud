@@ -197,6 +197,7 @@ namespace CheckinPortalCloudAPI.Models.OWS
         public string ApprovalCode { get; set; }
         public string PaymentTerminalID { get; set; }
         public string Rule { get; set; }
+        public bool IsSale { get; set; }
 
     }
 
