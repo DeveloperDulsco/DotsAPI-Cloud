@@ -1071,5 +1071,53 @@ namespace CheckinPortalCloudAPI.Helper.Local
                 throw ex;
             }
         }
+        public bool PushOPeraPaymentDetails(Models.OWS.OPIPaymentResponseModel OPIPaymentResponse,string ReservationNameID, string ConnectionString)
+        {
+            bool isSavedSuccessfully = false;
+            SQLHelpers.Instance.SetConnectionString(ConnectionString);
+            try
+            {
+
+                SqlParameter approvalAmountParmeter = new SqlParameter()
+                {
+                    ParameterName = "@ApprovalAmount",
+                    SqlDbType = SqlDbType.VarChar,
+                    Value = OPIPaymentResponse.ApprovalAmount,
+                };
+                SqlParameter aprovalCodeParmeter = new SqlParameter()
+                {
+                    ParameterName = "@AprovalCode",
+                    SqlDbType = SqlDbType.VarChar,
+                    Value = OPIPaymentResponse.AprovalCode,
+                };
+                SqlParameter ReservationNameIDParmeter = new SqlParameter()
+                {
+                    ParameterName = "@ReservationNameID",
+                    SqlDbType = SqlDbType.VarChar,
+                    Value = ReservationNameID,
+                };
+                SqlParameter PaymentTypeCodeParmeter = new SqlParameter()
+                {
+                    ParameterName = "@PaymentTypeCode",
+                    SqlDbType = SqlDbType.VarChar,
+                    Value = OPIPaymentResponse.PaymentTypeCode,
+                };
+
+                var ResultTable = SQLHelpers.Instance.ExecuteSP("Usp_InsertOperaPaymentData", approvalAmountParmeter, aprovalCodeParmeter, ReservationNameIDParmeter
+                    , PaymentTypeCodeParmeter);
+
+                if (ResultTable != null && ResultTable.Rows.Count > 0)
+                {
+                    isSavedSuccessfully = ResultTable.Rows[0][0].ToString() == "1";
+                }
+                return isSavedSuccessfully;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+        }
+
     }
 }

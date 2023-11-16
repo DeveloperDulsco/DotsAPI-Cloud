@@ -27,7 +27,7 @@ namespace CheckinPortalCloudAPI.Models.OWS
         public OperaReservation OperaReservation { get; set; }
         public PreregisterReservationRequest PreregisterReservationRequest { get; set; }
         public UpdateProfile UpdateProileRequest { get; set; }
-        public  FetchRoomList FetchRoomList { get; set; }
+        public FetchRoomList FetchRoomList { get; set; }
         public ModifyBookingRequest modifyBookingRequest { get; set; }
         public MakePaymentRequest MakePaymentRequest { get; set; }
         public object FetchMaster { get; set; }
@@ -38,8 +38,8 @@ namespace CheckinPortalCloudAPI.Models.OWS
         public FetchGuestMessageRequest FetchGuestMessageRequest { get; set; }
         public ReservationQueueRequest ReservationQueueRequest { get; set; }
         public FetchGuestRequest FetchGuestRequest { get; set; }
+        public EncodeKeyRequest EncodeKeyRequest { get; set; }
     }
-
     public class FetchGuestRequest
     {
         public string ReservationNumber { get; set; }
@@ -196,11 +196,13 @@ namespace CheckinPortalCloudAPI.Models.OWS
         public string PaymentRefernce { get; set; }
         public string ApprovalCode { get; set; }
         public string PaymentTerminalID { get; set; }
+        public string Rule { get; set; }
 
     }
 
     public class OPIPaymentResponseModel
     {
+
         public string PaymentTypeCode { get; set; }
         public string AprovalCode { get; set; }
         public string ApprovalAmount { get; set; }
@@ -253,6 +255,7 @@ namespace CheckinPortalCloudAPI.Models.OWS
         public string DocumentNumber { get; set; }
         public string DocumentType { get; set; }
         public DateTime? IssueDate { get; set; }
+        public bool? isFieldMandatory { get; set; }
     }
 
     public class FetchProfileRequest
@@ -510,5 +513,12 @@ namespace CheckinPortalCloudAPI.Models.OWS
         public bool isPrinterNotificationEnabled { get; set; }
         public bool isScreenNotificationEnabled { get; set; }
         public bool isGlobal { get; set; }
+    }
+    public class EncodeKeyRequest
+    {
+        public bool isNewKey { get; set; }
+        public string EncoderID { get; set; }
+        public string PrimaryProfilePMSID { get; set; }
+        public string ReservationNameID { get; set; }
     }
 }

@@ -1,6 +1,8 @@
-﻿using CheckinPortalCloudAPI.ServiceLib;
+﻿using CheckinPortalCloudAPI.Helper;
+using CheckinPortalCloudAPI.ServiceLib;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -15,6 +17,7 @@ namespace CheckinPortalCloudAPI.Controllers
         [ActionName("FetchReservationSummaryList")]
         public async Task<Models.OWS.OwsResponseModel> FetchReservationSummaryList(Models.OWS.OwsRequestModel owsRequest)
         {
+           
             return new ServiceLib.OWS.OperaServiceLib().GetReservationSummaryList(owsRequest);
         }
 
@@ -123,7 +126,42 @@ namespace CheckinPortalCloudAPI.Controllers
         [ActionName("AddPayment")]
         public async Task<Models.OWS.OwsResponseModel> AddPayment(Models.OWS.OwsRequestModel owsRequest)
         {
-            return new ServiceLib.OWS.OperaServiceLib().AddPayment(owsRequest);
+            var AddPayresponse = new ServiceLib.OWS.OperaServiceLib().AddPayment(owsRequest);
+            try
+            {
+
+              
+                if (AddPayresponse != null)
+                {
+                    if (AddPayresponse.result)
+                    {
+                        if (AddPayresponse.responseData != null)
+                        {
+                            var paymentresponse = (Models.OWS.OPIPaymentResponseModel)AddPayresponse.responseData;
+                            if (paymentresponse != null)
+                            {
+                                bool resultSet = Helper.Local.DBHelper.Instance.PushOPeraPaymentDetails(paymentresponse, owsRequest.MakePaymentRequest.ReservationNameID, ConfigurationManager.AppSettings["LocalConnectionString"]);
+                                if (resultSet)
+                                {
+                                    new LogHelper().Debug("Operaadd payment details Inserted Successfully ", owsRequest.MakePaymentRequest.ReservationNameID, "PushOPeraPaymentDetails", "API", "AddPayment");
+                                }
+                                else
+                                {
+                                    new LogHelper().Debug("Failed to Insert operaadd payment details ", owsRequest.MakePaymentRequest.ReservationNameID, "PushOPeraPaymentDetails", "API", "AddPayment");
+                                }
+                            }
+                        }
+                    }
+                }
+                return AddPayresponse;
+            }
+            catch(Exception ex)
+            {
+                new LogHelper().Error(ex, null, "PushOPeraPaymentDetails", "API", "AddPayment");
+                return AddPayresponse;
+            }
+
+            
         }
 
 
@@ -278,6 +316,13 @@ namespace CheckinPortalCloudAPI.Controllers
         public async Task<Models.OWS.OwsResponseModel> UpdateProfileAddress(Models.OWS.OwsRequestModel owsRequest)
         {
             return new ServiceLib.OWS.OperaServiceLib().GetReservationDetailsFromPMS(owsRequest);
+        }
+
+        [HttpPost]
+        [ActionName("EncodeKey")]
+        public async Task<Models.OWS.OwsResponseModel> EncodeKey(Models.OWS.OwsRequestModel owsRequest)
+        {
+            return new ServiceLib.OWS.OperaServiceLib().EncodeKey(owsRequest);
         }
     }
 }

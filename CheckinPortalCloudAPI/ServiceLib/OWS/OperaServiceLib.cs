@@ -2600,6 +2600,9 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
         {
             try
             {
+                new LogHelper().Debug("Raw Get ReservationSummaryList : " + JsonConvert.SerializeObject(Request),"", "GetReservationSummaryList", "API", "GetReservationSummaryList");
+
+
                 //NLog with Debug
                 List<Models.OWS.OperaReservation> RList = new List<Models.OWS.OperaReservation>();
                 List<Models.OWS.PreferanceDetails> RPreferencesList = new List<Models.OWS.PreferanceDetails> ();
@@ -2801,6 +2804,9 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 #region Response Success
                 if (status.resultStatusFlag.Equals(ReservationService.ResultStatusFlag.SUCCESS))
                 {
+                    new LogHelper().Debug("Success ReservationSummaryList : " + ReservationService.ResultStatusFlag.SUCCESS, "", "GetReservationSummaryList", "API", "GetReservationSummaryList");
+
+
                     try
                     {
                         foreach (ReservationService.HotelReservation Hreservation in fetchBookingSummaryRes.HotelReservations)
@@ -3340,6 +3346,9 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 }
                 else
                 {
+                    new LogHelper().Debug("ReservationSummaryList : " + status.GDSError.Value, "", "GetReservationSummaryList", "API", "GetReservationSummaryList");
+
+
                     //Nlog Debug
                     return new Models.OWS.OwsResponseModel
                     {
@@ -3671,9 +3680,10 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
 
                             if(string.IsNullOrEmpty(Request.FetchRoomList.RoomStatus))
                             {
-
-                                //if ((RS.RoomStatus1 == "CL" || RS.RoomStatus1 == "IP") 
-                                if ((RS.RoomStatus1 == "IP")
+                                //for sts
+                              //  if ((RS.RoomStatus1 == "CL" || RS.RoomStatus1 == "IP") 
+                                    //for other property
+                               if ((RS.RoomStatus1 == "IP")
                                     && RS.FrontOfficeStatus == "VAC")//|| RSResponse.RoomStatus[0].RoomStatus1 == "IP"
                                 {
                                     if (RS.NextReservationDateSpecified)
@@ -3808,7 +3818,8 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
             try
             {
                 //System.IO.File.AppendAllLines(System.Web.Hosting.HostingEnvironment.MapPath(@"~\GuestCheckin.txt"), new string[] { JsonConvert.SerializeObject(Request) });
-
+                new LogHelper().Debug("GuestCheckIn request : " + JsonConvert.SerializeObject(Request), Request.OperaReservation.ReservationNameID, "GuestCheckIn", "API", "OWS");
+                DateTime? PostingDate = null;
                 #region Request
                 #region Request Header
                 string temp = Helper.Helper.Get8Digits();
@@ -4449,25 +4460,40 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
 
 
                     List<Models.OWS.GuestMessage> LGM = new List<Models.OWS.GuestMessage>();
-                    foreach (ReservationAdvancedService.GuestMessage GM in GMResponse.GuestMessages)
+                    if (GMResponse.GuestMessages != null)
                     {
-                        Models.OWS.GuestMessage GuestMessages = new Models.OWS.GuestMessage();
-                        GuestMessages.MessageDate = GM.Date;
-                        ReservationAdvancedService.UniqueID UID = GM.GuestMessageID;
-                        GuestMessages.MessageID = UID.Value;
-                        GuestMessages.RecepientName = GM.RecipientName;
-                        GuestMessages.Message = GM.Value;
-                        GuestMessages.MessageStatus = GM.StatusFlag;
-                        LGM.Add(GuestMessages);
-                    }
+                        foreach (ReservationAdvancedService.GuestMessage GM in GMResponse.GuestMessages)
+                        {
 
-                    return new Models.OWS.OwsResponseModel
+                            Models.OWS.GuestMessage GuestMessages = new Models.OWS.GuestMessage();
+                            GuestMessages.MessageDate = GM.Date;
+                            ReservationAdvancedService.UniqueID UID = GM.GuestMessageID;
+                            GuestMessages.MessageID = UID.Value;
+                            GuestMessages.RecepientName = GM.RecipientName;
+                            GuestMessages.Message = GM.Value;
+                            GuestMessages.MessageStatus = GM.StatusFlag;
+                            LGM.Add(GuestMessages);
+                        }
+
+
+                        return new Models.OWS.OwsResponseModel
+                        {
+                            responseData = LGM,
+                            responseMessage = "Success",
+                            result = true,
+                            statusCode = 101
+                        };
+                    }
+                    else
                     {
-                        responseData = LGM,
-                        responseMessage = "Success",
-                        result = true,
-                        statusCode = 101
-                    };
+                        return new Models.OWS.OwsResponseModel
+                        {
+                            responseData = null,
+                            responseMessage = "No guest messages found",
+                            result = false,
+                            statusCode = 102
+                        };
+                    }
 
                 }
                 else
@@ -4475,7 +4501,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                     return new Models.OWS.OwsResponseModel
                     {
                         responseData = null,
-                        responseMessage = GMResponse.Result != null ? GMResponse.Result.Text[0].Value : "Failled",
+                        responseMessage = GMResponse.Result != null ? JsonConvert.SerializeObject(GMResponse.Result) : "Failled",
                         result = false,
                         statusCode = 102
                     };
@@ -4484,6 +4510,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
             }
             catch (Exception ex)
             {
+                System.IO.File.WriteAllText(System.Web.Hosting.HostingEnvironment.MapPath(@"~\request1.txt"), ex.ToString());
                 return new Models.OWS.OwsResponseModel
                 {
                     responseData = null,
@@ -4759,6 +4786,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
             }
             catch (Exception ex)
             {
+             
                 return new Models.OWS.OwsResponseModel
                 {
                     responseData = null,
@@ -6524,6 +6552,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         Regex rgx = new Regex("[^a-zA-Z0-9 -]");
                         modifyReservation.modifyBookingRequest.PaymentMethod.MaskedCardNumber = rgx.Replace(modifyReservation.modifyBookingRequest.PaymentMethod.MaskedCardNumber, "");
                         CC.Item = modifyReservation.modifyBookingRequest.PaymentMethod.MaskedCardNumber;
+                        
                     }
                     else
                     {
@@ -6689,8 +6718,8 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         ReservationNameID = Request.OperaReservation.ReservationNameID
                     }
                 });
-
-                if (ReservationResult != null && ReservationResult.result )
+                
+                if (ReservationResult != null && ReservationResult.result)
                 {
                     var reservationList = (List<Models.OWS.OperaReservation>)ReservationResult.responseData;
                     var Folioresult = getFolioAsAList(new OwsRequestModel()
@@ -6711,34 +6740,49 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                             ProfileID = reservationList.First().GuestProfiles.First().PmsProfileID
                         }
                     });
-                    if(Folioresult != null && Folioresult.result)
+                    if (Folioresult != null && Folioresult.result)
                     {
                         var folio = (Models.OWS.FolioModel)Folioresult.responseData;
-                        if(folio.ReservationBalance != 0)
+                        if (!bool.Parse(ConfigurationManager.AppSettings["OPIEnabled"].ToString()))
                         {
-                            return new Models.OWS.OwsResponseModel()
+                            if (folio.ReservationBalance != 0)
                             {
-                                responseMessage = "Failled to processing check out because reservation balance is greater than 0",
-                                statusCode = 1003,
-                                result = false
-                            };
+                                return new Models.OWS.OwsResponseModel()
+                                {
+                                    responseMessage = "Failled to processing check out because reservation balance is greater than 0",
+                                    statusCode = 1003,
+                                    result = false
+                                };
+                            }
+                            else
+                            {
+                                if (folio.FolioWindows != null)
+                                {
+                                    foreach (var window in folio.FolioWindows)
+                                    {
+                                        if (window.BalanceAmount != 0)
+                                        {
+                                            return new Models.OWS.OwsResponseModel()
+                                            {
+                                                responseMessage = "Failled to processing check out because folio window balance is greater than 0",
+                                                statusCode = 1003,
+                                                result = false
+                                            };
+                                        }
+                                    }
+                                }
+                            }
                         }
                         else
                         {
-                            if(folio.FolioWindows != null)
+                            if (folio.ReservationBalance < 0)
                             {
-                                foreach(var window in folio.FolioWindows)
+                                return new Models.OWS.OwsResponseModel()
                                 {
-                                    if(window.BalanceAmount != 0)
-                                    {
-                                        return new Models.OWS.OwsResponseModel()
-                                        {
-                                            responseMessage = "Failled to processing check out because folio window balance is greater than 0",
-                                            statusCode = 1003,
-                                            result = false
-                                        };
-                                    }
-                                }
+                                    responseMessage = "Failled to processing check out because reservation balance is -ve value",
+                                    statusCode = 1003,
+                                    result = false
+                                };
                             }
                         }
                     }
@@ -6761,6 +6805,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         result = false
                     };
                 }
+                
 
                 new LogHelper().Debug("Checkout request : " + JsonConvert.SerializeObject(Request), Request.OperaReservation.ReservationNameID, "GuestCheckOut", "API", "OWS");
                 #region Request
@@ -6813,7 +6858,11 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 UIDLIST[0] = uID;
                 RB.ReservationID = UIDLIST;
                 CORequest.ReservationRequest = RB;
-                //CORequest.CreditCardInfo = null;
+                CORequest.Printer = new ReservationAdvancedService.Printer()
+                {
+                    StationID = Request.MakePaymentRequest.PaymentTerminalID
+                };
+                CORequest.CreditCardInfo = null;
                 //CORequest.canHandleVaultedCreditCard = false;
                 //CORequest.canHandleVaultedCreditCardSpecified = true;
 
@@ -6831,6 +6880,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                             Request.Username, Request.Password, Request.HotelDomain));
                 }
                 ReservationAdvancedService.CheckOutResponse COResponse = new ReservationAdvancedService.CheckOutResponse();
+                ResAdvPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour("Test USE", "Request.WSSEPassword", "Request.KioskUserName", "Request.KioskPassword", "Request.HotelDomain"));
                 COResponse = ResAdvPortClient.CheckOut(ref OGHeader, CORequest);
                 
 
@@ -6846,6 +6896,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 }
                 else
                 {
+                    new LogHelper().Debug("GuestCheckOut Response : " + COResponse.Result != null ? (COResponse.Result.Text != null ? COResponse.Result.Text[0].Value : COResponse.Result.OperaErrorCode) : "Check out failled", Request.OperaReservation.ReservationNameID, "GuestCheckOut", "API", "OWS");
                     return new Models.OWS.OwsResponseModel()
                     {
                         responseMessage = COResponse.Result != null ? (COResponse.Result.Text != null ? COResponse.Result.Text[0].Value : COResponse.Result.OperaErrorCode ): "Check out failled",
@@ -6861,6 +6912,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
             }
             catch (Exception ex)
             {
+                new LogHelper().Error(ex, Request.OperaReservation.ReservationNameID, "GuestCheckOut", "API", "OWS");
                 return new Models.OWS.OwsResponseModel()
                 {
                     responseMessage = "Generic Exception : " + ex.Message,
@@ -7581,10 +7633,10 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
         {
             try
             {
-
+                
                 new LogHelper().Debug("AddPayment request : " + JsonConvert.SerializeObject(Request), Request.MakePaymentRequest.ReservationNameID, "AddPayment", "API", "OWS");
                 DateTime? PostingDate = null;
-
+               
                 #region Request Header
                 string temp = Helper.Helper.Get8Digits();
                 ReservationAdvancedService.OGHeader OGHeader = new ReservationAdvancedService.OGHeader();
@@ -7629,13 +7681,13 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 uID.Value = Request.MakePaymentRequest.ReservationNameID;
                 APRequest.ResvNameID = uID;
 
-                APRequest.TerminalCode = Request.MakePaymentRequest.PaymentTerminalID;
+                APRequest.TerminalCode =Request.MakePaymentRequest.PaymentTerminalID;
 
                 APRequest.Window = Request.MakePaymentRequest.WindowNumber.Value;
 
                 APRequest.AuthorizationRule = new ReservationAdvancedService.AuthorizationInfo()
                 {
-                    Rule = "5",
+                    Rule = string.IsNullOrEmpty(Request.MakePaymentRequest.Rule)?"5": Request.MakePaymentRequest.Rule,
                     Amount = new ReservationAdvancedService.Amount()
                     {
                         Value = (double)Request.MakePaymentRequest.Amount
@@ -7655,8 +7707,8 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
 
                 if (RSResponse.Result.resultStatusFlag == ReservationAdvancedService.ResultStatusFlag.SUCCESS)
                 {
-                   
-                    return new Models.OWS.OwsResponseModel()
+
+                    var owsresponse = new Models.OWS.OwsResponseModel()
                     {
                         responseData = new Models.OWS.OPIPaymentResponseModel()
                         {
@@ -7668,11 +7720,17 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         statusCode = 101,
                         result = true
                     };
+                    new LogHelper().Debug("AddPayment response : " + JsonConvert.SerializeObject(owsresponse), Request.MakePaymentRequest.ReservationNameID, "AddPayment", "API", "OWS");
+
+
+                    return owsresponse;
 
                 }
                 else
                 {
                     //System.IO.File.WriteAllText(System.Web.Hosting.HostingEnvironment.MapPath(@"~\Log.txt"), Newtonsoft.Json.JsonConvert.SerializeObject(RSResponse));
+                    new LogHelper().Debug("Add Payment request is failed", Request.MakePaymentRequest.ReservationNameID, "MakePayment", "API", "OWS");
+
                     return new Models.OWS.OwsResponseModel()
                     {
                         responseMessage = RSResponse.Result != null ? RSResponse.Result.Text != null ? string.Join(" ", RSResponse.Result.Text.Select(x => x.Value).ToArray()) : "Failled" : "Failled",
@@ -7683,6 +7741,8 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
             }
             catch (Exception ex)
             {
+                new LogHelper().Error(ex, Request.MakePaymentRequest.ReservationNameID, "MakePayment", "API", "OWS");
+
                 return new Models.OWS.OwsResponseModel()
                 {
                     responseMessage = "Generic Exception : " + ex.Message,
@@ -8225,8 +8285,11 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 Auth.UserCredentials = userCredentials;
                 OGHeader.Authentication = Auth;
                 #endregion
+                if (Request.UpdateProileRequest != null && Request.UpdateProileRequest.Emails != null &&
+                   (Request.UpdateProileRequest.isFieldMandatory == null || Request.UpdateProileRequest.isFieldMandatory.Value ||
+                  Request.UpdateProileRequest.Emails.Count > 0 && !string.IsNullOrEmpty(Request.UpdateProileRequest.Emails.First().email)))
 
-                if (Request.UpdateProileRequest != null && Request.UpdateProileRequest.Emails != null && Request.UpdateProileRequest.Emails.Count > 0)
+                    
                 {
                     NameService.UpdateEmailResponse EMailResponse = new NameService.UpdateEmailResponse();
                     foreach (Models.OWS.Email email in Request.UpdateProileRequest.Emails)
@@ -8343,6 +8406,24 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         result = true
                     };
                 }
+                else if (Request.UpdateProileRequest.isFieldMandatory != null && !Request.UpdateProileRequest.isFieldMandatory.Value)
+                {
+                    return new Models.OWS.OwsResponseModel()
+                    {
+                        result = true,
+                        responseMessage = "Success",
+                        statusCode = 8002
+                    };
+                }
+                else if (Request.UpdateProileRequest.isFieldMandatory != null && !Request.UpdateProileRequest.isFieldMandatory.Value)
+                {
+                    return new Models.OWS.OwsResponseModel()
+                    {
+                        result = true,
+                        responseMessage = "Success",
+                        statusCode = 8002
+                    };
+                }
                 else
                 {
                     return new Models.OWS.OwsResponseModel
@@ -8392,8 +8473,12 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 OGHeader.Authentication = Auth;
                 #endregion
 
-                if (Request.UpdateProileRequest != null && Request.UpdateProileRequest.Phones != null && Request.UpdateProileRequest.Phones.Count > 0)
+                if (Request.UpdateProileRequest != null && Request.UpdateProileRequest.Phones != null && 
+                    (Request.UpdateProileRequest.isFieldMandatory == null || Request.UpdateProileRequest.isFieldMandatory.Value ||
+                    Request.UpdateProileRequest.Phones.Count > 0 && !string.IsNullOrEmpty(Request.UpdateProileRequest.Phones.First().PhoneNumber)))
                 {
+                    
+                    
                     NameService.UpdatePhoneResponse PhoneResponse = new NameService.UpdatePhoneResponse();
                     NameService.InsertPhoneResponse InsertPhoneResponse = new NameService.InsertPhoneResponse();
                     foreach (Models.OWS.Phone phone in Request.UpdateProileRequest.Phones)
@@ -8440,7 +8525,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                 }
                                 #endregion
                             }
-                            else
+                            else 
                             {
                                 return new Models.OWS.OwsResponseModel()
                                 {
@@ -8503,17 +8588,37 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                 };
                             }
                         }
-                        
+
                     }
                     return new Models.OWS.OwsResponseModel()
                     {
                         result = true,
                         responseMessage = "Success"
                     };
+                    
+                    
+                }
+                else if (Request.UpdateProileRequest.isFieldMandatory != null && !Request.UpdateProileRequest.isFieldMandatory.Value)
+                {
+                    return new Models.OWS.OwsResponseModel()
+                    {
+                        result = true,
+                        responseMessage = "Success",
+                        statusCode = 8002
+                    };
+                }
+                else if (Request.UpdateProileRequest.isFieldMandatory != null && !Request.UpdateProileRequest.isFieldMandatory.Value)
+                {
+                    return new Models.OWS.OwsResponseModel()
+                    {
+                        result = true,
+                        responseMessage = "Success",
+                        statusCode = 8002
+                    };
                 }
                 else
                 {
-                    
+
                     return new Models.OWS.OwsResponseModel()
                     {
                         result = false,
@@ -8530,6 +8635,116 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                     responseMessage = ex.Message,
                     statusCode = 8002
                 };
+            }
+        }
+        public Models.OWS.OwsResponseModel EncodeKey(Models.OWS.OwsRequestModel reservationRquest)
+        {
+            try
+            {
+
+                ReservationAdvancedService.AdditionalKeysRequest additionalKeyRequest = new ReservationAdvancedService.AdditionalKeysRequest();
+                ReservationAdvancedService.AdditionalKeysResponse additionalKeyResponse = new ReservationAdvancedService.AdditionalKeysResponse();
+
+                #region Request Header
+
+                string temp = Helper.Helper.Get8Digits();
+                ReservationAdvancedService.OGHeader OGHeader = new ReservationAdvancedService.OGHeader();
+                OGHeader.transactionID = temp;
+                OGHeader.timeStamp = DateTime.Now;
+                OGHeader.primaryLangID = reservationRquest.Language; //English
+                ReservationAdvancedService.EndPoint orginEndPOint = new ReservationAdvancedService.EndPoint();
+                orginEndPOint.entityID = reservationRquest.KioskID; //Kiosk Identifier
+                orginEndPOint.systemType = reservationRquest.SystemType;//"KIOSK";
+                OGHeader.Origin = orginEndPOint;
+                ReservationAdvancedService.EndPoint destEndPOint = new ReservationAdvancedService.EndPoint();
+                destEndPOint.entityID = reservationRquest.DestinationEntityID;
+                destEndPOint.systemType = reservationRquest.DestinationSystemType;
+                OGHeader.Destination = destEndPOint;
+                ReservationAdvancedService.OGHeaderAuthentication Auth = new ReservationAdvancedService.OGHeaderAuthentication();
+                ReservationAdvancedService.OGHeaderAuthenticationUserCredentials userCredentials = new ReservationAdvancedService.OGHeaderAuthenticationUserCredentials();
+                userCredentials.UserName = reservationRquest.Username;
+                userCredentials.UserPassword = reservationRquest.Password;
+                Auth.UserCredentials = userCredentials;
+                OGHeader.Authentication = Auth;
+                #endregion
+                ReservationAdvancedService.ResvAdvancedServiceSoapClient ResSoapCLient = new ReservationAdvancedService.ResvAdvancedServiceSoapClient();
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    ResSoapCLient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            reservationRquest.Username, reservationRquest.Password, reservationRquest.HotelDomain));
+                }
+                ResSoapCLient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                           ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                           reservationRquest.Username, reservationRquest.Password, reservationRquest.HotelDomain));
+                ReservationAdvancedService.UniqueID uID = new ReservationAdvancedService.UniqueID();
+                uID.type = ReservationAdvancedService.UniqueIDType.EXTERNAL;
+                uID.source = "OPERA_RESV_ID";
+                uID.Value = reservationRquest.EncodeKeyRequest.ReservationNameID;
+                ReservationAdvancedService.UniqueID[] UIDLIST = new ReservationAdvancedService.UniqueID[1];
+                UIDLIST[0] = uID;
+
+                additionalKeyRequest.StationID = "KIOSK1";
+                additionalKeyRequest.CreateNewKey = reservationRquest.EncodeKeyRequest.isNewKey;
+                additionalKeyRequest.CreateNewKeySpecified = true;
+                //additionalKeyRequest.GetKeyTrackSpecified = false;
+                additionalKeyRequest.Keys = 1;
+                additionalKeyRequest.KeyEncoder = reservationRquest.EncodeKeyRequest.EncoderID;
+                //additionalKeyRequest.KeyExpirationDateSpecified = false;
+                additionalKeyRequest.ReservationRequest = new ReservationAdvancedService.ReservationRequestBase()
+                {
+                    //CheckOutTimeSpecified = false,
+                    HotelReference = new ReservationAdvancedService.HotelReference()
+                    {
+                        chainCode = reservationRquest.ChainCode,
+                        hotelCode = reservationRquest.HotelDomain
+                    },
+                    ReservationID = UIDLIST
+                };
+                additionalKeyRequest.Profile = new ReservationAdvancedService.UniqueID()
+                {
+                    type = ReservationAdvancedService.UniqueIDType.INTERNAL,
+                    Value = reservationRquest.EncodeKeyRequest.PrimaryProfilePMSID
+                };
+
+
+                additionalKeyResponse = ResSoapCLient.AdditionalKeys(ref OGHeader, additionalKeyRequest);
+
+                if (additionalKeyResponse.Result.resultStatusFlag == ReservationAdvancedService.ResultStatusFlag.SUCCESS)
+                {
+                    return new Models.OWS.OwsResponseModel()
+                    {
+                        responseData = null,
+                        result = true,
+                        responseMessage = "Success,"
+                    };
+                }
+                else
+                {
+                    return new Models.OWS.OwsResponseModel()
+                    {
+                        responseData = null,
+                        result = false,
+                        responseMessage = "Failled to encode key"
+                    };
+                }
+
+
+
+            }
+            catch (Exception ex)
+            {
+                return new Models.OWS.OwsResponseModel
+                {
+                    responseMessage = ex.ToString(),
+                    statusCode = -1,
+                    result = false
+                };
+
             }
         }
 

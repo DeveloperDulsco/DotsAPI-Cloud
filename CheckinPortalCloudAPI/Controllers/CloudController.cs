@@ -41,6 +41,8 @@ namespace CheckinPortalCloudAPI.Controllers
             try
             {
                 new LogHelper().Log("Processing Document", null, "ProcessDocumentForOCR", "", "Process Document");
+                string requestString = JsonConvert.SerializeObject(cloudRequest, Formatting.None);
+                new LogHelper().Debug("Processing Document webapi request :- " + requestString, null, "ProcessDocumentForOCR", "", "Process Document");
                 Models.Cloud.CloudResponseModel cloudResponse = await new WSClientHelper().processDocument(new Models.Cloud.CloudRequestModel() { RequestObject = regulaRequest }, regulaRequest.OCRURL);
                 return cloudResponse;
             }
