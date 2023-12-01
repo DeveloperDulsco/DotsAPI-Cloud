@@ -553,4 +553,34 @@ namespace CheckinPortalCloudAPI.Models.Local
         public PaymentConfiguration PaymentConfig { get; set; }
 
     }
+    public class UpdateLuggageTagRequestModel
+    {
+        public int PropertyID { get; set; }
+        public string PMSReservationId { get; set; }
+        public string ConfirmationId { get; set; }
+        public int? GuestID { get; set; }
+        public string BaggageTagValue { get; set; }
+    }
+    public class UpdateLuggageTagAPIRequestModel
+    {
+      public UpdateLuggageTagRequestModel TagRequestModel { get; set; }
+        public string apiBaseAddress { get; set; }
+        public string access_token { get; set; }
+
+
+    }
+
+    public class UpdateLuggageTagResponseModel
+    {
+        public bool HasError { get; set; }
+        public List<ErrorResponse> Errors { get; set; }
+        public string Result { get; set; }
+    }
+
+    public class ErrorResponse
+    {
+        public int? ErrorCode { get; set; }
+        public string ErrorMessage { get; set; }
+        public bool HasError { get; set; }
+    }
 }

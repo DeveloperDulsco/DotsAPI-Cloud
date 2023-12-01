@@ -2712,6 +2712,101 @@ namespace CheckinPortalCloudAPI.Controllers
                 };
             }
         }
+        [HttpPost]
+        [ActionName("updateLugaggeTagAsync")]
+        public async Task<Models.Local.LocalResponseModel> updateLugaggeTagAsync(Models.Local.UpdateLuggageTagAPIRequestModel localRequest)
+        {
+            try
+            {
+                new LogHelper().Debug("updateLugaggeTag request : " + JsonConvert.SerializeObject(localRequest), "", "updateLugaggeTagAsync", "API", "Local");
+                using (var client = new HttpClient())
+                {
+                   
+                    if (localRequest != null)
+                    {
+                        var json = JsonConvert.SerializeObject(localRequest.TagRequestModel);
+                        var data = new StringContent(json, Encoding.UTF8, "application/json");
+                        client.DefaultRequestHeaders.Add("X-Knowcross-Access", localRequest.access_token);
+                        HttpResponseMessage response = await client.PostAsync(localRequest.apiBaseAddress, data);
+                        if (response.StatusCode == HttpStatusCode.OK)
+                        {
+                            var resp = await response.Content.ReadAsStringAsync();
+                           
+                            var result = JsonConvert.DeserializeObject<UpdateLuggageTagResponseModel>(resp);
+                            if(result.HasError)
+                            {
+                                return new Models.Local.LocalResponseModel()
+                                {
+                                    result = false,
+
+                                    responseMessage = result.Errors!=null? result.Errors.FirstOrDefault().ErrorMessage:"Failed",
+                                    statusCode = result.Errors != null ? Int32.Parse(result.Errors.FirstOrDefault().ErrorCode.ToString()) : -1,
+                                    responseData = result
+                                };
+                            }
+                            else
+                            {
+                                return new Models.Local.LocalResponseModel()
+                                {
+                                    result = true,
+                                    responseMessage = "Success",
+                                    statusCode = 101,
+                                    responseData = result
+                                };
+
+                            }
+                           
+                        }
+                        else
+                        {
+                            var resp = new UpdateLuggageTagResponseModel()
+                            {
+                                HasError = true,
+                                Errors = new List<ErrorResponse>()
+                            {
+                                new ErrorResponse()
+                                {
+                                    ErrorCode = (int)response.StatusCode,
+                                    HasError = true,
+                                    ErrorMessage = response.ReasonPhrase
+                                }
+                            },
+                                Result = "Failled"
+                            };
+
+                            return new Models.Local.LocalResponseModel()
+                            {
+                                result = false,
+
+                                responseMessage = String.IsNullOrEmpty(response.ReasonPhrase)?"Failled": response.ReasonPhrase,
+                                statusCode = (int)response.StatusCode,
+                                responseData = resp
+                            };
+                        }
+                    }
+
+                    else
+                    {
+                        return new Models.Local.LocalResponseModel()
+                        {
+                            result = false,
+                            responseMessage = "luggade details are null",
+                            statusCode = -1
+                        };
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return new Models.Local.LocalResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message,
+                    statusCode = -1
+                };
+            }
+        }
+
     }
 }
 
