@@ -220,16 +220,14 @@ namespace CheckinPortalCloudAPI.Models.Local
         public bool? isActive { get; set; }
     }
 
+    public class LocalResponseModel
+    {
+        public object responseData { get; set; }
+        public bool result { get; set; }
+        public string responseMessage { get; set; }
+        public int statusCode { get; set; }
 
-
-        public class LocalResponseModel
-        {
-            public object responseData { get; set; }
-            public bool result { get; set; }
-            public string responseMessage { get; set; }
-            public int statusCode { get; set; }
-
-        }
+    }
 
     public class KeyEncodeRequestModel
     {
@@ -563,9 +561,11 @@ namespace CheckinPortalCloudAPI.Models.Local
     }
     public class UpdateLuggageTagAPIRequestModel
     {
-      public UpdateLuggageTagRequestModel TagRequestModel { get; set; }
+        public UpdateLuggageTagRequestModel TagRequestModel { get; set; }
         public string apiBaseAddress { get; set; }
         public string access_token { get; set; }
+        public Models.KnowCross.AccesstokenRequestModel AccesstokenRequestModel { get; set; }
+        public Models.KnowCross.UpdateLuggageTagRequestModel UpdateLuggageTagRequestModel { get; set; }
 
 
     }

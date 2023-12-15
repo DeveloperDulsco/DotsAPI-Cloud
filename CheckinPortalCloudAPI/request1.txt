@@ -1,1 +1,10 @@
-{"IsFault":false,"IsEmpty":false,"Headers":[{"Action":"http://webservices.micros.com/ows/5.1/Name.wsdl#FetchProfile","MustUnderstand":true,"DictionaryName":{"Dictionary":{},"Key":5,"Value":"Action"},"DictionaryNamespace":{"Dictionary":{},"Key":439,"Value":"http://schemas.microsoft.com/ws/2005/05/addressing/none"},"Name":"Action","Namespace":"http://schemas.microsoft.com/ws/2005/05/addressing/none","Actor":"","IsReferenceParameter":false,"Relay":false},{"Name":"OGHeader","Namespace":"http://webservices.micros.com/og/4.3/Core/","MustUnderstand":false,"Relay":false,"Actor":"","IsReferenceParameter":false}],"Properties":{},"Version":"Soap11","State":0}
+System.InvalidOperationException: Could not find default endpoint element that references contract 'ResvAdvancedServiceSoap' in the ServiceModel client configuration section. This might be because no configuration file was found for your application, or because no endpoint element matching this contract could be found in the client element.
+   at System.ServiceModel.Description.ConfigLoader.LoadChannelBehaviors(ServiceEndpoint serviceEndpoint, String configurationName)
+   at System.ServiceModel.ChannelFactory.ApplyConfiguration(String configurationName, Configuration configuration)
+   at System.ServiceModel.ChannelFactory.InitializeEndpoint(String configurationName, EndpointAddress address)
+   at System.ServiceModel.ChannelFactory`1..ctor(String endpointConfigurationName, EndpointAddress remoteAddress)
+   at System.ServiceModel.ConfigurationEndpointTrait`1.CreateSimplexFactory()
+   at System.ServiceModel.ClientBase`1.CreateChannelFactoryRef(EndpointTrait`1 endpointTrait)
+   at System.ServiceModel.ClientBase`1.InitializeChannelFactoryRef()
+   at CheckinPortalCloudAPI.ReservationAdvancedService.ResvAdvancedServiceSoapClient..ctor() in C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\Connected Services\ReservationAdvancedService\Reference.cs:line 28059
+   at CheckinPortalCloudAPI.ServiceLib.OWS.OperaServiceLib.GetMessages(OwsRequestModel Request) in C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\ServiceLib\OWS\OperaServiceLib.cs:line 4432

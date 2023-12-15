@@ -17,9 +17,9 @@
     <WebStackScaffolding_IsReferencingScriptLibrariesSelected>True</WebStackScaffolding_IsReferencingScriptLibrariesSelected>
     <WebStackScaffolding_LayoutPageFile />
     <WebStackScaffolding_IsAsyncSelected>False</WebStackScaffolding_IsAsyncSelected>
-    <NameOfLastUsedPublishProfile>C:\Users\USER\source\Workspaces\CheckinPortalCloudAPI\MCI-WebAPI\CheckinPortalCloudAPI\Properties\PublishProfiles\FolderProfile3.pubxml</NameOfLastUsedPublishProfile>
+    <NameOfLastUsedPublishProfile>C:\Users\Muhammed\source\Workspaces\MCI-WebAPI\CheckinPortalCloudAPI\Properties\PublishProfiles\FolderProfile4.pubxml</NameOfLastUsedPublishProfile>
     <ActiveDebugTarget />
-    <ProjectView>ProjectFiles</ProjectView>
+    <ProjectView>ShowAllFiles</ProjectView>
   </PropertyGroup>
   <ProjectExtensions>
     <VisualStudio>

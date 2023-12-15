@@ -627,10 +627,15 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                                     FolioItems.TransactionCode = BItems.TransactionCode;
                                                     if (FolioItems.TransactionCode != null)
                                                     {
-                                                        if (BItems.TransactionCode.Substring(0, 1).Equals("9"))
+                                                        if(!string.IsNullOrEmpty(BItems.RevenueGroup) &&
+                                                            BItems.RevenueGroup.Equals("PAYMENT"))
                                                         {
                                                             FolioItems.IsCredit = true;
                                                         }
+                                                        //if (BItems.TransactionCode.Substring(0, 1).Equals("9") && !BItems.TransactionCode.Equals("9999"))
+                                                        //{
+                                                        //    FolioItems.IsCredit = true;
+                                                        //}
                                                     }
                                                     FolioItems.ItemName = BItems.Description;
                                                     FolioItems.Date = BItems.Date;
@@ -2795,9 +2800,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 #endregion
 
                 //ResSoapCLient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour("Test USE", "Request.WSSEPassword", "Request.KioskUserName", "Request.KioskPassword", "Request.HotelDomain"));
-                ResSoapCLient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
-                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
-                                            Request.Username, Request.Password, Request.HotelDomain));
+                
                 fetchBookingSummaryRes = ResSoapCLient.FutureBookingSummary(ref OGHeader, fetchBookingSummaryReq);
                 ReservationService.GDSResultStatus status = fetchBookingSummaryRes.Result;
 
@@ -6858,11 +6861,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 UIDLIST[0] = uID;
                 RB.ReservationID = UIDLIST;
                 CORequest.ReservationRequest = RB;
-                CORequest.Printer = new ReservationAdvancedService.Printer()
+
+                if (bool.Parse(ConfigurationManager.AppSettings["OPIEnabled"].ToString()))
                 {
-                    StationID = Request.MakePaymentRequest.PaymentTerminalID
-                };
-                CORequest.CreditCardInfo = null;
+                    CORequest.Printer = new ReservationAdvancedService.Printer()
+                    {
+                        StationID = Request.MakePaymentRequest.PaymentTerminalID
+                    };
+
+                    CORequest.CreditCardInfo = null;
+                }
                 //CORequest.canHandleVaultedCreditCard = false;
                 //CORequest.canHandleVaultedCreditCardSpecified = true;
 
@@ -6880,7 +6888,6 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                             Request.Username, Request.Password, Request.HotelDomain));
                 }
                 ReservationAdvancedService.CheckOutResponse COResponse = new ReservationAdvancedService.CheckOutResponse();
-                ResAdvPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour("Test USE", "Request.WSSEPassword", "Request.KioskUserName", "Request.KioskPassword", "Request.HotelDomain"));
                 COResponse = ResAdvPortClient.CheckOut(ref OGHeader, CORequest);
                 
 
@@ -8700,6 +8707,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 //additionalKeyRequest.GetKeyTrackSpecified = false;
                 additionalKeyRequest.Keys = 1;
                 additionalKeyRequest.KeyEncoder = reservationRquest.EncodeKeyRequest.EncoderID;
+
                 //additionalKeyRequest.KeyExpirationDateSpecified = false;
                 additionalKeyRequest.ReservationRequest = new ReservationAdvancedService.ReservationRequestBase()
                 {
@@ -8709,7 +8717,8 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         chainCode = reservationRquest.ChainCode,
                         hotelCode = reservationRquest.HotelDomain
                     },
-                    ReservationID = UIDLIST
+                    ReservationID = UIDLIST,
+                    CheckOutTime = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 12, 0, 0)
                 };
                 additionalKeyRequest.Profile = new ReservationAdvancedService.UniqueID()
                 {

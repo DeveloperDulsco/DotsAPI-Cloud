@@ -1,0 +1,1 @@
+ {"responseData":{"PaymentTypeCode":"AX","AprovalCode":"805653              ","ApprovalAmount":"1593.26","MaskedCardNumber":null},"result":true,"responseMessage":"Success","statusCode":101}

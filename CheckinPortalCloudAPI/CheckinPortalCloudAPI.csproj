@@ -126,7 +126,9 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.IO.Compression, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL" />
-    <Reference Include="System.Net" />
+    <Reference Include="System.Net">
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Net.Http, Version=4.1.1.3, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Net.Http.4.3.4\lib\net46\System.Net.Http.dll</HintPath>
       <Private>True</Private>
@@ -329,6 +331,7 @@
     <Compile Include="Helper\Local\WSClientHelper.cs" />
     <Compile Include="Helper\LogHelper.cs" />
     <Compile Include="Helper\Regula\RegulaHelper.cs" />
+    <Compile Include="Helper\Utility\KnowCrossHelper.cs" />
     <Compile Include="Models\Adyen.cs" />
     <Compile Include="Models\Cloud\CloudModel.cs" />
     <Compile Include="Models\Email\EmailModel.cs" />
@@ -357,6 +360,7 @@
     <Compile Include="Models\KIOSK\ProfileDocumentRequestModel.cs" />
     <Compile Include="Models\KIOSK\ReservationModel.cs" />
     <Compile Include="Models\KIOSK\ReservationRequestModel.cs" />
+    <Compile Include="Models\KnowCross\KnowCross.cs" />
     <Compile Include="Models\Local\LocalDBModel.cs" />
     <Compile Include="Models\Local\LocalModel.cs" />
     <Compile Include="Models\OWS\FolioModel.cs" />
@@ -884,12 +888,6 @@
     <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.ExternalPaymentResponse1.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.FetchAuthorizationsHistoryResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.FetchAuthorizationsHistoryResponse1.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
     <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.FetchKeyDataResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Content>
@@ -945,12 +943,6 @@
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Content>
     <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.InsertPayRoutingResponse1.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.InstantPaymentNotificationResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Content>
-    <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.InstantPaymentNotificationResponse1.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Content>
     <Content Include="Connected Services\ReservationAdvancedService\CheckinPortalCloudAPI.ReservationAdvancedService.InvoiceResponse.datasource">
@@ -1363,7 +1355,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Helper\Utility\" />
     <Folder Include="Resources\HTML\" />
     <Folder Include="Resources\Images\Temp\" />
     <Folder Include="Views\SMSGateWay\" />

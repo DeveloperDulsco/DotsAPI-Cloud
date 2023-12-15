@@ -28,6 +28,7 @@ using System.Web;
 using System.Web.Http;
 using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 
 namespace CheckinPortalCloudAPI.Controllers
 {
@@ -2714,32 +2715,65 @@ namespace CheckinPortalCloudAPI.Controllers
         }
         [HttpPost]
         [ActionName("updateLugaggeTagAsync")]
-        public async Task<Models.Local.LocalResponseModel> updateLugaggeTagAsync(Models.Local.UpdateLuggageTagAPIRequestModel localRequest)
+        public async Task<Models.Local.LocalResponseModel> updateLugaggeTagAsync(Models.Local.LocalRequestModel localRequest)
         {
             try
             {
                 new LogHelper().Debug("updateLugaggeTag request : " + JsonConvert.SerializeObject(localRequest), "", "updateLugaggeTagAsync", "API", "Local");
+
+                Models.Local.UpdateLuggageTagAPIRequestModel lugagetagUpdateRequest = JsonConvert.DeserializeObject<Models.Local.UpdateLuggageTagAPIRequestModel>(localRequest.RequestObject.ToString());
+
+                var accessToken = new Helper.Utility.KnowCrossHelper().generateAccessToken(lugagetagUpdateRequest.AccesstokenRequestModel);
+                
+                if (accessToken == null)
+                {
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = true,
+                        responseMessage = "Failled to generate access token"
+                    };
+                }
+
+                //HttpClientHandler handler = new HttpClientHandler();
+                //handler.UseDefaultCredentials = true;
+                //var proxy = new WebProxy
+                //{
+                //    Address = new Uri(ConfigurationManager.AppSettings["PaymentProxyURL"]),
+                //    BypassProxyOnLocal = false,
+                //    UseDefaultCredentials = false,
+
+                //    Credentials = new NetworkCredential(
+                //    userName: ConfigurationManager.AppSettings["PaymentProxyUN"],
+                //    password: ConfigurationManager.AppSettings["PaymentProxyPSWD"])
+                //};
+
+                //var httpClientHandler = new HttpClientHandler
+                //{
+                //    Proxy = proxy,
+                //};
+                //using (var client = new HttpClient(handler,true))
                 using (var client = new HttpClient())
                 {
-                   
                     if (localRequest != null)
                     {
-                        var json = JsonConvert.SerializeObject(localRequest.TagRequestModel);
+                        var json = JsonConvert.SerializeObject(lugagetagUpdateRequest.UpdateLuggageTagRequestModel);
+                        
                         var data = new StringContent(json, Encoding.UTF8, "application/json");
-                        client.DefaultRequestHeaders.Add("X-Knowcross-Access", localRequest.access_token);
-                        HttpResponseMessage response = await client.PostAsync(localRequest.apiBaseAddress, data);
+                        client.DefaultRequestHeaders.Add("X-Knowcross-Access", accessToken);
+                        HttpResponseMessage response = await client.PostAsync(
+                            lugagetagUpdateRequest.AccesstokenRequestModel.apiBaseAddress, data);
                         if (response.StatusCode == HttpStatusCode.OK)
                         {
                             var resp = await response.Content.ReadAsStringAsync();
-                           
+
                             var result = JsonConvert.DeserializeObject<UpdateLuggageTagResponseModel>(resp);
-                            if(result.HasError)
+                            if (result.HasError)
                             {
                                 return new Models.Local.LocalResponseModel()
                                 {
                                     result = false,
 
-                                    responseMessage = result.Errors!=null? result.Errors.FirstOrDefault().ErrorMessage:"Failed",
+                                    responseMessage = result.Errors != null ? result.Errors.FirstOrDefault().ErrorMessage : "Failed",
                                     statusCode = result.Errors != null ? Int32.Parse(result.Errors.FirstOrDefault().ErrorCode.ToString()) : -1,
                                     responseData = result
                                 };
@@ -2755,7 +2789,7 @@ namespace CheckinPortalCloudAPI.Controllers
                                 };
 
                             }
-                           
+
                         }
                         else
                         {
@@ -2778,7 +2812,7 @@ namespace CheckinPortalCloudAPI.Controllers
                             {
                                 result = false,
 
-                                responseMessage = String.IsNullOrEmpty(response.ReasonPhrase)?"Failled": response.ReasonPhrase,
+                                responseMessage = String.IsNullOrEmpty(response.ReasonPhrase) ? "Failled" : response.ReasonPhrase,
                                 statusCode = (int)response.StatusCode,
                                 responseData = resp
                             };
@@ -2790,7 +2824,7 @@ namespace CheckinPortalCloudAPI.Controllers
                         return new Models.Local.LocalResponseModel()
                         {
                             result = false,
-                            responseMessage = "luggade details are null",
+                            responseMessage = "luggade details are null in the request",
                             statusCode = -1
                         };
                     }
@@ -2798,6 +2832,7 @@ namespace CheckinPortalCloudAPI.Controllers
             }
             catch (Exception ex)
             {
+                new LogHelper().Error(ex, "", "updateLugaggeTagAsync", "API", "Local");
                 return new Models.Local.LocalResponseModel()
                 {
                     result = false,
