@@ -236,7 +236,18 @@ namespace CheckinPortalCloudAPI.Controllers
                                                 : textField.GetValue(Source.VISUAL);
                         }
                     }
-
+                    textField = response.Text().GetField(TextFieldType.PLACE_OF_BIRTH);
+                    if (textField != null)
+                    {
+                        readDocumentResponse.placeOfBirth = string.IsNullOrEmpty(textField.GetValue(Source.VISUAL)) ? textField.GetValue(Source.MRZ)
+                                            : textField.GetValue(Source.VISUAL);
+                    }
+                    textField = response.Text().GetField(TextFieldType.PLACE_OF_ISSUE);
+                    if (textField != null)
+                    {
+                        readDocumentResponse.issuingPlace = string.IsNullOrEmpty(textField.GetValue(Source.VISUAL)) ? textField.GetValue(Source.MRZ)
+                                            : textField.GetValue(Source.VISUAL);
+                    }
                     var documentImageFieldbyte = response.Images().GetField(GraphicFieldType.DOCUMENT_FRONT).GetValue();
                     if(documentImageFieldbyte != null && documentImageFieldbyte.Length > 0)
                         readDocumentResponse.fullImage = Convert.ToBase64String(documentImageFieldbyte, 0, documentImageFieldbyte.Length);

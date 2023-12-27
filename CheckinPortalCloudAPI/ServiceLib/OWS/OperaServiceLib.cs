@@ -1738,7 +1738,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
         {
             try
             {
-                new LogHelper().Debug("Update Passport request : " + JsonConvert.SerializeObject(Request), Request.UpdateProileRequest.ProfileID, "UpdatePassport", "API", "OWS");
+                new LogHelper().Debug("Update Passport request : " + JsonConvert.SerializeObject(Request), "", "UpdatePassport", "API", "OWS");
 
                 if (string.IsNullOrEmpty(Request.UpdateProileRequest.DocumentType))
                 {
@@ -1828,6 +1828,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 }
                 else
                 {
+                    new LogHelper().Debug("UpdatePassport failed with reason"+ DocumentResponse.Result != null ? string.Join(" ", DocumentResponse.Result.Text[0].Value) : "Document not updated", "", "UpdatePassport", "API", "OWS");
                     return new Models.OWS.OwsResponseModel
                     {
                         responseMessage = DocumentResponse.Result != null ? string.Join(" ", DocumentResponse.Result.Text[0].Value) : "Document not updated",
@@ -1840,7 +1841,8 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
             }
             catch (Exception ex)
             {
-                
+                new LogHelper().Error(ex, "", "UpdatePassport", "API", "OWS");
+
                 return new Models.OWS.OwsResponseModel
                 {
                     responseMessage = ex.Message,
@@ -1854,7 +1856,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
         {
             try
             {
-                new LogHelper().Debug("Update Name request : " + JsonConvert.SerializeObject(Request), Request.UpdateProileRequest.ProfileID, "UpdateName", "API", "OWS");
+                new LogHelper().Debug("Update Name request : " + JsonConvert.SerializeObject(Request), "", "UpdateName", "API", "OWS");
 
                 #region Request Header
                 string temp = Helper.Helper.Get8Digits();
@@ -2027,7 +2029,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 }
                 else
                 {
-                    
+                   
                     return new Models.OWS.OwsResponseModel
                     {
                         responseMessage = UpdateNameRes.Result != null ? UpdateNameRes.Result.Text[0].Value : "Document not updated",
@@ -2040,7 +2042,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
             }
             catch (Exception ex)
             {
-
+              
                 return new Models.OWS.OwsResponseModel
                 {
                     responseMessage = ex.Message,
@@ -7188,6 +7190,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
             }
             catch(Exception ex)
             {
+                new LogHelper().Error(ex, "", "GetRegcarBase64", "API", "OWS");
                 return new Models.OWS.OwsResponseModel()
                 {
                     result = false,
@@ -8092,7 +8095,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
         {
             try
             {
-                new LogHelper().Debug("Update Address request : " + JsonConvert.SerializeObject(Request), Request.UpdateProileRequest.ProfileID, "UpdateAddress", "API", "OWS");
+                new LogHelper().Debug("Update Address request : " + JsonConvert.SerializeObject(Request), Request!=null? Request.UpdateProileRequest!=null?Request.UpdateProileRequest.ProfileID:"":"", "UpdateAddress", "API", "OWS");
                 #region Request Header
                 string temp = Helper.Helper.Get8Digits();
                 NameService.OGHeader OGHeader = new NameService.OGHeader();
@@ -8261,7 +8264,9 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 }
             }
             catch (Exception ex)
-            {                
+            {
+                new LogHelper().Error(ex, "", "UpdateAddress", "API", "OWS");
+
                 return new Models.OWS.OwsResponseModel()
                 {
                     result = false,
@@ -8275,7 +8280,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
         {
             try
             {
-                new LogHelper().Debug("Update Email request : " + JsonConvert.SerializeObject(Request), Request.UpdateProileRequest.ProfileID, "UpdateEmail", "API", "OWS");
+                new LogHelper().Debug("Update Email request : " + JsonConvert.SerializeObject(Request), Request != null ? Request.UpdateProileRequest != null ? Request.UpdateProileRequest.ProfileID : "" : "", "UpdateEmail", "API", "OWS");
                 #region Request Header
                 string temp = Helper.Helper.Get8Digits();
                 NameService.OGHeader OGHeader = new NameService.OGHeader();
@@ -8449,6 +8454,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
             }
             catch (Exception ex)
             {
+                new LogHelper().Error(ex, "", "UpdateEmail", "API", "UpdateEmail");
                 return new Models.OWS.OwsResponseModel
                 {
                     responseMessage = ex.Message,
@@ -8462,7 +8468,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
         {
             try
             {
-                new LogHelper().Debug("Update Phone request : " + JsonConvert.SerializeObject(Request), Request.UpdateProileRequest.ProfileID, "UpdatePhone", "API", "OWS");
+                new LogHelper().Debug("Update Phone request : " + JsonConvert.SerializeObject(Request), Request != null ? Request.UpdateProileRequest != null ? Request.UpdateProileRequest.ProfileID : "" : "", "UpdatePhone", "API", "OWS");
                 #region Request Header
                 string temp = Helper.Helper.Get8Digits();
                 NameService.OGHeader OGHeader = new NameService.OGHeader();
@@ -8631,7 +8637,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 }
                 else
                 {
-
+                   
                     return new Models.OWS.OwsResponseModel()
                     {
                         result = false,
@@ -8642,6 +8648,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
             }
             catch (Exception ex)
             {
+                new LogHelper().Error(ex, "", "UpdatePhone", "API", "UpdatePhone");
                 return new Models.OWS.OwsResponseModel()
                 {
                     result = false,
@@ -8691,9 +8698,9 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                             ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
                                             reservationRquest.Username, reservationRquest.Password, reservationRquest.HotelDomain));
                 }
-                ResSoapCLient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
-                                           ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
-                                           reservationRquest.Username, reservationRquest.Password, reservationRquest.HotelDomain));
+                //ResSoapCLient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                //                           ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                //                           reservationRquest.Username, reservationRquest.Password, reservationRquest.HotelDomain));
                 ReservationAdvancedService.UniqueID uID = new ReservationAdvancedService.UniqueID();
                 uID.type = ReservationAdvancedService.UniqueIDType.EXTERNAL;
                 uID.source = "OPERA_RESV_ID";

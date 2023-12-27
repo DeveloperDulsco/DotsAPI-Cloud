@@ -251,6 +251,7 @@ namespace CheckinPortalCloudAPI.Controllers
         [ActionName("FetchRoomList")]
         public Models.OWS.OwsResponseModel FetchRoomList(Models.OWS.OwsRequestModel Request)
         {
+            
             return new ServiceLib.OWS.OperaServiceLib().FetchRoomList(Request);
         }
 

@@ -154,6 +154,8 @@ namespace CheckinPortalCloudAPI.Controllers
         {
             try
             {
+                new LogHelper().Debug("PushReservationDetails request into DB : " + JsonConvert.SerializeObject(localDataRequest), "", "PushReservationDetails", "API", "PushReservationDetails");
+
                 //System.IO.File.AppendAllText(System.Web.HttpContext.Current.Request.MapPath("~\\Resources\\LocalPush.txt"), localDataRequest.RequestObject.ToString());
                 List<OperaReservation> reservations = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Models.Local.OperaReservation>>(localDataRequest.RequestObject.ToString());
                 //HttpResponseMessage response = await httpClient.PostAsync($"/v52/payments", requestContent);
@@ -174,6 +176,7 @@ namespace CheckinPortalCloudAPI.Controllers
                 }
                 if (Helper.Local.DBHelper.Instance.InsertReservationDetails(operaReservationDataTables, profileDetailsDataTables, new List<Models.Local.DB.ProfileDocumentDetailsModel>(), localDataRequest.SyncFromCloud, ConfigurationManager.AppSettings["LocalConnectionString"]))
                 {
+                    
                     return new Models.Local.LocalResponseModel()
                     {
                         result = true,
@@ -182,15 +185,19 @@ namespace CheckinPortalCloudAPI.Controllers
                     };
                 }
                 else
+                {
+                    new LogHelper().Debug("PushReservationDetails into DB response is failed to insert details: ", "", "PushReservationDetails", "API", "PushReservationDetails");
                     return new Models.Local.LocalResponseModel()
                     {
                         result = false,
                         responseMessage = "Failled to insert the data",
                         statusCode = -1
                     };
+                }
             }
             catch (Exception ex)
             {
+                new LogHelper().Error(ex, "", "PushReservationDetails", "API", "PushReservationDetails");
                 return new Models.Local.LocalResponseModel()
                 {
                     result = false,
@@ -1358,6 +1365,8 @@ namespace CheckinPortalCloudAPI.Controllers
         {
             try
             {
+                new LogHelper().Debug("PushReservationDocumentDetails request into DB : " + JsonConvert.SerializeObject(localRequest), "", "PushReservationDocumentDetails", "API", "PushReservationDocumentDetails");
+
                 List<Models.Local.DB.ReservationDocumentsDataTableModel> reservationDocuments = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Models.Local.DB.ReservationDocumentsDataTableModel>>(localRequest.RequestObject.ToString());
 
                 if (Helper.Local.DBHelper.Instance.InsertReservationDocuments(reservationDocuments, localRequest.SyncFromCloud != null ? localRequest.SyncFromCloud.Value : false, ConfigurationManager.AppSettings["LocalConnectionString"]))
@@ -1370,15 +1379,19 @@ namespace CheckinPortalCloudAPI.Controllers
                     };
                 }
                 else
+                {
+                    new LogHelper().Debug("PushReservationDocumentDetails failed to insert into DB response", "", "PushReservationDocumentDetails", "API", "PushReservationDocumentDetails");
                     return new Models.Local.LocalResponseModel()
                     {
                         result = false,
                         responseMessage = "Failled to insert the data",
                         statusCode = -1
                     };
+                }
             }
             catch (Exception ex)
             {
+                new LogHelper().Error(ex, "", "PushReservationDocumentDetails", "API", "PushReservationDocumentDetails");
                 return new Models.Local.LocalResponseModel()
                 {
                     result = false,
