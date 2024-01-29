@@ -790,6 +790,8 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
         {
             try
             {
+                string currentyeartransactioncode = ConfigurationManager.AppSettings["currentyeartransactioncode"]!=null? ConfigurationManager.AppSettings["currentyeartransactioncode"].ToString():"";
+                string previousyeartransactioncode = ConfigurationManager.AppSettings["previousyeartransactioncode"] != null ? ConfigurationManager.AppSettings["previousyeartransactioncode"].ToString() : "";
                 //Models.OWS.OwsResponseModel owsResponse = getFolioAsAList(reservationRequest);
                 Models.OWS.FetchFolioRequest fetchFolioRequest = reservationRequest.FetchFolioRequest;
                 if (fetchFolioRequest.FolioList == null)
@@ -1042,6 +1044,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                     decimal TotalCredit = 0;
                                     decimal TaxAmount = 0;
                                     decimal TaxAmount8GST = 0;
+                                    decimal TaxAmount9GST = 0;
                                     int group = 1;
                                     int itemCount = 0;
                                     #endregion
@@ -1078,9 +1081,13 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                                 {
                                                     TaxAmount += items.Amount;
                                                 }
-                                                else if (items.description.Contains("0196"))
+                                                else if (!string.IsNullOrEmpty(previousyeartransactioncode) && items.description.Contains(previousyeartransactioncode))
                                                 {
                                                     TaxAmount8GST += items.Amount;
+                                                }
+                                                else if (!string.IsNullOrEmpty(currentyeartransactioncode) && items.description.Contains(currentyeartransactioncode))
+                                                {
+                                                    TaxAmount9GST += items.Amount;
                                                 }
                                                 else
                                                 {
@@ -1120,6 +1127,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                     reportParameters.Columns.Add("TotalBeforeGST", typeof(string));
                                     reportParameters.Columns.Add("GST7Per", typeof(string));
                                     reportParameters.Columns.Add("GST8Per", typeof(string));
+                                    reportParameters.Columns.Add("GST9Per", typeof(string));
                                     reportParameters.Columns.Add("ZeroRatedSupplies", typeof(string));
                                     reportParameters.Columns.Add("NonHotelSupplies", typeof(string));
                                     reportParameters.Columns.Add("PaidoutCreditRefund", typeof(string));
@@ -1162,6 +1170,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                     parameterRow["TotalBeforeGST"] = (TotalAmount - TaxAmount).ToString("0.00");
                                     parameterRow["GST7Per"] = ((7 / 100) * TotalAmount).ToString("0.00");
                                     parameterRow["GST8Per"] = TaxAmount8GST.ToString("0.00");
+                                    parameterRow["GST9Per"] = TaxAmount9GST.ToString("0.00");
                                     parameterRow["ZeroRatedSupplies"] = "0.00";
                                     parameterRow["NonHotelSupplies"] = "0.00";
                                     parameterRow["PaidoutCreditRefund"] = "0.00";
@@ -1282,6 +1291,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                 decimal totalCredit = 0;
                                 decimal GST7 = 0;
                                 decimal GST8 = 0;
+                                decimal GST9 = 0;
                                 foreach (DataTable dataTable in ds.Tables)
                                 {
                                     if (dataTable.TableName.Equals("FolioItems"))
@@ -1322,11 +1332,14 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                                 {
                                                     GST7 += items.Amount;
                                                 }
-                                                else if (items.TransactionCode != null && items.TransactionCode.Contains("0196"))
+                                                else if (!string.IsNullOrEmpty(previousyeartransactioncode) && items.TransactionCode != null && items.TransactionCode.Contains(previousyeartransactioncode))
                                                 {
                                                     GST8 += items.Amount;
                                                 }
-
+                                                else if (!string.IsNullOrEmpty(currentyeartransactioncode) && items.TransactionCode != null && items.TransactionCode.Contains(currentyeartransactioncode))
+                                                {
+                                                    GST9 += items.Amount;
+                                                }
                                                 dataTable.Rows.Add(folioRow);
                                             }
 
@@ -1381,6 +1394,8 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                             ParameterRow["GST7Per"] = GST7;//TaxAmount.ToString("0.00");
                                         if (dataTable.Columns.Contains("GST8Per"))
                                             ParameterRow["GST8Per"] = GST8;//TaxAmount.ToString("0.00");
+                                        if (dataTable.Columns.Contains("GST9Per"))
+                                            ParameterRow["GST9Per"] = GST9;//TaxAmount.ToString("0.00");
                                         if (dataTable.Columns.Contains("ZeroRatedSupplies"))
                                             ParameterRow["ZeroRatedSupplies"] = ServiceCharge;
                                         if (dataTable.Columns.Contains("NonHotelSupplies"))
@@ -1489,7 +1504,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         decimal TotalCredit = 0;
                         decimal GST7 = 0;
                         decimal GST8 = 0;
-
+                        decimal GST9 = 0;
                         if (GuestFolio != null && GuestFolio.Items != null && GuestFolio.Items.Count > 0)
                         {
                             foreach (var items in GuestFolio.Items)
@@ -1516,11 +1531,14 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                 {
                                     GST7 += items.Amount;
                                 }
-                                else if (items.TransactionCode != null && items.TransactionCode.Contains("0196"))
+                                else if (!string.IsNullOrEmpty(previousyeartransactioncode) && items.TransactionCode != null && items.TransactionCode.Contains(previousyeartransactioncode))
                                 {
                                     GST8 += items.Amount;
                                 }
-
+                                else if (!string.IsNullOrEmpty(currentyeartransactioncode) &&  items.TransactionCode != null && items.TransactionCode.Contains(currentyeartransactioncode))
+                                {
+                                    GST9 += items.Amount;
+                                }
                                 folioRow["ItemGroup"] = 1;
                                 FolioItemsTable.Rows.Add(folioRow);
 
@@ -1551,6 +1569,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         reportParameters.Columns.Add("TotalBeforeGST", typeof(string));
                         reportParameters.Columns.Add("GST7Per", typeof(string));
                         reportParameters.Columns.Add("GST8Per", typeof(string));
+                        reportParameters.Columns.Add("GST9Per", typeof(string));
                         reportParameters.Columns.Add("ZeroRatedSupplies", typeof(string));
                         reportParameters.Columns.Add("NonHotelSupplies", typeof(string));
                         reportParameters.Columns.Add("PaidoutCreditRefund", typeof(string));
@@ -1588,6 +1607,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         //parameterRow["GST7Per"] = TaxAmount.ToString("0.00");
                         parameterRow["GST7Per"] = GST7.ToString("0.00");
                         parameterRow["GST8Per"] = GST8.ToString("0.00");
+                        parameterRow["GST9Per"] = GST9.ToString("0.00");
                         parameterRow["ZeroRatedSupplies"] = "0.00";
                         parameterRow["NonHotelSupplies"] = "0.00";
                         parameterRow["PaidoutCreditRefund"] = "0.00";
@@ -3686,10 +3706,10 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                             if(string.IsNullOrEmpty(Request.FetchRoomList.RoomStatus))
                             {
                                 //for sts
-                              //  if ((RS.RoomStatus1 == "CL" || RS.RoomStatus1 == "IP") 
+                                if ((RS.RoomStatus1 == "CL" || RS.RoomStatus1 == "IP")
                                     //for other property
-                               if ((RS.RoomStatus1 == "IP")
-                                    && RS.FrontOfficeStatus == "VAC")//|| RSResponse.RoomStatus[0].RoomStatus1 == "IP"
+                                    //if ((RS.RoomStatus1 == "IP")
+                                         && RS.FrontOfficeStatus == "VAC")//|| RSResponse.RoomStatus[0].RoomStatus1 == "IP"
                                 {
                                     if (RS.NextReservationDateSpecified)
                                     {
