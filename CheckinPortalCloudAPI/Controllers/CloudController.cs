@@ -37,10 +37,14 @@ namespace CheckinPortalCloudAPI.Controllers
         public async Task<Models.Cloud.CloudResponseModel> OCRProcessDocument(Models.Cloud.CloudRequestModel cloudRequest)
         {
             Models.Cloud.RegulaRequest regulaRequest = JsonConvert.DeserializeObject<Models.Cloud.RegulaRequest>(cloudRequest.RequestObject.ToString());
+            Guid newGuid = Guid.NewGuid();
+            regulaRequest.Tag = newGuid.ToString("n") + "-" + (
+            ConfigurationManager.AppSettings["PropertyName"] != null ? ConfigurationManager.AppSettings["PropertyName"].ToString() != "" ? ConfigurationManager.AppSettings["PropertyName"].ToString() : "DOTS" : "DOTS");
 
             try
             {
                 new LogHelper().Log("Processing Document", null, "ProcessDocumentForOCR", "", "Process Document");
+
                 string requestString = JsonConvert.SerializeObject(cloudRequest, Formatting.None);
                 new LogHelper().Debug("Processing Document webapi request :- " + requestString, null, "ProcessDocumentForOCR", "", "Process Document");
                 Models.Cloud.CloudResponseModel cloudResponse = await new WSClientHelper().processDocument(new Models.Cloud.CloudRequestModel() { RequestObject = regulaRequest }, regulaRequest.OCRURL);
@@ -69,14 +73,26 @@ namespace CheckinPortalCloudAPI.Controllers
             {
                 Models.Cloud.RegulaRequest regulaRequest = JsonConvert.DeserializeObject<Models.Cloud.RegulaRequest>(cloudRequest.RequestObject.ToString());
                 Helper.Regula.RegulaHelper regulaInterface = new Helper.Regula.RegulaHelper(ConfigurationManager.AppSettings["RegulaURL"]);
-
+                Guid newGuid = Guid.NewGuid();
+                string Session_Tag = "";
+                if (string.IsNullOrEmpty(regulaRequest.Tag))
+                {
+                    Session_Tag = newGuid.ToString("n") + "-" + (
+            ConfigurationManager.AppSettings["PropertyName"] != null ? ConfigurationManager.AppSettings["PropertyName"].ToString() != "" ? ConfigurationManager.AppSettings["PropertyName"].ToString() : "DOTS" : "DOTS");
+                }
+                else
+                {
+                    Session_Tag = regulaRequest.Tag;
+                }
                 var imageBytes = Convert.FromBase64String(regulaRequest.Base64Image);
+
+
                 var image = new ProcessRequestImage(new ImageData(imageBytes), Light.WHITE);
 
                 var requestParams = new RecognitionParams()
                     .WithScenario(Scenario.FULL_PROCESS)
                     .WithResultTypeOutput(new List<int> { Result.STATUS, Result.TEXT, Result.IMAGES, Result.DOCUMENT_TYPE });
-                var request = new RecognitionRequest(requestParams, image);
+                var request = new RecognitionRequest(requestParams, image, Session_Tag);
                 var baseAddress = ConfigurationManager.AppSettings["RegulaURL"].ToString();
                 var api = new DocumentReaderApi(ConfigurationManager.AppSettings["RegulaURL"].ToString());//.WithLicense(File.ReadAllText("regula.license"));
                 ServicePointManager.ServerCertificateValidationCallback =
@@ -92,17 +108,17 @@ namespace CheckinPortalCloudAPI.Controllers
                     Models.Regula.ReadDocumentResponseModel readDocumentResponse = new Models.Regula.ReadDocumentResponseModel();
 
                     ChosenDocumentTypeResult documentTypeResult = response.ResultByType<ChosenDocumentTypeResult>(9, 0);
-                    if(documentTypeResult != null && documentTypeResult.OneCandidate != null && documentTypeResult.OneCandidate.FDSIDList != null)
+                    if (documentTypeResult != null && documentTypeResult.OneCandidate != null && documentTypeResult.OneCandidate.FDSIDList != null)
                     {
                         Type type = typeof(Models.Regula.RegulaDocumentType);
-                        foreach(var p in type.GetFields())
+                        foreach (var p in type.GetFields())
                         {
-                           if((int)p.GetValue(null) == documentTypeResult.OneCandidate.FDSIDList.DType)
+                            if ((int)p.GetValue(null) == documentTypeResult.OneCandidate.FDSIDList.DType)
                             {
                                 readDocumentResponse.idType = p.Name;
                             }
                         }
-                        
+
                     }
 
                     var textField = response.Text().GetField(TextFieldType.SURNAME);
@@ -236,23 +252,12 @@ namespace CheckinPortalCloudAPI.Controllers
                                                 : textField.GetValue(Source.VISUAL);
                         }
                     }
-                    textField = response.Text().GetField(TextFieldType.PLACE_OF_BIRTH);
-                    if (textField != null)
-                    {
-                        readDocumentResponse.placeOfBirth = string.IsNullOrEmpty(textField.GetValue(Source.VISUAL)) ? textField.GetValue(Source.MRZ)
-                                            : textField.GetValue(Source.VISUAL);
-                    }
-                    textField = response.Text().GetField(TextFieldType.PLACE_OF_ISSUE);
-                    if (textField != null)
-                    {
-                        readDocumentResponse.issuingPlace = string.IsNullOrEmpty(textField.GetValue(Source.VISUAL)) ? textField.GetValue(Source.MRZ)
-                                            : textField.GetValue(Source.VISUAL);
-                    }
+
                     var documentImageFieldbyte = response.Images().GetField(GraphicFieldType.DOCUMENT_FRONT).GetValue();
-                    if(documentImageFieldbyte != null && documentImageFieldbyte.Length > 0)
+                    if (documentImageFieldbyte != null && documentImageFieldbyte.Length > 0)
                         readDocumentResponse.fullImage = Convert.ToBase64String(documentImageFieldbyte, 0, documentImageFieldbyte.Length);
                     var documentImageField = response.Images().GetField(GraphicFieldType.PORTRAIT);
-                    if(documentImageField != null)
+                    if (documentImageField != null)
                     {
                         var photoImagebytes = documentImageField.GetValue(Source.VISUAL);
                         if (photoImagebytes != null && photoImagebytes.Length > 0)
@@ -273,7 +278,7 @@ namespace CheckinPortalCloudAPI.Controllers
                     };
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return new CloudResponseModel()
                 {

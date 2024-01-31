@@ -37,14 +37,14 @@
           <DataField>Credits</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="Itemgroup">
-          <DataField>Itemgroup</DataField>
+        <Field Name="ItemGroup">
+          <DataField>ItemGroup</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
       <rd:DataSetInfo>
         <rd:DataSetName>ReportDataset</rd:DataSetName>
-        <rd:SchemaPath>C:\project current working\MCI-WebAPI (2)\MCI-WebAPI\CheckinPortalCloudAPI\Resources\RDLC\Backup\ReportDataset.xsd</rd:SchemaPath>
+        <rd:SchemaPath>C:\Users\stskiosk\Documents\Samsotech\15-08-2018\STS_KioskGateway\STS_KioskGateway\DataSets\ReportDataset.xsd</rd:SchemaPath>
         <rd:TableName>FolioItems</rd:TableName>
         <rd:TableAdapterFillMethod />
         <rd:TableAdapterGetDataMethod />
@@ -83,7 +83,7 @@
         </Field>
         <Field Name="ArrivalDate">
           <DataField>ArrivalDate</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="DepartureDate">
           <DataField>DepartureDate</DataField>
@@ -141,18 +141,14 @@
           <DataField>GST8Per</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="GST9Per">
-          <DataField>GST9Per</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
       </Fields>
       <rd:DataSetInfo>
-        <rd:DataSetName>ReportDataset</rd:DataSetName>
-        <rd:SchemaPath>C:\project current working\MCI-WebAPI (2)\MCI-WebAPI\CheckinPortalCloudAPI\Resources\RDLC\Backup\ReportDataset.xsd</rd:SchemaPath>
-        <rd:TableName>FolioParameters</rd:TableName>
-        <rd:TableAdapterFillMethod />
-        <rd:TableAdapterGetDataMethod />
-        <rd:TableAdapterName />
+        <rd:DataSetName>FolioParameter</rd:DataSetName>
+        <rd:SchemaPath>C:\Users\Administrator\source\repos\MCI-WebAPI-19\CheckinPortalCloudAPI\FolioParameter.xsd</rd:SchemaPath>
+        <rd:TableName>samp</rd:TableName>
+        <rd:TableAdapterFillMethod>Fill</rd:TableAdapterFillMethod>
+        <rd:TableAdapterGetDataMethod>GetData</rd:TableAdapterGetDataMethod>
+        <rd:TableAdapterName>sampTableAdapter</rd:TableAdapterName>
       </rd:DataSetInfo>
     </DataSet>
   </DataSets>
@@ -882,7 +878,7 @@
                       <Paragraph>
                         <TextRuns>
                           <TextRun>
-                            <Value>+8%  GST</Value>
+                            <Value>+7%  GST</Value>
                             <Style>
                               <FontSize>9pt</FontSize>
                               <FontWeight>Bold</FontWeight>
@@ -915,7 +911,7 @@
                       <Paragraph>
                         <TextRuns>
                           <TextRun>
-                            <Value>=First(Fields!GST8Per.Value, "DataSet2")</Value>
+                            <Value>=First(Fields!GST7Per.Value, "DataSet2")</Value>
                             <Style>
                               <FontSize>9pt</FontSize>
                               <FontWeight>Bold</FontWeight>
@@ -1290,7 +1286,7 @@
                       <Paragraph>
                         <TextRuns>
                           <TextRun>
-                            <Value>+9%  GST</Value>
+                            <Value>+8%  GST</Value>
                             <Style>
                               <FontSize>9pt</FontSize>
                               <FontWeight>Bold</FontWeight>
@@ -1323,7 +1319,7 @@
                       <Paragraph>
                         <TextRuns>
                           <TextRun>
-                            <Value>=First(Fields!GST9Per.Value, "DataSet2")</Value>
+                            <Value>=First(Fields!GST8Per.Value, "DataSet2")</Value>
                             <Style>
                               <FontSize>9pt</FontSize>
                               <FontWeight>Bold</FontWeight>

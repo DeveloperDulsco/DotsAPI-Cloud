@@ -104,7 +104,7 @@ namespace CheckinPortalCloudAPI.Models.Cloud
         public string Base64Image { get; set; }
         public string ImageFormat { get; set; }
         public string OCRURL { get; set; }
-        
+        public string Tag { get; set; }
     }
 
     public class UserDefinedFields

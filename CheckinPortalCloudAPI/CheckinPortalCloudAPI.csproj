@@ -104,7 +104,7 @@
       <HintPath>..\packages\QRCoder.1.3.9\lib\net40\QRCoder.dll</HintPath>
     </Reference>
     <Reference Include="Regula.DocumentReader.WebClient, Version=5.8.3.0, Culture=neutral, PublicKeyToken=f8be549fcbb50138, processorArchitecture=MSIL">
-      <HintPath>..\packages\Regula.DocumentReader.WebClient.5.8.5\lib\netstandard2.0\Regula.DocumentReader.WebClient.dll</HintPath>
+      <HintPath>..\packages\Regula.DocumentReader.WebClient.6.1.1\lib\netstandard2.0\Regula.DocumentReader.WebClient.dll</HintPath>
     </Reference>
     <Reference Include="RestSharp, Version=106.12.0.0, Culture=neutral, PublicKeyToken=598062e77f915f75, processorArchitecture=MSIL">
       <HintPath>..\packages\RestSharp.106.12.0\lib\net452\RestSharp.dll</HintPath>
@@ -1319,6 +1319,24 @@
     <None Include="Connected Services\ReservationService\Reservation1.wsdl" />
     <Content Include="Properties\DataSources\System.Xml.XmlNode.datasource" />
     <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
+    <Content Include="Resources\RDLC\Backup\ReportDataset1.xsc">
+      <DependentUpon>ReportDataset1.xsd</DependentUpon>
+    </Content>
+    <Content Include="Resources\RDLC\Backup\ReportDataset1.xss">
+      <DependentUpon>ReportDataset1.xsd</DependentUpon>
+    </Content>
+    <Content Include="Resources\RDLC\Backup\ReportDataset.xsc">
+      <DependentUpon>ReportDataset.xsd</DependentUpon>
+    </Content>
+    <Content Include="Resources\RDLC\Backup\ReportDataset.xss">
+      <DependentUpon>ReportDataset.xsd</DependentUpon>
+    </Content>
+    <Content Include="Resources\RDLC\Sofitel\ReportDataset.xsc">
+      <DependentUpon>ReportDataset.xsd</DependentUpon>
+    </Content>
+    <Content Include="Resources\RDLC\Sofitel\ReportDataset.xss">
+      <DependentUpon>ReportDataset.xsd</DependentUpon>
+    </Content>
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
     <Content Include="Scripts\jquery-3.4.1.js" />
     <Content Include="Scripts\jquery-3.4.1.min.js" />
@@ -1357,6 +1375,7 @@
     <Folder Include="App_Data\" />
     <Folder Include="Resources\HTML\" />
     <Folder Include="Resources\Images\Temp\" />
+    <Folder Include="Resources\RDLC\STS\" />
     <Folder Include="Views\SMSGateWay\" />
     <Folder Include="Views\STBEva\" />
   </ItemGroup>
@@ -1402,6 +1421,8 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\RDLC\CheckinMessageNonMember.rdlc" />
     <EmbeddedResource Include="Resources\RDLC\CheckinMessageMember.rdlc" />
+    <EmbeddedResource Include="Resources\RDLC\FolioTemplatestsold.rdlc" />
+    <EmbeddedResource Include="Resources\RDLC\FolioTemplate.rdlc" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
