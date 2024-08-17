@@ -1,36 +1,33 @@
 <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
   <s:Header>
-    <Action s:mustUnderstand="1" xmlns="http://schemas.microsoft.com/ws/2005/05/addressing/none">http://webservices.micros.com/ows/5.1/ResvAdvanced.wsdl#Invoice</Action>
+    <Action s:mustUnderstand="1" xmlns="http://schemas.microsoft.com/ws/2005/05/addressing/none">http://webservices.micros.com/ows/5.1/Reservation.wsdl#FetchBooking</Action>
     <wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">
       <wsse:UsernameToken>
         <wsse:Username>HA5D3-KSK</wsse:Username>
         <wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">FairmontsingaporeITADMIN000.</wsse:Password>
       </wsse:UsernameToken>
       <wsu:Timestamp>
-        <wsu:Created>2024-05-01T08:10:29Z</wsu:Created>
-        <wsu:Expires>2024-05-01T08:15:29Z</wsu:Expires>
+        <wsu:Created>2024-08-17T12:45:34Z</wsu:Created>
+        <wsu:Expires>2024-08-17T12:50:34Z</wsu:Expires>
       </wsu:Timestamp>
     </wsse:Security>
-    <OGHeader transactionID="29519323" timeStamp="2024-05-01T08:10:29" xmlns="http://webservices.micros.com/og/4.3/Core/">
+    <OGHeader transactionID="64987991" timeStamp="2024-08-17T12:45:34" xmlns="http://webservices.micros.com/og/4.3/Core/">
       <Origin entityID="KIOSK" systemType="KIOSK" />
       <Destination entityID="KIOSK" systemType="PMS" />
       <Authentication>
         <UserCredentials>
-          <UserName>SUPERVISOR</UserName>
-          <UserPassword>PEGASUS2021</UserPassword>
+          <UserName>KIOSK</UserName>
+          <UserPassword>$$$KIOSK$$</UserPassword>
           <Domain>EU</Domain>
         </UserCredentials>
       </Authentication>
     </OGHeader>
   </s:Header>
   <s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-    <InvoiceRequest xmlns="http://webservices.micros.com/og/4.3/ResvAdvanced/">
-      <ReservationRequest>
-        <HotelReference chainCode="CHA" hotelCode="EU" />
-        <ReservationID>
-          <UniqueID type="EXTERNAL" source="RESV_NAME_ID" xmlns="http://webservices.micros.com/og/4.3/Common/">314425</UniqueID>
-        </ReservationID>
-      </ReservationRequest>
-    </InvoiceRequest>
+    <FetchBookingRequest xmlns="http://webservices.micros.com/ows/5.1/Reservation.wsdl">
+      <HotelReference chainCode="CHA" hotelCode="EU" />
+      <ConfirmationNumber type="INTERNAL">328914</ConfirmationNumber>
+      <LegNumber type="EXTERNAL">1</LegNumber>
+    </FetchBookingRequest>
   </s:Body>
 </s:Envelope>
