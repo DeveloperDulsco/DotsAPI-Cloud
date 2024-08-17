@@ -4839,6 +4839,845 @@ namespace CheckinPortalCloudAPI.Helper.Local
             }
 
         }
+        #region Cloud Merging API
+        public async Task<Models.Local.LocalResponseModel> PushCloudDueInReservation(Models.Local.PushReservationRequest pushReservationRequest)
+        {
 
+            #region Variables
+            List<Models.OWS.OperaReservation> operaReservationList = null;
+            Models.OWS.OperaReservation Reservation = null;
+            #endregion
+
+            try
+            {
+                new LogHelper().Log("Pushing due in reservation list", null, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+
+
+                bool? isEmailSent = null;
+                bool? IsEmailProcessed = null;
+              
+                List<Models.OWS.OperaReservation> temp_operaReservations = null;
+
+                #region Fetching Reservation from OWS
+                   Models.OWS.OwsResponseModel owsResponse1 = await new WSClientHelper().FetchReservationAsync(pushReservationRequest.ReservationNumber, new Models.OWS.OwsRequestModel()
+                {
+                    ChainCode = pushReservationRequest.ServiceParameters.ChainCode,
+                    DestinationEntityID = pushReservationRequest.ServiceParameters.DestinationEntityID,
+                    HotelDomain = pushReservationRequest.ServiceParameters.HotelDomain,
+                    KioskID = pushReservationRequest.ServiceParameters.KioskID,
+                    Language = pushReservationRequest.ServiceParameters.Language,
+                    LegNumber = pushReservationRequest.ServiceParameters.Legnumber,
+                    Password = pushReservationRequest.ServiceParameters.Password,
+                    SystemType = pushReservationRequest.ServiceParameters.SystemType,
+                    Username = pushReservationRequest.ServiceParameters.Username,
+                    FetchBookingRequest = new Models.OWS.FetchBookingRequestModel()
+                    {
+                        ReservationNumber = pushReservationRequest.ReservationNumber
+                        //ReservationNameID = pushReservationRequest.ReservationNameID
+                    }
+                }, "Due-In push", pushReservationRequest.ServiceParameters);
+                if (!owsResponse1.result)
+                {
+                    new LogHelper().Log("Fetching opera reservation", null, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                    new LogHelper().Warn("Failled to fetch opera reservation with reason :- " + owsResponse1.responseMessage, pushReservationRequest.ReservationNumber, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Failled to fetch opera reservation with reason :- " + owsResponse1.responseMessage
+                    };
+                }
+                if (owsResponse1.responseData == null)
+                {
+                    new LogHelper().Log("Failled to fetch opera reservation with reason :- API response data is NULL" + owsResponse1.responseMessage, pushReservationRequest.ReservationNumber, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Failled to fetch opera reservation with reason :- API response data is NULL" + owsResponse1.responseMessage
+                    };
+                }
+                else
+                {
+                    new LogHelper().Debug("Converting API json to object", pushReservationRequest.ReservationNumber, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                    try
+                    {
+                        temp_operaReservations = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Models.OWS.OperaReservation>>(owsResponse1.responseData.ToString());
+                        Reservation = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Models.OWS.OperaReservation>>(owsResponse1.responseData.ToString())[0];
+                        new LogHelper().Log("Opera reservation fetched successfully", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                    }
+                    catch (Exception ex)
+                    {
+                        new LogHelper().Error(ex, pushReservationRequest.ReservationNumber, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                        new LogHelper().Log("Failled to covert API response to object", pushReservationRequest.ReservationNumber, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                        new LogHelper().Warn("Failled to fetch opera reservation with reason :- " + ex.Message, pushReservationRequest.ReservationNumber, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                        new LogHelper().Debug("Failled to fetch opera reservation with reason :- " + ex.Message, pushReservationRequest.ReservationNumber, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-IN push");
+                        return new Models.Local.LocalResponseModel()
+                        {
+                            result = false,
+                            responseMessage = ex.Message
+                        };
+                    }
+                }
+
+                #endregion
+
+                #region Processing SHarers to Local DB
+
+                try
+                {
+                    List<Models.OWS.OperaReservation> tempList = null;
+                    if (temp_operaReservations[0].SharerReservations != null && temp_operaReservations[0].SharerReservations.Count > 0)
+                    {
+                        //MessageBox.Show("Sharer present");
+                        string shareID = temp_operaReservations[0].ReservationNumber;
+                        temp_operaReservations[0].ReservationNumber += "||" + temp_operaReservations[0].ReservationNumber;
+
+                        foreach (Models.OWS.OperaReservation sharerReservation in temp_operaReservations[0].SharerReservations)
+                        {
+                            owsResponse1 = await new WSClientHelper().FetchReservationAsync(pushReservationRequest.ReservationNumber, new Models.OWS.OwsRequestModel()
+                            {
+                                ChainCode = pushReservationRequest.ServiceParameters.ChainCode,
+                                DestinationEntityID = pushReservationRequest.ServiceParameters.DestinationEntityID,
+                                HotelDomain = pushReservationRequest.ServiceParameters.HotelDomain,
+                                KioskID = pushReservationRequest.ServiceParameters.KioskID,
+                                Language = pushReservationRequest.ServiceParameters.Language,
+                                LegNumber = pushReservationRequest.ServiceParameters.Legnumber,
+                                Password = pushReservationRequest.ServiceParameters.Password,
+                                SystemType = pushReservationRequest.ServiceParameters.SystemType,
+                                Username = pushReservationRequest.ServiceParameters.Username,
+                                FetchBookingRequest = new Models.OWS.FetchBookingRequestModel()
+                                {
+                                    ReservationNumber = pushReservationRequest.ReservationNumber
+                                }
+                            }, "Due-In push", pushReservationRequest.ServiceParameters);
+
+                            if (owsResponse1.result && owsResponse1.responseData != null)
+                            {
+                                tempList = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Models.OWS.OperaReservation>>(owsResponse1.responseData.ToString());
+                                tempList[0].ReservationNumber += "||" + shareID;
+                                temp_operaReservations.AddRange(tempList);
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    new LogHelper().Error(ex, pushReservationRequest.ReservationNumber, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                }
+                #endregion
+
+                #region Pushing record copy in local DB
+                new LogHelper().Log("Updating the reservation in Local DB", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                //Reservation.IsEmailSend = false;
+                //Reservation.reservationDocument = null;
+                Models.Local.LocalResponseModel localResponse = await new WSClientHelper().PushRecordLocally(new Models.Local.LocalRequestModel()
+                {
+                    SyncFromCloud = false,
+                    RequestObject = temp_operaReservations,//new List<Models.OWS.OperaReservation>() { Reservation }
+                }, Reservation.ReservationNameID, "Due-In push", pushReservationRequest.ServiceParameters);
+                if (!localResponse.result)
+                {
+                    new LogHelper().Log("Updating the reservation in Local DB with email send flag failled with reason :- " + localResponse.responseMessage, Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                }
+                else
+                    new LogHelper().Log("Updating the reservation in Local DB with email send flag fsucceeded", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                #endregion
+
+                #region Validating email present or not
+                bool isEmailPresent = false;
+                if (Reservation != null && Reservation.GuestProfiles != null && Reservation.GuestProfiles.Count > 0 &&
+                    Reservation.GuestProfiles[0].Email != null && Reservation.GuestProfiles[0].Email.Count > 0 &&
+                    !string.IsNullOrEmpty(Reservation.GuestProfiles[0].Email[0].email))
+                    isEmailPresent = true;
+                if (!isEmailPresent)
+                {
+                    new LogHelper().Log("Skipping reservation No. : " + Reservation.ReservationNumber + " no email ID present", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = " no email ID present"
+                    };
+                }
+                #endregion
+
+                #region Validating Reservation
+                new LogHelper().Log("Validating reservation", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+
+                if (Reservation == null)
+                {
+                    new LogHelper().Log("Reservation returned as NULL", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Reservation returned as NULL"
+                    };
+                }
+                else if (Reservation.Adults == null && Reservation.Adults == 0)
+                {
+                    new LogHelper().Log("Reservation adult count is NULL or 0", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Reservation adult count is NULL or 0"
+                    };
+                }
+                else if (string.IsNullOrEmpty(Reservation.ReservationStatus) && (!Reservation.ReservationStatus.ToUpper().Equals("DUEIN") || !Reservation.ReservationStatus.ToUpper().Equals("RESERVED")))
+                {
+                    new LogHelper().Debug("Reservation status is : " + Reservation.ReservationStatus + " not elogible for pre-checkin", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Reservation adult count is NULL or 0"
+                    };
+                }
+                new LogHelper().Log("Reservation Validated ", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                #endregion
+
+                #region Processing sharer Profiles
+                new LogHelper().Log("Processing sharer in the reservation", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                if (Reservation.SharerReservations != null && Reservation.SharerReservations.Count > 0)
+                {
+                    foreach (Models.OWS.OperaReservation sharer in Reservation.SharerReservations)
+                    {
+                        if (sharer.GuestProfiles != null && sharer.GuestProfiles.Count > 0)
+                        {
+                            foreach (Models.OWS.GuestProfile guestProfile in sharer.GuestProfiles)
+                            {
+                                Reservation.GuestProfiles.Add(guestProfile);
+                            }
+                        }
+                    }
+                    new LogHelper().Log("Processing sharer in the reservation completed", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                }
+                else
+                    new LogHelper().Log("No sharers found", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                #endregion
+
+                #region Processing RoomRate
+                new LogHelper().Log("Updating rate details", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                if (Reservation.RateDetails != null && Reservation.RateDetails.DailyRates != null && Reservation.RateDetails.DailyRates.Count > 0)
+                {
+                    decimal total_roomrate = Reservation.RateDetails.DailyRates.Sum(x => x.Amount);
+                    if (Reservation.PrintRate != null && Reservation.PrintRate.Value)
+                        Reservation.RateDetails.RateAmount = total_roomrate;
+                    else
+                        Reservation.TotalAmount = 0;
+                    new LogHelper().Log("Updating rate details completed", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                }
+                else
+                    new LogHelper().Log("Updating rate details failed because Rate details are blank in the reservation", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                #endregion
+
+
+                #region Processing MealPlan
+                if (pushReservationRequest.ServiceParameters.IsBreakFastValidationWithUDF != null && pushReservationRequest.ServiceParameters.IsBreakFastValidationWithUDF.Value)
+                {
+                    new LogHelper().Debug("Processing meal plan from UDF fields", Reservation.ReservationNameID, "PushCloudDueInReservation", "Grabber", "Due-In push");
+                    if (Reservation.userDefinedFields != null && Reservation.userDefinedFields.Count > 0)
+                    {
+                        if (Reservation.userDefinedFields.Find(x => x.FieldName.Equals(pushReservationRequest.ServiceParameters.MealPlanFieldName)) != null)
+                        {
+
+                            if (!Reservation.userDefinedFields.Find(x => x.FieldName.Equals(pushReservationRequest.ServiceParameters.MealPlanFieldName)).FieldValue.Equals("NP"))
+                            {
+                                string tempUDFValue = Reservation.userDefinedFields.Find(x => x.FieldName.Equals(pushReservationRequest.ServiceParameters.MealPlanFieldName)).FieldValue;
+                                if (!string.IsNullOrEmpty(tempUDFValue))
+                                {
+                                    bool isPackageFound = false;
+                                    if (pushReservationRequest.ServiceParameters.PackageCodes.Split(';').ToList().Contains(tempUDFValue))
+                                        isPackageFound = true;
+                                    if (isPackageFound)
+                                    {
+                                        Reservation.IsBreakFastAvailable = true;
+                                        new LogHelper().Debug("Meal plan updated", Reservation.ReservationNameID, "PushCloudDueInReservation", "Grabber", "Due-In push");
+                                    }
+                                }
+                            }
+                            else
+                                new LogHelper().Log("Processing meal plan not updated (NP not present in UDF)", Reservation.ReservationNameID, "PushCloudDueInReservation", "Grabber", "Due-In push");
+                        }
+                    }
+                    else
+                        new LogHelper().Log("No UDF fields for meal plan not found", Reservation.ReservationNameID, "PushCloudDueInReservation", "Grabber", "Due-In push");
+                }
+                if (pushReservationRequest.ServiceParameters.IsBreakFastValidationWithPackage != null && pushReservationRequest.ServiceParameters.IsBreakFastValidationWithPackage.Value)
+                {
+                    new LogHelper().Debug("Processing package list in the reservation for meal plan", Reservation.ReservationNameID, "PushCloudDueInReservation", "Grabber", "Due-In push");
+                    if (((Reservation.PackageDetails != null && Reservation.PackageDetails.Count > 0) || (Reservation.PreferanceDetails != null && Reservation.PreferanceDetails.Count > 0)) && (!string.IsNullOrEmpty(pushReservationRequest.ServiceParameters.PackageCodes) && pushReservationRequest.ServiceParameters.PackageCodes.Split(';').ToList() != null))
+                    {
+                        if (Reservation.PackageDetails != null && Reservation.PackageDetails.Count > 0)
+                        {
+                            bool isPackageFound = false;
+                            foreach (Models.OWS.PackageDetails package in Reservation.PackageDetails)
+                            {
+                                if (pushReservationRequest.ServiceParameters.PackageCodes.Split(';').ToList().Contains(package.PackageCode))
+                                {
+                                    isPackageFound = true;
+                                    break;
+                                }
+                            }
+                            if (isPackageFound)
+                            {
+                                Reservation.IsBreakFastAvailable = true;
+                                new LogHelper().Debug("Meal plan updated", Reservation.ReservationNameID, "PushCloudDueInReservation", "Grabber", "Due-In push");
+                            }
+                        }
+                        if (Reservation.PreferanceDetails != null && Reservation.PreferanceDetails.Count > 0)
+                        {
+                            if (Reservation.IsBreakFastAvailable == null || !Reservation.IsBreakFastAvailable.Value)
+                            {
+                                bool isPrefernceFound = false;
+                                foreach (Models.OWS.PreferanceDetails prefernce in Reservation.PreferanceDetails)
+                                {
+                                    if (pushReservationRequest.ServiceParameters.PackageCodes.Split(';').ToList().Contains(prefernce.PreferanceCode))
+                                    {
+                                        isPrefernceFound = true;
+                                        break;
+                                    }
+                                }
+                                if (isPrefernceFound)
+                                {
+                                    Reservation.IsBreakFastAvailable = true;
+                                    new LogHelper().Debug("Meal plan updated", Reservation.ReservationNameID, "PushCloudDueInReservation", "Grabber", "Due-In push");
+                                }
+                            }
+                        }
+                    }
+                    else
+                        new LogHelper().Log("No package or prefernce list in the reservation for meal plan not found", Reservation.ReservationNameID, "PushCloudDueInReservation", "Grabber", "Due-In push");
+                }
+                #endregion
+
+
+
+                #region VerifyVIPReservationOrNot
+                new LogHelper().Log("Verifying reservation VIP status in UDF field", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                if (Reservation.userDefinedFields != null && Reservation.userDefinedFields.Count > 0)
+                {
+                    if (Reservation.userDefinedFields.Find(x => x.FieldName.Equals(pushReservationRequest.ServiceParameters.PreAuthUDF)) != null &&
+                        Reservation.userDefinedFields.Find(x => x.FieldName.Equals(pushReservationRequest.ServiceParameters.PreAuthUDF)).FieldValue.Equals("NO"))
+                    {
+                        new LogHelper().Log("Reservation is flagged not to take payment", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                        Reservation.DepositDetail = new List<Models.OWS.DepositDetail>()
+                {
+                    new Models.OWS.DepositDetail()
+                    {
+                        Amount = 0,
+                        CardExpiryDate = null,
+                        CreditCardNumber = null,
+                        IsCreditCardDeposit = false,
+                        PaymentType = null
+                    }
+                };
+                        Reservation.IsDepositAvailable = true;
+                    }
+                    else if (Reservation.userDefinedFields.Find(x => x.FieldName.Equals(pushReservationRequest.ServiceParameters.PreAuthAmntUDF)) != null &&
+                        Reservation.userDefinedFields.Find(x => x.FieldName.Equals(pushReservationRequest.ServiceParameters.PreAuthAmntUDF)).FieldValue.Equals("NO"))
+                    {
+
+                        new LogHelper().Log("Reservation is flagged not to take payment", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                        Reservation.DepositDetail = new List<Models.OWS.DepositDetail>()
+                        {
+                            new Models.OWS.DepositDetail()
+                            {
+                                Amount = 0,
+                                CardExpiryDate = null,
+                                CreditCardNumber = null,
+                                IsCreditCardDeposit = false,
+                                PaymentType = null
+                            }
+                        };
+
+                        Reservation.IsDepositAvailable = true;
+                    }
+                }
+                new LogHelper().Log("Verifying reservation VIP status in UDF field completed", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                #endregion
+
+                #region PaymentDesabling
+                if (pushReservationRequest.ServiceParameters.IsPaymentDisabled)
+                {
+                    new LogHelper().Log("Disabling the payment as per the config", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                    Reservation.DepositDetail = new List<Models.OWS.DepositDetail>()
+                {
+                    new Models.OWS.DepositDetail()
+                    {
+                        Amount = 0,
+                        CardExpiryDate = null,
+                        CreditCardNumber = null,
+                        IsCreditCardDeposit = false,
+                        PaymentType = null
+                    }
+                };
+                    Reservation.IsDepositAvailable = true;
+                }
+                #endregion
+
+                #region Update ETA
+                if (pushReservationRequest.ServiceParameters.IsETADefault)
+                {
+                    new LogHelper().Log("Assigning NULL value to ETA as per the config", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                    Reservation.ExpectedArrivalTime = null;
+                }
+                #endregion
+
+               
+
+            
+                #region Sending Email
+                try
+                {
+
+                    new LogHelper().Log("Verifying email send or not ", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                    //if (isEmailSent == null || !isEmailSent.Value)
+                    {
+                        new LogHelper().Log("Sending pre-checkin email", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                        if (Reservation != null && Reservation.GuestProfiles != null && Reservation.GuestProfiles[0].Email != null && Reservation.GuestProfiles[0].Email.Count > 0)
+                        {
+                            foreach (Models.OWS.Email email in Reservation.GuestProfiles[0].Email)
+                            {
+                                if (email.primary != null && email.primary.Value)
+                                {
+                                    TextInfo textInfo = new CultureInfo("en-US", false).TextInfo;
+                                    Models.Email.EmailResponse emailResponse = await new WSClientHelper().SendEmail(Reservation.ReservationNameID, new Models.Email.EmailRequest()
+                                    {
+                                        FromEmail = pushReservationRequest.ServiceParameters.PreArrivalFromEmail,
+                                        ToEmail = email.email,
+                                        GuestName = !string.IsNullOrEmpty(Reservation.GuestProfiles[0].GuestName) ? textInfo.ToTitleCase(Reservation.GuestProfiles[0].GuestName)
+                                        : Reservation.GuestProfiles[0].GuestName,
+                                        Subject = pushReservationRequest.ServiceParameters.PreArrivalEmailSubject,
+                                        confirmationNumber = "?id=" + HttpUtility.UrlEncode(new Helper().EncryptString("b14ca5898a4e4133bbce2ea2315a1916", Reservation.ReservationNumber)),
+                                        displayFromEmail = pushReservationRequest.ServiceParameters.EmailDisplayName,
+                                        EmailType = Models.Email.EmailType.Precheckedin,
+                                        AttachmentFileName = "WelcomeEmail.pdf",
+                                        ReservationNumber = !string.IsNullOrEmpty(Reservation.ReservationNumber) ? (Reservation.ReservationNumber.Contains("||") ?
+                                                            (Reservation.ReservationNumber.Substring(0, Reservation.ReservationNumber.IndexOf('|') - 1)) : (Reservation.ReservationNumber)) : (Reservation.ReservationNumber),
+                                        ArrivalDate = Reservation.ArrivalDate.Value.ToString("dd-MMM-yyyy"),
+                                        DepartureDate = Reservation.DepartureDate.Value.ToString("dd-MMM-yyy")
+
+                                    }, "Due-In push", pushReservationRequest.ServiceParameters);
+                                    if (!emailResponse.result)
+                                    {
+                                        isEmailSent = false;
+                                        IsEmailProcessed = false;
+                                        new LogHelper().Log("Failled to send confirmation email with reason :- " + emailResponse.responseMessage, Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                                        new LogHelper().Warn("Failled to send confirmation email with reason :- " + emailResponse.responseMessage, Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                                    }
+                                    else
+                                    {
+                                        isEmailSent = true;
+                                        IsEmailProcessed = true;
+                                        new LogHelper().Log("Email send successfully", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            new LogHelper().Log("Failled to send pre-checkin since email address not found from pre checked in list response", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                            new LogHelper().Warn("Failled to send pre-checkin since email address not found from pre checked in list response", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                        }
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    new LogHelper().Error(ex, Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                }
+                #endregion
+
+                #region Pushing Reservation Track
+                if (IsEmailProcessed != null && IsEmailProcessed.Value)
+                {
+                    new LogHelper().Log("Pushing reservation track from local DB ", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+
+                    localResponse = await new WSClientHelper().PushReservationTrackLocally(Reservation.ReservationNameID, new Models.Local.LocalRequestModel()
+                    {
+                        RequestObject = new Models.Local.ReservationTrackStatus()
+                        {
+                            ReservationNameID = Reservation.ReservationNameID,
+                            ProcessType = Models.Local.ReservationProcessType.Precheckinemail.ToString(),
+                            ReservationNumber = !string.IsNullOrEmpty(Reservation.ReservationNumber) ? (Reservation.ReservationNumber.Contains("||") ?
+                                                            (Reservation.ReservationNumber.Substring(0, Reservation.ReservationNumber.IndexOf('|') - 1)) : (Reservation.ReservationNumber)) : (Reservation.ReservationNumber),
+                            EmailSent = IsEmailProcessed.Value,
+                            ProcessStatus = ""
+                        }
+                    }, "Due-In push", pushReservationRequest.ServiceParameters);
+                    if (localResponse.result)
+                    {
+                        new LogHelper().Log("Reservation track in local DB updated successfully ", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                    }
+                    else
+                    {
+                        //isReservationTrackPresent = true;
+                        new LogHelper().Log("Failled to update reservation track in local DB with reason :- " + localResponse.responseMessage, Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                    }
+                }
+                #endregion
+
+                #region Pushing record copy in local DB
+                new LogHelper().Log("Updating the reservation in Local DB with email send flag ", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                Reservation.IsEmailSend = isEmailSent;
+                Reservation.reservationDocument = null;
+                localResponse = await new WSClientHelper().PushRecordLocally(new Models.Local.LocalRequestModel()
+                {
+                    SyncFromCloud = false,
+                    RequestObject = new List<Models.OWS.OperaReservation>() { Reservation }
+                }, Reservation.ReservationNameID, "Due-In push", pushReservationRequest.ServiceParameters);
+                if (!localResponse.result)
+                {
+                    new LogHelper().Log("Updating the reservation in Local DB with email send flag failled with reason :- " + localResponse.responseMessage, Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                }
+                else
+                    new LogHelper().Log("Updating the reservation in Local DB with email send flag fsucceeded", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                #endregion
+
+                #region Updating record status in Local DB
+                new LogHelper().Log("Updating the reservation status in Local DB", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                localResponse = await new WSClientHelper().UpdateRecordLocally(Reservation.ReservationNameID, new Models.Local.LocalRequestModel()
+                {
+                    RequestObject = new List<Models.Local.UpdateReservationByReservationNameIDModel>()
+                {
+                    new Models.Local.UpdateReservationByReservationNameIDModel{
+                        IsPushedToCloud = true,
+                        ReservationNameID = Reservation.ReservationNameID
+                        //StatusDescription = "Success"
+                    }
+                }
+                }, "Due-In push", pushReservationRequest.ServiceParameters);
+                if (!localResponse.result)
+                {
+                    new LogHelper().Log("Updating the reservation status in Local DB with email send flag failled with reason :- " + localResponse.responseMessage, Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                }
+                else
+                    new LogHelper().Log("Updating the reservation status in Local DB ", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
+                #endregion
+
+                return new Models.Local.LocalResponseModel()
+                {
+                    result = true,
+                    responseMessage = "Success"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Models.Local.LocalResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message
+                };
+            }
+
+        }
+        public async Task<Models.Local.LocalResponseModel> PushCloudDueOutReservationDetails(Models.Local.PushReservationRequest pushReservationRequest)
+        {
+
+
+            #region Variables
+
+            List<Models.OWS.OperaReservation> operaReservationList = null;
+            Models.OWS.OperaReservation Reservation = null;
+            List<Models.Local.PaymentHeader> paymentHeaders = null;
+            Models.OWS.FolioModel guestFolio = null;
+            string folioAsBase64 = "";
+            bool isEmailSend = false;
+            #endregion
+
+            try
+            {
+                new LogHelper().Debug("Pushing due out reservation details", null, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+
+
+                isEmailSend = false;
+
+                new LogHelper().Debug("Processing reservation No. : " + pushReservationRequest.ReservationNumber, null, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+
+                #region Fetching Reservation from OWS
+                new LogHelper().Debug("Fetching opera reservation", pushReservationRequest.ReservationNumber, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                Models.OWS.OwsResponseModel owsResponse1 = await new WSClientHelper().FetchReservationAsync(pushReservationRequest.ReservationNumber, new Models.OWS.OwsRequestModel()
+                {
+                    ChainCode = pushReservationRequest.ServiceParameters.ChainCode,
+                    DestinationEntityID = pushReservationRequest.ServiceParameters.DestinationEntityID,
+                    HotelDomain = pushReservationRequest.ServiceParameters.HotelDomain,
+                    KioskID = pushReservationRequest.ServiceParameters.KioskID,
+                    Language = pushReservationRequest.ServiceParameters.Language,
+                    LegNumber = pushReservationRequest.ServiceParameters.Legnumber,
+                    Password = pushReservationRequest.ServiceParameters.Password,
+                    SystemType = pushReservationRequest.ServiceParameters.SystemType,
+                    Username = pushReservationRequest.ServiceParameters.Username,
+                    FetchBookingRequest = new Models.OWS.FetchBookingRequestModel()
+                    {
+                        ReservationNumber = pushReservationRequest.ReservationNumber
+                    }
+                }, "Due-Out push", pushReservationRequest.ServiceParameters);
+                if (!owsResponse1.result)
+                {
+                    new LogHelper().Log("Failled to fetch opera reservation with reason :- " + owsResponse1.responseMessage, pushReservationRequest.ReservationNumber, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Failled to fetch opera reservation with reason :- " + owsResponse1.responseMessage
+                    };
+                }
+                if (owsResponse1.responseData == null)
+                {
+                    new LogHelper().Log("Failled to fetch opera reservation with reason :- API response data is NULL" + owsResponse1.responseMessage, pushReservationRequest.ReservationNumber, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Failled to fetch opera reservation with reason :- API response data is NULL" + owsResponse1.responseMessage
+                    };
+                }
+                else
+                {
+                    new LogHelper().Debug("Converting API json to object", pushReservationRequest.ReservationNumber, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                    try
+                    {
+                        List<Models.OWS.OperaReservation> temp_operaReservations = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Models.OWS.OperaReservation>>(owsResponse1.responseData.ToString());
+                        Reservation = temp_operaReservations[0];
+                        new LogHelper().Debug("Opera reservation fetched successfully", Reservation.ReservationNameID, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                    }
+                    catch (Exception ex)
+                    {
+                        new LogHelper().Error(ex, Reservation.ReservationNameID, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                        //new LogHelper().Log("Failled to covert API response to object", Reservation.ReservationNameID, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                        //new LogHelper().Warn("Failled to fetch opera reservation with reason :- " + ex.Message, Reservation.ReservationNameID, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                        //new LogHelper().Debug("Failled to fetch opera reservation with reason :- " + ex.Message, Reservation.ReservationNameID, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                        return new Models.Local.LocalResponseModel()
+                        {
+                            result = false,
+                            responseMessage = ex.Message
+                        };
+                    }
+                }
+
+                #endregion
+
+                #region Verifying Day use guest
+                if (!string.IsNullOrEmpty(ConfigurationManager.AppSettings["IsDayUseReservationCheckOutEnabled"]) && !bool.TryParse(ConfigurationManager.AppSettings["IsDayUseReservationCheckOutEnabled"].ToString(), out bool result))
+                {
+                    new LogHelper().Debug("verifying day use guest or not", Reservation.ReservationNameID, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                    if (Reservation != null)
+                    {
+                        if (Reservation.ArrivalDate != null && Reservation.DepartureDate != null && Reservation.ArrivalDate.Value.Equals(Reservation.DepartureDate.Value))
+                        {
+                            new LogHelper().Debug("reservation is a day use guest, so skipping the reservation", Reservation.ReservationNameID, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                            return new Models.Local.LocalResponseModel()
+                            {
+                                result = false,
+                                responseMessage = "reservation is a day use guest, so skipping the reservation"
+                            };
+                        }
+                        else
+                            new LogHelper().Debug("reservation is not a day use guest", Reservation.ReservationNameID, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                    }
+                    else
+                        new LogHelper().Debug("verifying day use guest or not failled reservation object is blank", Reservation.ReservationNameID, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                }
+                #endregion
+
+                #region Validating email present or not
+                bool isEmailPresent = false;
+                if (Reservation != null && Reservation.GuestProfiles != null && Reservation.GuestProfiles.Count > 0 &&
+                    Reservation.GuestProfiles[0].Email != null && Reservation.GuestProfiles[0].Email.Count > 0 &&
+                    !string.IsNullOrEmpty(Reservation.GuestProfiles[0].Email[0].email))
+                    isEmailPresent = true;
+                if (!isEmailPresent)
+                {
+                    new LogHelper().Debug("Skipping reservation No. : " + Reservation.ReservationNumber + " no email ID present", Reservation.ReservationNameID, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Skipping reservation No. : " + Reservation.ReservationNumber + " no email ID present"
+                    };
+                }
+                #endregion
+
+                #region Verifying the reservation Status
+                if (string.IsNullOrEmpty(Reservation.ReservationStatus) || !Reservation.ReservationStatus.Equals("DUEOUT"))
+                {
+                    new LogHelper().Debug("Reservation status : " + Reservation.ReservationStatus + " (not DUEOUT, so skipping the reservation)", Reservation.ReservationNameID, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Reservation status : " + Reservation.ReservationStatus + " (not DUEOUT, so skipping the reservation)"
+                    };
+                }
+                #endregion
+
+                #region Check Payment in Saavy
+                //Models.Local.LocalResponseModel localResponse = null;
+                new LogHelper().Debug("Fetching payment details for reservation No. : " + Reservation.ReservationNumber + " in Saavy Pay", Reservation.ReservationNameID, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                Models.Local.LocalResponseModel localResponse = await new WSClientHelper().FetchPaymentDetails(Reservation.ReservationNameID, new Models.Local.LocalRequestModel()
+                {
+                    RequestObject = new Models.Local.FetchPaymentRequest()
+                    {
+                        ReservationNameID = Reservation.ReservationNameID,
+                        isActive = true
+                    }
+                }, "Due-Out push", pushReservationRequest.ServiceParameters);
+
+                if (!localResponse.result || localResponse.responseData == null)
+                {
+                    new LogHelper().Debug("Failled to fetch payment details with reason :- " + localResponse.responseMessage, Reservation.ReservationNameID, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+
+
+                }
+                else
+                {
+                    new LogHelper().Debug("Converting API json to object", Reservation.ReservationNameID, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                    try
+                    {
+                        paymentHeaders = JsonConvert.DeserializeObject<List<Models.Local.PaymentHeader>>(localResponse.responseData.ToString());
+                        new LogHelper().Debug("Payment details fetched successfully", Reservation.ReservationNameID, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                    }
+                    catch (Exception ex)
+                    {
+                        new LogHelper().Error(ex, Reservation.ReservationNameID, "PushDueOutReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                        new LogHelper().Log("Failled to covert API response to object", Reservation.ReservationNameID, "PushDueOutReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+
+                    }
+                }
+
+                #endregion
+
+                #region FetchFolioItemsByWindow
+                new LogHelper().Debug("Fetching reservation folio by window for reservation No. : " + Reservation.ReservationNumber, Reservation.ReservationNameID, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                owsResponse1 = await new WSClientHelper().GetFolioByWindow(Reservation.ReservationNameID, new Models.OWS.OwsRequestModel()
+                {
+                    ChainCode = pushReservationRequest.ServiceParameters.ChainCode,
+                    DestinationEntityID = pushReservationRequest.ServiceParameters.DestinationEntityID,
+                    HotelDomain = pushReservationRequest.ServiceParameters.HotelDomain,
+                    KioskID = pushReservationRequest.ServiceParameters.KioskID,
+                    Language = pushReservationRequest.ServiceParameters.Language,
+                    LegNumber = pushReservationRequest.ServiceParameters.Legnumber,
+                    Password = pushReservationRequest.ServiceParameters.Password,
+                    SystemType = pushReservationRequest.ServiceParameters.SystemType,
+                    Username = pushReservationRequest.ServiceParameters.Username,
+                    FetchFolioRequest = new Models.OWS.FetchFolioRequest()
+                    {
+                        ReservationNameID = Reservation.ReservationNameID,
+                        ProfileID = (Reservation.GuestProfiles != null && Reservation.GuestProfiles.Count > 0) ? Reservation.GuestProfiles[0].PmsProfileID : ""
+                    }
+                }, "Due-Out push", pushReservationRequest.ServiceParameters);
+
+                if (!owsResponse1.result)
+                {
+                    new LogHelper().Log("Failled to fetch folio by window with reason :- " + owsResponse1.responseMessage, Reservation.ReservationNameID, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Failled to fetch folio by window with reason :- " + owsResponse1.responseMessage
+                    };
+                }
+                else
+                {
+                    new LogHelper().Debug("Converting API json to object", Reservation.ReservationNameID, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                    try
+                    {
+
+                        guestFolio = JsonConvert.DeserializeObject<Models.OWS.FolioModel>(owsResponse1.responseData.ToString());
+                        if (guestFolio != null)
+                        {
+                            new LogHelper().Debug("Current guest balance of the reservation is : " + guestFolio.BalanceAmount, Reservation.ReservationNameID, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                            new LogHelper().Debug("Reservation folio by window fetched successfully", Reservation.ReservationNameID, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                        }
+                        else
+                        {
+                            new LogHelper().Log("No folio items found in the reservation", Reservation.ReservationNameID, "PushDueOutReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        new LogHelper().Error(ex, Reservation.ReservationNameID, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                        new LogHelper().Log("Failled to covert API response to object", Reservation.ReservationNameID, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+
+                    }
+                }
+                #endregion
+
+
+
+                #region FetchFolioAsBase64
+                new LogHelper().Debug("Fetching reservation folio as base64 for reservation No. : " + Reservation.ReservationNumber, Reservation.ReservationNameID, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                owsResponse1 = await new WSClientHelper().GetFolio(Reservation.ReservationNameID, new Models.OWS.OwsRequestModel()
+                {
+                    ChainCode = pushReservationRequest.ServiceParameters.ChainCode,
+                    DestinationEntityID = pushReservationRequest.ServiceParameters.DestinationEntityID,
+                    HotelDomain = pushReservationRequest.ServiceParameters.HotelDomain,
+                    KioskID = pushReservationRequest.ServiceParameters.KioskID,
+                    Language = pushReservationRequest.ServiceParameters.Language,
+                    LegNumber = pushReservationRequest.ServiceParameters.Legnumber,
+                    Password = pushReservationRequest.ServiceParameters.Password,
+                    SystemType = pushReservationRequest.ServiceParameters.SystemType,
+                    Username = pushReservationRequest.ServiceParameters.Username,
+                    FetchFolioRequest = new Models.OWS.FetchFolioRequest()
+                    {
+                        ReservationNameID = Reservation.ReservationNameID,
+                        OperaReservation = Reservation,
+                        ProfileID = (Reservation.GuestProfiles != null && Reservation.GuestProfiles.Count > 0) ? Reservation.GuestProfiles[0].PmsProfileID : "",
+                        FolioList = guestFolio
+                    }
+                }, "Due-Out push", pushReservationRequest.ServiceParameters);
+
+                if (!owsResponse1.result || owsResponse1.responseData == null)
+                {
+                    new LogHelper().Log("Failled to fetch folio with reason :- " + owsResponse1.responseMessage, Reservation.ReservationNameID, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Failled to fetch folio with reason :- " + owsResponse1.responseMessage
+                    };
+                }
+                else
+                {
+                    folioAsBase64 = owsResponse1.responseData.ToString();
+                    new LogHelper().Debug("Fetched guest folio as base64 successfully", Reservation.ReservationNameID, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                }
+                #endregion
+
+
+
+               
+
+
+
+                #region Pushing record copy in local DB
+                new LogHelper().Debug("Updating the reservation in Local DB with email send flag ", Reservation.ReservationNameID, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+
+                Reservation.reservationDocument = null;
+                localResponse = await new WSClientHelper().PushRecordLocally(new Models.Local.LocalRequestModel()
+                {
+                    SyncFromCloud = false,
+                    RequestObject = new List<Models.OWS.OperaReservation>() { Reservation }
+                }, Reservation.ReservationNameID, "Due-Out push", pushReservationRequest.ServiceParameters);
+                if (!localResponse.result)
+                {
+                    new LogHelper().Log("Updating the reservation in Local DB with email send flag failled with reason :- " + localResponse.responseMessage, Reservation.ReservationNameID, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                }
+                else
+                    new LogHelper().Debug("Updating the reservation in Local DB with email send flag fsucceeded", Reservation.ReservationNameID, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                #endregion
+
+                new LogHelper().Debug("Reservation :- " + Reservation.ReservationNumber + " processed", Reservation.ReservationNameID, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+
+                return new Models.Local.LocalResponseModel()
+                {
+                    result = true,
+                    responseMessage = "Success"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Models.Local.LocalResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message
+                };
+            }
+        }
+
+        #endregion
     }
 }

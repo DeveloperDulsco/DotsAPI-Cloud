@@ -17,7 +17,7 @@ namespace CheckinPortalCloudAPI.Models.Local.DB
 		public string MembershipType { get; set; }
 		public bool? IsDepositAvailable { get; set; }
 		public bool IsCardDetailPresent { get; set; }
-		public bool IsSaavyPaid { get; set; }		
+		public bool IsSaavyPaid { get; set; }
 		public string FlightNo { get; set; }
 		public DateTime ETA { get; set; }
 		public string ReservationSource { get; set; }
@@ -36,10 +36,10 @@ namespace CheckinPortalCloudAPI.Models.Local.DB
 	}
 
 	public class BIData
-    {
+	{
 		public List<BISummaryArrivals> BISummaryArrivals { get; set; }
 		public List<BINationalityWiseSummaryArrivals> BINationalityWiseSummaryArrivals { get; set; }
-    }
+	}
 
 	public class ReservationAdditionalDetails
 	{
@@ -57,14 +57,14 @@ namespace CheckinPortalCloudAPI.Models.Local.DB
 		public int PrecheckinFailed { get; set; }
 		public int Departure { get; set; }
 		public int PrecheckoutEmailsent { get; set; }
-		public int PrecheckoutSuccess {get;set;}
+		public int PrecheckoutSuccess { get; set; }
 		public int RoomUpgrade { get; set; }
 		public int PackageUpgrade { get; set; }
 
 	}
 
 	public class BINationalityWiseSummaryArrivals
-    {
+	{
 		public DateTime ReportDate { get; set; }
 		public string Nationality { get; set; }
 		public string ReservationNumber { get; set; }
@@ -147,7 +147,7 @@ namespace CheckinPortalCloudAPI.Models.Local.DB
 		public string ResponseMessage { get; set; }
 		public bool? IsActive { get; set; }
 		public string TransactionType { get; set; }
-		public string DisplayTransactionType { get; set; }		
+		public string DisplayTransactionType { get; set; }
 		public string StatusType { get; set; }
 		public DateTime CreatedDateTime { get; set; }
 		public string CardType { get; set; }
@@ -243,7 +243,7 @@ namespace CheckinPortalCloudAPI.Models.Local.DB
 		public byte[] DocumentImage3 { get; set; }
 		public byte[] FaceImage { get; set; }
 		public string CloudProfileDetailID { get; set; }
-		
+
 
 	}
 
@@ -252,7 +252,7 @@ namespace CheckinPortalCloudAPI.Models.Local.DB
 		public string ReservationNameID { get; set; }
 		public byte[] Document { get; set; }
 		public string DocumentType { get; set; }
-		
+
 
 	}
 
@@ -298,12 +298,12 @@ namespace CheckinPortalCloudAPI.Models.Local.DB
 
 
 	public partial class ProfileDocumentDetailstbModel
-    {
+	{
 		public string ProfileDocID { get; set; }
 		public string ProfileID { get; set; }
 		public string ProfileDetailID { get; set; }
 
-    }
+	}
 
 	public partial class ProfileDocuments
 	{
@@ -420,4 +420,7 @@ namespace CheckinPortalCloudAPI.Models.Local.DB
 		public string ResponseMessage { get; set; }
 		public PaymentResponse ResponseObject { get; set; }
 	}
+
+	
 }
+

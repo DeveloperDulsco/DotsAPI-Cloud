@@ -8790,5 +8790,143 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
             }
         }
 
+
+        public Models.OWS.OwsResponseModel GetCreditlimitRecord(Models.OWS.OwsRequestModel owsRequest)
+        {
+            try
+            {
+                //Get Active preauthorization.
+                List<Models.OWS.CreditLimitRecord> creditlist = new List<Models.OWS.CreditLimitRecord>();
+                var ActivePreAuthList = Helper.Local.DBHelper.Instance.Usp_FetchPaymentTransactions("", true, ConfigurationManager.AppSettings["SaavyConnectionString"]);
+                if (ActivePreAuthList != null && ActivePreAuthList.Count > 0)
+                {
+                    foreach (var preAuth in ActivePreAuthList)
+                    {
+
+                        if (preAuth.IsActive)
+                        {
+
+                            var ReservationDetails = new ServiceLib.OWS.OperaServiceLib().GetReservationDetailsFromPMS(owsRequest);
+                            if (ReservationDetails != null && ReservationDetails.result && ReservationDetails.responseData != null)
+                            {
+                                if (ReservationDetails != null && ReservationDetails.result)
+                                {
+                                    var reservation = (List<Models.OWS.OperaReservation>)ReservationDetails.responseData;
+                                    {
+                                        try
+                                        {
+
+
+                                            var reservationRate = reservation.FirstOrDefault().RateDetails != null ? (reservation.FirstOrDefault().RateDetails.RateAmount != null ? reservation.FirstOrDefault().RateDetails.RateAmount.Value : 0) : 0;
+                                            var folioBalance = reservation.FirstOrDefault().CurrentBalance;
+                                            // add details to datatable
+
+
+                                            Models.OWS.CreditLimitRecord credit = new Models.OWS.CreditLimitRecord();
+                                            credit.ConfirmationNo = reservation.FirstOrDefault().ReservationNumber != null ? reservation.FirstOrDefault().ReservationNumber : "";
+                                            credit.RoomNo = reservation.FirstOrDefault().RoomDetails != null ? reservation.FirstOrDefault().RoomDetails.RoomNumber : "";
+                                            credit.GuetName = reservation.FirstOrDefault().GuestProfiles != null && reservation.FirstOrDefault().GuestProfiles.Count > 0 ? reservation.FirstOrDefault().GuestProfiles[0].GuestName : "";
+                                            credit.ArrivalDate = reservation.FirstOrDefault().ArrivalDate != null ? reservation.FirstOrDefault().ArrivalDate.Value.ToString("dd-MM-yyyy") : "";
+                                            credit.DepartureDate = reservation.FirstOrDefault().DepartureDate != null ? reservation.FirstOrDefault().DepartureDate.Value.ToString("dd-MM-yyyy") : "";
+                                            credit.PaymentMethod = preAuth.OperaPaymentTypeCode;
+                                            credit.CreditCard = preAuth.MaskedCardNumber;
+                                            credit.ExpiryDate = preAuth.ExpiryDate;
+                                            credit.Swiped = "";
+                                            credit.CreditLimit = "0.00";
+                                            credit.TotalApprovalAmount = preAuth.Amount.ToString("0.00");
+
+
+
+                                            credit.Balance = folioBalance.ToString();
+                                            credit.Variance = (folioBalance - preAuth.Amount).ToString("0.00");
+                                            credit.NoPost = reservation.FirstOrDefault().NoPost != null ? "Yes" : "No";
+                                            credit.BlockCode = "";
+                                            credit.RateCode = reservation.FirstOrDefault().RateDetails != null ? reservation.FirstOrDefault().RateDetails.RateCode : "";
+                                            credit.RateAmount = "0";
+
+                                            credit.ApprovalCode = preAuth.ParentPspRefereceNumber;
+                                            credit.ApprovalAmount = preAuth.Amount.ToString("0.00");
+                                            creditlist.Add(credit);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                        }
+
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+                }
+              //  if (creditlist.Count > 0)
+                {
+
+                    try
+                    {
+                        // show in rdlc
+                        //System.IO.File.AppendAllText(System.Web.HttpContext.Current.Server.MapPath("~/ReportJson.txt"), Newtonsoft.Json.JsonConvert.SerializeObject(dataTable));
+                        #region Initilize Reportviewer
+                        ReportViewer rv = new ReportViewer();
+                        rv.ProcessingMode = ProcessingMode.Local;
+                        rv.LocalReport.ReportPath = System.Web.Hosting.HostingEnvironment.MapPath("~/Resources/RDLC/CreditLimitReport.rdlc");
+                        #endregion
+
+                        #region Assin Dataset
+                        ReportDataSource RegcardDatasource = new ReportDataSource();
+                        RegcardDatasource.Name = "DataSet1";
+                        RegcardDatasource.Value = creditlist;
+                        rv.LocalReport.DataSources.Add(RegcardDatasource);
+                        rv.LocalReport.EnableExternalImages = true;
+                        rv.LocalReport.Refresh();
+                        #endregion
+
+                        #region Private Members
+                        byte[] streamBytes = null;
+                        string mimeType = "";
+                        string encoding = "";
+                        string filenameExtension = "";
+                        string[] streamids = null;
+                        Warning[] warnings = null;
+                        #endregion
+                        
+                        streamBytes = rv.LocalReport.Render("PDF", null, out mimeType, out encoding, out filenameExtension, out streamids, out warnings);
+                        string Base64RegCard = "";
+                        Base64RegCard = Convert.ToBase64String(streamBytes);
+                        return new Models.OWS.OwsResponseModel()
+                        {
+                            result = false,
+                            responseData = Base64RegCard,
+                            responseMessage ="success",
+                            statusCode = 8002
+                        };
+                        // return File(streamBytes, "application/pdf", "CreditLimitReport.pdf");
+                    }
+                    catch (Exception ex)
+                    {
+                        return new Models.OWS.OwsResponseModel()
+                        {
+                            result = false,
+                            responseMessage = ex.Message,
+                            statusCode = 8002
+                        };
+                    }
+
+                }
+              
+
+
+            }
+            catch (Exception ex)
+            {
+                return new Models.OWS.OwsResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message,
+                    statusCode = 8002
+                };
+            }
+        }
+
     }
 }

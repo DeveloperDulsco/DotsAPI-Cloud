@@ -213,7 +213,28 @@ namespace CheckinPortalCloudAPI.Models.OWS
 
     }
 
-    
+    public class CreditLimitRecord
+    {
+        public string ConfirmationNo { get; set; }
+        public string RoomNo { get; set; }
+        public string GuetName { get; set; }
+        public string ArrivalDate { get; set; }
+        public string DepartureDate { get; set; }
+        public string PaymentMethod { get; set; }
+        public string CreditCard { get; set; }
+        public string ExpiryDate { get; set; }
+        public string Swiped { get; set; }
+        public string CreditLimit { get; set; }
+        public string TotalApprovalAmount { get; set; }
+        public string Balance { get; set; }
+        public string Variance { get; set; }
+        public string NoPost { get; set; }
+        public string BlockCode { get; set; }
+        public string RateCode { get; set; }
+        public string RateAmount { get; set; }
+        public string ApprovalCode { get; set; }
+        public string ApprovalAmount { get; set; }
+    }
 
     
 

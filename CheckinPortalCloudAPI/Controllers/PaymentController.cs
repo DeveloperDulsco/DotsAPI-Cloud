@@ -1489,6 +1489,63 @@ namespace CheckinPortalCloudAPI.Controllers
                                 Result = true
                             };
                         }
+                        if (modificationResult != null && modificationResult.Response == Adyen.Model.Enum.ResponseEnum.CancelReceived)
+                        {
+                            paymentResponseObject.PspReference = modificationResult.PspReference;
+                            List<Models.AdyenPayment.AdditionalInfo> additionalInfos = new List<Models.AdyenPayment.AdditionalInfo>();
+                            if (modificationResult.AdditionalData != null)
+                            {
+                                foreach (KeyValuePair<string, string> keyValuePair in modificationResult.AdditionalData)
+                                {
+                                    Models.AdyenPayment.AdditionalInfo additionalInfo = new Models.AdyenPayment.AdditionalInfo();
+                                    additionalInfo.key = keyValuePair.Key;
+                                    additionalInfo.value = keyValuePair.Value;
+                                    switch (additionalInfo.key)
+                                    {
+                                        case "refusalReasonRaw":
+                                            paymentResponseObject.RefusalReason = additionalInfo.value;
+                                            break;
+                                        case "expiryDate":
+                                            paymentResponseObject.CardExpiryDate = additionalInfo.value;
+                                            break;
+                                        case "recurring.recurringDetailReference":
+                                            paymentResponseObject.PaymentToken = additionalInfo.value;
+                                            break;
+                                        case "authCode":
+                                            paymentResponseObject.AuthCode = additionalInfo.value;
+                                            break;
+                                        case "paymentMethod":
+                                            paymentResponseObject.CardType = additionalInfo.value;
+                                            break;
+                                        case "fundingSource":
+                                            paymentResponseObject.FundingSource = additionalInfo.value;
+                                            break;
+                                        case "authorisedAmountCurrency":
+                                            paymentResponseObject.Currency = additionalInfo.value;
+                                            break;
+                                        case "authorisedAmountValue":
+                                            paymentResponseObject.Amount = !string.IsNullOrEmpty(additionalInfo.value) ? Decimal.Divide(Convert.ToDecimal(long.Parse(additionalInfo.value)), Convert.ToDecimal(100)) : 0;
+                                            break;
+
+
+                                    }
+                                    additionalInfos.Add(additionalInfo);
+                                }
+                                paymentResponseObject.additionalInfos = additionalInfos;
+                            }
+                            new LogHelper().Log("Adyen cancel payment request completed successfully", paymentRequest.RequestIdentifier, "CancelPayment", "API", "Payment");
+                            new LogHelper().Debug("cancel payment response : " + JsonConvert.SerializeObject(new Models.AdyenPayment.AdyenEcomResponse()
+                            {
+                                ResponseObject = paymentResponseObject,
+                                Result = true
+                            }), paymentRequest.RequestIdentifier, "CancelPayment", "API", "Payment");
+                            return new Models.AdyenPayment.AdyenEcomResponse()
+                            {
+                                ResponseObject = paymentResponseObject,
+                                Result = true
+                            };
+                        }
+
                         else
                         {
                            

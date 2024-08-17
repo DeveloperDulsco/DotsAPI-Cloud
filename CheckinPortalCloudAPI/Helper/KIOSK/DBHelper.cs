@@ -384,5 +384,6 @@ namespace CheckinPortalCloudAPI.Helper.KIOSK
             }
         }
 
+      
     }
 }

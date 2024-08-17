@@ -1,31 +1,36 @@
 <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
   <s:Header>
-    <Action s:mustUnderstand="1" xmlns="http://schemas.microsoft.com/ws/2005/05/addressing/none">http://webservices.micros.com/ows/5.1/Name.wsdl#FetchProfile</Action>
+    <Action s:mustUnderstand="1" xmlns="http://schemas.microsoft.com/ws/2005/05/addressing/none">http://webservices.micros.com/ows/5.1/ResvAdvanced.wsdl#Invoice</Action>
     <wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">
       <wsse:UsernameToken>
         <wsse:Username>HA5D3-KSK</wsse:Username>
         <wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">FairmontsingaporeITADMIN000.</wsse:Password>
       </wsse:UsernameToken>
       <wsu:Timestamp>
-        <wsu:Created>2023-12-13T11:00:15Z</wsu:Created>
-        <wsu:Expires>2023-12-13T11:05:15Z</wsu:Expires>
+        <wsu:Created>2024-05-01T08:10:29Z</wsu:Created>
+        <wsu:Expires>2024-05-01T08:15:29Z</wsu:Expires>
       </wsu:Timestamp>
     </wsse:Security>
-    <OGHeader transactionID="31062759" timeStamp="2023-12-13T11:00:15" xmlns="http://webservices.micros.com/og/4.3/Core/">
+    <OGHeader transactionID="29519323" timeStamp="2024-05-01T08:10:29" xmlns="http://webservices.micros.com/og/4.3/Core/">
       <Origin entityID="KIOSK" systemType="KIOSK" />
       <Destination entityID="KIOSK" systemType="PMS" />
       <Authentication>
         <UserCredentials>
-          <UserName>HA5D3-KSK</UserName>
-          <UserPassword>FairmontsingaporeITADMIN000.</UserPassword>
-          <Domain>HA5D3</Domain>
+          <UserName>SUPERVISOR</UserName>
+          <UserPassword>PEGASUS2021</UserPassword>
+          <Domain>EU</Domain>
         </UserCredentials>
       </Authentication>
     </OGHeader>
   </s:Header>
   <s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-    <FetchProfileRequest xmlns="http://webservices.micros.com/ows/5.1/Name.wsdl">
-      <NameID type="INTERNAL">1580385</NameID>
-    </FetchProfileRequest>
+    <InvoiceRequest xmlns="http://webservices.micros.com/og/4.3/ResvAdvanced/">
+      <ReservationRequest>
+        <HotelReference chainCode="CHA" hotelCode="EU" />
+        <ReservationID>
+          <UniqueID type="EXTERNAL" source="RESV_NAME_ID" xmlns="http://webservices.micros.com/og/4.3/Common/">314425</UniqueID>
+        </ReservationID>
+      </ReservationRequest>
+    </InvoiceRequest>
   </s:Body>
 </s:Envelope>

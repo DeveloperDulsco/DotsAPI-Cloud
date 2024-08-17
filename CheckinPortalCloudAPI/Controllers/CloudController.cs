@@ -3183,8 +3183,7 @@ namespace CheckinPortalCloudAPI.Controllers
             }
         }
 
-
-
+       
 
         #endregion
 
@@ -4600,5 +4599,442 @@ namespace CheckinPortalCloudAPI.Controllers
 
         }
 
+        [HttpPost]
+        [ActionName("FetchPolicyMaster")]
+        public async Task<Models.Cloud.CloudResponseModel> FetchPolicyMaster(Models.Cloud.CloudRequestModel cloudRequest)
+        {
+            try
+            {
+
+                List<Models.Cloud.DB.PolicyMaster> policyMaster = Helper.Cloud.DBHelper.Instance.FetchPolicyMaster(ConfigurationManager.AppSettings["ConnectionString"]);
+                {
+                    return new Models.Cloud.CloudResponseModel()
+                    {
+                        responseData = policyMaster,
+                        result = true,
+                        responseMessage = "Success",
+                        statusCode = 101
+                    };
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return new Models.Cloud.CloudResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message,
+                    statusCode = -1
+                };
+            }
+
+        }
+
+        [HttpPost]
+        [ActionName("FetchPaymentHistory")]
+        public async Task<Models.Cloud.CloudResponseModel> FetchPaymentHistory(Models.Cloud.CloudRequestModel cloudRequest)
+        {
+            try
+            {
+
+                List<Models.Cloud.DB.PaymentHistory> paymentHistory = Helper.Cloud.DBHelper.Instance.FetchPaymentHistory(ConfigurationManager.AppSettings["SaavyConnectionString"],"");
+                {
+                    return new Models.Cloud.CloudResponseModel()
+                    {
+                        responseData = paymentHistory,
+                        result = true,
+                        responseMessage = "Success",
+                        statusCode = 101
+                    };
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return new Models.Cloud.CloudResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message,
+                    statusCode = -1
+                };
+            }
+
+        }
+        [HttpPost]
+        [ActionName("FetchReservationDetailsByReferenceNumber")]
+        public async Task<Models.Cloud.CloudResponseModel> FetchReservationDetailsByReferenceNumber(Models.Cloud.CloudRequestModel cloudRequest)
+        {
+            try
+            {
+                //new LogHelper().Log("Fetching reservation status started", cloudRequest.RequestObject.ToString(), "FetchReservationStatusInCloud", "API", "Payment");
+
+                List<Models.Cloud.DB.CloudReservationModel> reservationStatusInClouds = Helper.Cloud.DBHelper.Instance.FetchReservationDetailsByReferenceNumber
+(ConfigurationManager.AppSettings["ConnectionString"], cloudRequest.RequestObject.ToString());
+
+                if (reservationStatusInClouds != null && reservationStatusInClouds.Count > 0)
+                {
+                    return new Models.Cloud.CloudResponseModel()
+                    {
+                        responseData = reservationStatusInClouds,
+                        result = true,
+                        responseMessage = "Success",
+                        statusCode = 101
+                    };
+                }
+                else
+                {
+                    return new Models.Cloud.CloudResponseModel()
+                    {
+                        responseData = null,
+                        result = false,
+                        responseMessage = "Reservation not found",
+                        statusCode = -1
+                    };
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                return new Models.Cloud.CloudResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message,
+                    statusCode = -1
+                };
+            }
+
+        }
+
+        [HttpPost]
+        [ActionName("GetCountry")]
+        public async Task<Models.Cloud.CloudResponseModel> GetCountry(Models.Cloud.CloudRequestModel cloudReques)
+        {
+            try
+            {
+              
+
+                List<Models.Cloud.DB.CountryMaster> reservationStatusInClouds = Helper.Cloud.DBHelper.Instance.FetchCountryMaster
+(ConfigurationManager.AppSettings["ConnectionString"]);
+
+                if (reservationStatusInClouds != null && reservationStatusInClouds.Count > 0)
+                {
+                    return new Models.Cloud.CloudResponseModel()
+                    {
+                        responseData = reservationStatusInClouds,
+                        result = true,
+                        responseMessage = "Success",
+                        statusCode = 101
+                    };
+                }
+                else
+                {
+                    return new Models.Cloud.CloudResponseModel()
+                    {
+                        responseData = null,
+                        result = false,
+                        responseMessage = "Reservation not found",
+                        statusCode = -1
+                    };
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                return new Models.Cloud.CloudResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message,
+                    statusCode = -1
+                };
+            }
+        }
+
+        [HttpPost]
+        [ActionName("GetState")]
+        public async Task<Models.Cloud.CloudResponseModel> GetState(Models.Cloud.CloudRequestModel cloudReques)
+        {
+            try
+            {
+
+                Models.Cloud.DB.StateMaster stateMaster = JsonConvert.DeserializeObject<StateMaster>(cloudReques.RequestObject.ToString());
+                List<Models.Cloud.DB.StateMaster> reservationStatusInClouds = Helper.Cloud.DBHelper.Instance.FetchStateMaster
+(ConfigurationManager.AppSettings["ConnectionString"], stateMaster.CountryMasterID.Value);
+
+                if (reservationStatusInClouds != null && reservationStatusInClouds.Count > 0)
+                {
+                    return new Models.Cloud.CloudResponseModel()
+                    {
+                        responseData = reservationStatusInClouds,
+                        result = true,
+                        responseMessage = "Success",
+                        statusCode = 101
+                    };
+                }
+                else
+                {
+                    return new Models.Cloud.CloudResponseModel()
+                    {
+                        responseData = null,
+                        result = false,
+                        responseMessage = "Reservation not found",
+                        statusCode = -1
+                    };
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                return new Models.Cloud.CloudResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message,
+                    statusCode = -1
+                };
+            }
+        }
+
+        [HttpPost]
+        [ActionName("UpdateReservationStatus")]
+      
+        public async Task<Models.Cloud.CloudResponseModel> UpdateReservationStatus(Models.Cloud.CloudRequestModel localDataRequest)
+        {
+            try
+            {
+                Models.Cloud.DB.ReservationStatusRequestModel ReservationstatusModel = Newtonsoft.Json.JsonConvert.DeserializeObject<Models.Cloud.DB.ReservationStatusRequestModel>(localDataRequest.RequestObject.ToString());
+
+                if (Helper.Cloud.DBHelper.Instance.UpdateReservationStatus(ReservationstatusModel, ConfigurationManager.AppSettings["ConnectionString"]))
+                {
+                    return new Models.Cloud.CloudResponseModel()
+                    {
+                        result = true,
+                        responseMessage = "Success",
+                        statusCode = 101
+                    };
+                }
+                else
+                    return new Models.Cloud.CloudResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Failled to update the data",
+                        statusCode = -1
+                    };
+            }
+            catch (Exception ex)
+            {
+                return new Models.Cloud.CloudResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message,
+                    statusCode = -1
+                };
+            }
+
+        }
+        //Paylink Methods
+        [HttpPost]
+        [ActionName("PushPaymentRequest")]
+        public async Task<Models.Cloud.CloudResponseModel> PushPaymentRequest(Models.Cloud.CloudRequestModel cloudRequest)
+        {
+            try
+            {
+               Models.Cloud.PayLinkRequest payLinkRequest = Newtonsoft.Json.JsonConvert.DeserializeObject<Models.Cloud.PayLinkRequest>(cloudRequest.RequestObject.ToString());
+
+                if (Helper.Cloud.DBHelper.Instance.InsertPayLinkRequestDetails(payLinkRequest, ConfigurationManager.AppSettings["ConnectionString"]))
+                {
+                    return new Models.Cloud.CloudResponseModel()
+                    {
+                        result = true,
+                        responseMessage = "Success",
+                        statusCode = 101
+                    };
+                }
+                else
+                    return new Models.Cloud.CloudResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Failled to insert the data",
+                        statusCode = -1
+                    };
+            }
+            catch (Exception ex)
+            {
+                return new Models.Cloud.CloudResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message,
+                    statusCode = -1
+                };
+            }
+
+        }
+
+        [HttpPost]
+        public async Task<Models.Cloud.CloudResponseModel> PayLinkInsertPayment(Models.Cloud.CloudRequestModel cloudRequest)
+        {
+            try
+            {
+                Models.Cloud.PayLinkRequest payLinkRequest = Newtonsoft.Json.JsonConvert.DeserializeObject<Models.Cloud.PayLinkRequest>(cloudRequest.RequestObject.ToString());
+
+                if (Helper.Cloud.DBHelper.Instance.InsertPayLinkRequestDetails(payLinkRequest, ConfigurationManager.AppSettings["ConnectionString"]))
+                {
+                    return new Models.Cloud.CloudResponseModel()
+                    {
+                        result = true,
+                        responseMessage = "Success",
+                        statusCode = 101
+                    };
+                }
+                else
+                    return new Models.Cloud.CloudResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Failled to insert the data",
+                        statusCode = -1
+                    };
+            }
+            catch (Exception ex)
+            {
+                return new Models.Cloud.CloudResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message,
+                    statusCode = -1
+                };
+            }
+        }
+
+        [HttpPost]
+        [ActionName("PushPaymentDetails")]
+        public async Task<Models.Cloud.CloudResponseModel> PushPaymentDetails(Models.Cloud.CloudRequestModel localRequest)
+        {
+            try
+            {
+               Models.Cloud.DB.PaymentDetails paymentDetails = JsonConvert.DeserializeObject<Models.Cloud.DB.PaymentDetails>(localRequest.RequestObject.ToString());
+                if (paymentDetails != null)
+                {
+                    if (Helper.Cloud.DBHelper.Instance.InsertPaymentCloudDetails(paymentDetails.paymentHistories, paymentDetails.paymentHeaders, paymentDetails.paymentAdditionalInfos, ConfigurationManager.AppSettings["ConnectionString"]))
+                    {
+                        return new Models.Cloud.CloudResponseModel()
+                        {
+                            result = true,
+                            responseMessage = "Success",
+                            statusCode = 101
+                        };
+                    }
+                    else
+                        return new Models.Cloud.CloudResponseModel()
+                        {
+                            result = false,
+                            responseMessage = "Failled to insert the data",
+                            statusCode = -1
+                        };
+                }
+                else
+                {
+                    return new Models.Cloud.CloudResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Request object can not be null",
+                        statusCode = -1
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new Models.Cloud.CloudResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message,
+                    statusCode = -1
+                };
+            }
+
+        }
+
+        [HttpPost]
+        [ActionName("UpdatePaymentRequestStatus")]
+
+        public async Task<Models.Cloud.CloudResponseModel> UpdatePaymentRequestStatus(Models.Cloud.CloudRequestModel localDataRequest)
+        {
+            try
+            {
+               
+
+                if (Helper.Cloud.DBHelper.Instance.UpdatePaymentRequeststatus(localDataRequest.RequestObject.ToString(), ConfigurationManager.AppSettings["ConnectionString"]))
+                {
+                    return new Models.Cloud.CloudResponseModel()
+                    {
+                        result = true,
+                        responseMessage = "Success",
+                        statusCode = 101
+                    };
+                }
+                else
+                    return new Models.Cloud.CloudResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Failled to update the data",
+                        statusCode = -1
+                    };
+            }
+            catch (Exception ex)
+            {
+                return new Models.Cloud.CloudResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message,
+                    statusCode = -1
+                };
+            }
+
+        }
+        [HttpPost]
+        [ActionName("FetchPaymentRequest")]
+        public async Task<Models.Cloud.CloudResponseModel> FetchPaymentRequest(Models.Cloud.CloudRequestModel cloudRequest)
+        {
+            try
+            {
+               
+
+                List<Models.Cloud.PayLinkFetchRequest> reservationStatusInClouds = Helper.Cloud.DBHelper.Instance.FetchPaymentRequest
+(ConfigurationManager.AppSettings["ConnectionString"], cloudRequest.RequestObject.ToString());
+
+                if (reservationStatusInClouds != null && reservationStatusInClouds.Count > 0)
+                {
+                    return new Models.Cloud.CloudResponseModel()
+                    {
+                        responseData = reservationStatusInClouds,
+                        result = true,
+                        responseMessage = "Success",
+                        statusCode = 101
+                    };
+                }
+                else
+                {
+                    return new Models.Cloud.CloudResponseModel()
+                    {
+                        responseData = null,
+                        result = false,
+                        responseMessage = "Reservation not found",
+                        statusCode = -1
+                    };
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                return new Models.Cloud.CloudResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message,
+                    statusCode = -1
+                };
+            }
+
+        }
     }
 }

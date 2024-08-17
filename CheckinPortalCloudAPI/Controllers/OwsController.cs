@@ -17,7 +17,7 @@ namespace CheckinPortalCloudAPI.Controllers
         [ActionName("FetchReservationSummaryList")]
         public async Task<Models.OWS.OwsResponseModel> FetchReservationSummaryList(Models.OWS.OwsRequestModel owsRequest)
         {
-           
+
             return new ServiceLib.OWS.OperaServiceLib().GetReservationSummaryList(owsRequest);
         }
 
@@ -130,7 +130,7 @@ namespace CheckinPortalCloudAPI.Controllers
             try
             {
 
-              
+
                 if (AddPayresponse != null)
                 {
                     if (AddPayresponse.result)
@@ -155,13 +155,13 @@ namespace CheckinPortalCloudAPI.Controllers
                 }
                 return AddPayresponse;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 new LogHelper().Error(ex, null, "PushOPeraPaymentDetails", "API", "AddPayment");
                 return AddPayresponse;
             }
 
-            
+
         }
 
 
@@ -172,7 +172,7 @@ namespace CheckinPortalCloudAPI.Controllers
             return new ServiceLib.OWS.OperaServiceLib().GuestCheckIn(Request);
         }
 
-        
+
 
         [HttpPost]
         [ActionName("GetRegCardAsBase64")]
@@ -209,7 +209,7 @@ namespace CheckinPortalCloudAPI.Controllers
         {
             return new ServiceLib.OWS.OperaServiceLib().UpdateName(Request);
         }
-        
+
         [HttpPost]
         [ActionName("CreateAccompanyingGuset")]
         public Models.OWS.OwsResponseModel CreateAccompanyingGuset(Models.OWS.OwsRequestModel Request)
@@ -238,7 +238,7 @@ namespace CheckinPortalCloudAPI.Controllers
             return new ServiceLib.OWS.OperaServiceLib().GetBusinessDate(Request);
         }
 
-        
+
 
         [HttpPost]
         [ActionName("AssignRoom")]
@@ -251,7 +251,7 @@ namespace CheckinPortalCloudAPI.Controllers
         [ActionName("FetchRoomList")]
         public Models.OWS.OwsResponseModel FetchRoomList(Models.OWS.OwsRequestModel Request)
         {
-            
+
             return new ServiceLib.OWS.OperaServiceLib().FetchRoomList(Request);
         }
 
@@ -324,6 +324,34 @@ namespace CheckinPortalCloudAPI.Controllers
         public async Task<Models.OWS.OwsResponseModel> EncodeKey(Models.OWS.OwsRequestModel owsRequest)
         {
             return new ServiceLib.OWS.OperaServiceLib().EncodeKey(owsRequest);
+        }
+        [HttpPost]
+        [ActionName("CreditLimit")]
+        public async Task<Models.OWS.OwsResponseModel> CreditLimit(Models.OWS.OwsRequestModel owsRequest)
+        {
+            try
+            {
+                var result = new ServiceLib.OWS.OperaServiceLib().GetCreditlimitRecord(owsRequest);
+                if (result != null && result.responseData != null)
+                {
+                    return result;
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                return new Models.OWS.OwsResponseModel
+                {
+                    responseData = "",
+                    result = false
+                };
+            }
+            return new Models.OWS.OwsResponseModel
+            {
+                responseData = "",
+                result = false
+            };
         }
     }
 }

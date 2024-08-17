@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<PDFTYPES>
+	
+	<PDFTYPE>
+		<DocumentName>TAX INVOICE</DocumentName>
+		<Signature>guest signature</Signature>
+		<DataIdentifier>Reservation No</DataIdentifier>
+		<DataIdentifierPosition>right</DataIdentifierPosition>
+		<DataIdentifierxaxis>100</DataIdentifierxaxis>
+		<DataIdentifieryaxis>2</DataIdentifieryaxis>
+		<DocumentType>foliotemplate</DocumentType>
+		
+	</PDFTYPE>
+	
+
+</PDFTYPES>

@@ -34,7 +34,8 @@ namespace CheckinPortalCloudAPI.Models.Email
             AcceptRequest,
             RejectRequest,
             CheckinSlip,
-        ServiceError
+        ServiceError,
+        PayByLink
     }
 
 

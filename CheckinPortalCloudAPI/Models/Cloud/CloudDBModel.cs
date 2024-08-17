@@ -7,7 +7,7 @@ using System.Web;
 namespace CheckinPortalCloudAPI.Models.Cloud.DB
 
 {
-    public class OperaReservationDataTableModel
+	public class OperaReservationDataTableModel
 	{
 		public string ReservationNameID { get; set; }
 		public string ReservationNumber { get; set; }
@@ -19,9 +19,9 @@ namespace CheckinPortalCloudAPI.Models.Cloud.DB
 		public string MembershipType { get; set; }
 		public bool IsDepositAvailable { get; set; }
 		public bool IsCardDetailPresent { get; set; }
-		
+
 		public bool IsSaavyPaid { get; set; }
-		
+
 		public DateTime ETA { get; set; }
 
 		public string RoomType { get; set; }
@@ -34,7 +34,7 @@ namespace CheckinPortalCloudAPI.Models.Cloud.DB
 		public decimal PaidAmount { get; set; }
 		public decimal BalanceAmount { get; set; }
 		public string StatusDescription { get; set; }
-		public  string ReservationSource { get; set; }
+		public string ReservationSource { get; set; }
 
 		public bool? IsBreakFastAvailable { get; set; }
 
@@ -62,11 +62,11 @@ namespace CheckinPortalCloudAPI.Models.Cloud.DB
 	}
 
 	public class ReservationAdditionalDetails
-    {
+	{
 		public string ResID { get; set; }
 		public string FieldName { get; set; }
 		public string FIeldValue { get; set; }
-    }
+	}
 
 	public class BINationalityWiseSummaryArrivals
 	{
@@ -141,8 +141,8 @@ namespace CheckinPortalCloudAPI.Models.Cloud.DB
 		public string Email { get; set; }
 		public string Phone { get; set; }
 		public DateTime? BirthDate { get; set; }
-		public string Nationality { get; set; }		
-		
+		public string Nationality { get; set; }
+
 		public string AddressLine1 { get; set; }
 		public string AddressLine2 { get; set; }
 		public string City { get; set; }
@@ -150,22 +150,22 @@ namespace CheckinPortalCloudAPI.Models.Cloud.DB
 		public string PostalCode { get; set; }
 		public string CountryCode { get; set; }
 		public string Gender { get; set; }
-		
+
 	}
 	public class ProfileDocumentDetailsModel
 	{
-	public string ReservationNameID{get;set;}
-	public string ProfileID{get;set;}
-	public string DocumentTypeCode{get;set;}
-	public string DocumentNumber{get;set;}
-	public DateTime? ExpiryDate{get;set;}
-	public DateTime? IssueDate{get;set;}
+		public string ReservationNameID { get; set; }
+		public string ProfileID { get; set; }
+		public string DocumentTypeCode { get; set; }
+		public string DocumentNumber { get; set; }
+		public DateTime? ExpiryDate { get; set; }
+		public DateTime? IssueDate { get; set; }
 		public string IssueCountry { get; set; }
-		public byte[] DocumentImage1{get;set;}
-	public byte[] DocumentImage2{get;set;}
-	public byte[] DocumentImage3{get;set;}
-	public byte[] FaceImage{get;set;}
-		
+		public byte[] DocumentImage1 { get; set; }
+		public byte[] DocumentImage2 { get; set; }
+		public byte[] DocumentImage3 { get; set; }
+		public byte[] FaceImage { get; set; }
+
 
 	}
 
@@ -190,15 +190,15 @@ namespace CheckinPortalCloudAPI.Models.Cloud.DB
 		public string CloudProfileDetailID { get; set; }
 		public string DocumentTypeCode { get; set; }
 		public string IssueCountry { get; set; }
-		
+
 	}
 
 	public partial class PaymentDetails
-    {
+	{
 		public List<PaymentHeader> paymentHeaders { get; set; }
 		public List<PaymentAdditionalInfo> paymentAdditionalInfos { get; set; }
 		public List<PaymentHistory> paymentHistories { get; set; }
-    }
+	}
 
 	public class PaymentHeader
 	{
@@ -232,7 +232,7 @@ namespace CheckinPortalCloudAPI.Models.Cloud.DB
 	}
 
 	public class PaymentNotification
-    {
+	{
 		public string EventCode { get; set; }
 		public DateTime EventDate { get; set; }
 		public string MerchantAccountCode { get; set; }
@@ -249,12 +249,12 @@ namespace CheckinPortalCloudAPI.Models.Cloud.DB
 	}
 
 	public class TbNotificationListType
-    {
+	{
 		public string PspReferenceNumber { get; set; }
 
 	}
 
-	
+
 
 	public class PaymentHistory
 	{
@@ -277,7 +277,7 @@ namespace CheckinPortalCloudAPI.Models.Cloud.DB
 		public string PackageName { get; set; }
 		public string PackageDesc { get; set; }
 		public string PackageAmount { get; set; }
-		public bool? IsRoomUpsell { get; set; } 
+		public bool? IsRoomUpsell { get; set; }
 	}
 
 	public partial class PackageMasterModel
@@ -295,7 +295,7 @@ namespace CheckinPortalCloudAPI.Models.Cloud.DB
 	}
 
 	public partial class PackageMasterDataTableModel
-    {
+	{
 		public int UniquePackageFlag { get; set; }
 		public int PackageID { get; set; }
 		public string PackageCode { get; set; }
@@ -312,12 +312,12 @@ namespace CheckinPortalCloudAPI.Models.Cloud.DB
 
 	}
 
-	
+
 
 	public class RoomTypeCode
-    {
+	{
 		public string RoomCode { get; set; }
-    }
+	}
 
 	public partial class CloudFetchCheckoutReservationModel
 	{
@@ -337,28 +337,28 @@ namespace CheckinPortalCloudAPI.Models.Cloud.DB
 		public Nullable<bool> IsPreCheckedInPMS { get; set; }
 		public string FlightNo { get; set; }
 		public Nullable<System.DateTime> ETA { get; set; }
-		
+
 		public bool? IsMemberShipEnrolled { get; set; }
 		public byte[] GuestSignature { get; set; }
 		public string FolioEmail { get; set; }
 	}
 
 	public class ReservationStatusInCloud
-    {
+	{
 		public string MessageCode { get; set; }
-        public string MessageDescription { get; set; }
+		public string MessageDescription { get; set; }
 		public bool? MessageStatus { get; set; }
-    }
+	}
 
 	public partial class CloudFetchReservationPolicyModel
-    {
+	{
 		public string ReservationNameID { get; set; }
 		public string ReservationNumber { get; set; }
 		public string PolicyDescription { get; set; }
 		public bool? PolicyValue { get; set; }
 	}
 
-	public partial class CloudFetchReservationModel
+	public class CloudFetchReservationModel
 	{
 		public string ReservationNameID { get; set; }
 		public string ReservationNumber { get; set; }
@@ -370,9 +370,9 @@ namespace CheckinPortalCloudAPI.Models.Cloud.DB
 		public string MembershipType { get; set; }
 		public Nullable<bool> IsDepositAvailable { get; set; }
 		public Nullable<bool> IsCardDetailPresent { get; set; }
-		
+
 		public Nullable<bool> IsSaavyPaid { get; set; }
-		
+
 		public Nullable<bool> IsPreCheckedInPMS { get; set; }
 		public string FlightNo { get; set; }
 		public Nullable<System.DateTime> ETA { get; set; }
@@ -401,6 +401,7 @@ namespace CheckinPortalCloudAPI.Models.Cloud.DB
 		public string StatusDescription { get; set; }
 		public string ReservationSource { get; set; }
 		public string Gender { get; set; }
+
 	}
 
 	public partial class FeedBackModel
@@ -411,9 +412,59 @@ namespace CheckinPortalCloudAPI.Models.Cloud.DB
 	}
 
 	public partial class RoomTypeMaster
-    {
+	{
 		public int RoomTypeID { get; set; }
 		public string RoomTypeCode { get; set; }
 		public string RoomTypeDescription { get; set; }
+	}
+	public partial class PolicyMaster
+	{
+		public bool Ismandatory { get; set; }
+		public string PolicyType { get; set; }
+		public string PolicyDescription { get; set; }
+	}
+	public class CloudReservationModel
+	{
+		public int ReservationDetailID { get; set; }
+		public string ReservationNameID { get; set; }
+		public string ReservationNumber { get; set; }
+		public Nullable<System.DateTime> ArrivalDate { get; set; }
+		public Nullable<System.DateTime> DepartureDate { get; set; }
+		public Nullable<int> Adultcount { get; set; }
+		public Nullable<int> Childcount { get; set; }
+		public string MembershipNo { get; set; }
+		public string MembershipType { get; set; }
+		public Nullable<bool> IsDepositAvailable { get; set; }
+		public Nullable<bool> IsCardDetailPresent { get; set; }
+		public Nullable<bool> IsSaavyPaid { get; set; }
+		public Nullable<bool> IsPreCheckedInPMS { get; set; }
+
+		public Nullable<bool> IsPrecheckOutPMS { get; set; }
+		public Nullable<bool> IsEcomchekinPaymentStaus { get; set; }
+		public Nullable<bool> IsEcomchekOUtPaymentStaus { get; set; }
+		public Nullable<bool> IsUploadComplete { get; set; }
+		public string FlightNo { get; set; }
+		public Nullable<System.DateTime> ETA { get; set; }
+		public bool? IsBreakFastAvailable { get; set; }
+	}
+	public class CountryMaster
+	{
+		public int CountryMasterID { get; set; }
+		public string Country_Full_name { get; set; }
+		public string Country_3Char_code { get; set; }
+		public string Country_2Char_code { get; set; }
+	}
+	public class StateMaster
+	{
+		public int StateMasterID { get; set; }
+		public string Statename { get; set; }
+		public string StateCode { get; set; }
+		public int? CountryMasterID { get; set; }
+	}
+	public class ReservationStatusRequestModel
+	{
+		public int ReservationID { get; set; }
+		public string ReservationNameID { get; set; }
+		public string Type { get; set; }
 	}
 }

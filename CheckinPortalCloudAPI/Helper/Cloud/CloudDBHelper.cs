@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 
 namespace CheckinPortalCloudAPI.Helper.Cloud
@@ -12,18 +13,19 @@ namespace CheckinPortalCloudAPI.Helper.Cloud
     public class DBHelper
     {
         private static readonly Lazy<DBHelper>
-           lazy = new Lazy<DBHelper>(() => 
+           lazy = new Lazy<DBHelper>(() =>
            new DBHelper()
            );
 
-        public static DBHelper Instance 
+        public static DBHelper Instance
         {
-            get { 
-                return lazy.Value; 
-            } 
+            get
+            {
+                return lazy.Value;
+            }
         }
 
-        public  DataTable ToDataTable<T>(IList<T> data)
+        public DataTable ToDataTable<T>(IList<T> data)
         {
             PropertyDescriptorCollection properties =
                 TypeDescriptor.GetProperties(typeof(T));
@@ -102,14 +104,14 @@ namespace CheckinPortalCloudAPI.Helper.Cloud
             return isSavedSuccessfully;
         }
 
-        public bool InsertReservationDetails(List<Models.Cloud.DB.OperaReservationDataTableModel> reservationDetailsTypeModels, List<Models.Cloud.DB.ProfileDetailsDataTableModel> profileDetailsTypeModels, List<Models.Cloud.DB.ProfileDocumentDetailsModel> profileDocumentDetailsTypeModels,string ConnectionString)
+        public bool InsertReservationDetails(List<Models.Cloud.DB.OperaReservationDataTableModel> reservationDetailsTypeModels, List<Models.Cloud.DB.ProfileDetailsDataTableModel> profileDetailsTypeModels, List<Models.Cloud.DB.ProfileDocumentDetailsModel> profileDocumentDetailsTypeModels, string ConnectionString)
         {
             try
             {
                 SQLHelpers.Instance.SetConnectionString(ConnectionString);
                 return InsertReservationDetails(this.ToDataTable(reservationDetailsTypeModels), this.ToDataTable(profileDetailsTypeModels), this.ToDataTable(profileDocumentDetailsTypeModels));
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw ex;
             }
@@ -121,8 +123,8 @@ namespace CheckinPortalCloudAPI.Helper.Cloud
             try
             {
                 SQLHelpers.Instance.SetConnectionString(ConnectionString);
-                
-                
+
+
                 #region Parameters
                 SqlParameter TbPaymentHeaderTypeParmeter = new SqlParameter()
                 {
@@ -149,7 +151,7 @@ namespace CheckinPortalCloudAPI.Helper.Cloud
                 {
                     isSavedSuccessfully = ResultTable.Rows[0][0].ToString() == "1";
                 }
-                
+
                 return isSavedSuccessfully;
             }
             catch (Exception ex)
@@ -251,7 +253,7 @@ namespace CheckinPortalCloudAPI.Helper.Cloud
             }
         }
 
-        public bool UpdatePaymentNotifications(string ConnectionString,List<Models.Cloud.DB.TbNotificationListType> pspRefernceList )
+        public bool UpdatePaymentNotifications(string ConnectionString, List<Models.Cloud.DB.TbNotificationListType> pspRefernceList)
         {
             bool isUpdatedSuccessfully = false;
             try
@@ -282,7 +284,7 @@ namespace CheckinPortalCloudAPI.Helper.Cloud
             }
         }
 
-        public bool InsertDueOutReservationDetails(List<Models.Cloud.DB.OperaReservationDataTableModel> reservationDetailsTypeModels, List<Models.Cloud.DB.ProfileDetailsDataTableModel> profileDetailsTypeModels, List<Models.Cloud.DB.ReservationDocumentsDataTableModel> reservationDocumentsDataTables , string ConnectionString)
+        public bool InsertDueOutReservationDetails(List<Models.Cloud.DB.OperaReservationDataTableModel> reservationDetailsTypeModels, List<Models.Cloud.DB.ProfileDetailsDataTableModel> profileDetailsTypeModels, List<Models.Cloud.DB.ReservationDocumentsDataTableModel> reservationDocumentsDataTables, string ConnectionString)
         {
             try
             {
@@ -295,7 +297,7 @@ namespace CheckinPortalCloudAPI.Helper.Cloud
             }
         }
 
-        public bool InsertDueOutReservationDetails(DataTable reservationDetailsType, DataTable profileDetailsType, DataTable profileDocumentDetailsType,DataTable reservationDocuments)
+        public bool InsertDueOutReservationDetails(DataTable reservationDetailsType, DataTable profileDetailsType, DataTable profileDocumentDetailsType, DataTable reservationDocuments)
         {
             bool isSavedSuccessfully = false;
             try
@@ -382,7 +384,7 @@ namespace CheckinPortalCloudAPI.Helper.Cloud
             }
             return isSavedSuccessfully;
         }
-    
+
         public List<Models.Cloud.DB.CloudFetchReservationModel> FetchReservationForLocalPush(string ConnectionString)
         {
             SQLHelpers.Instance.SetConnectionString(ConnectionString);
@@ -399,10 +401,10 @@ namespace CheckinPortalCloudAPI.Helper.Cloud
             return DataTableToList<Models.Cloud.DB.CloudFetchReservationModel>(transaction);
         }
 
-        public List<Models.Cloud.DB.CloudFetchReservationModel> FetchReservationForLocalPush(string ConnectionString,string ReservationNumber, bool isForceFetch)
+        public List<Models.Cloud.DB.CloudFetchReservationModel> FetchReservationForLocalPush(string ConnectionString, string ReservationNumber, bool isForceFetch)
         {
             SQLHelpers.Instance.SetConnectionString(ConnectionString);
-            
+
             #region Parameters
             SqlParameter reservationNumberParmeter = new SqlParameter()
             {
@@ -443,7 +445,7 @@ namespace CheckinPortalCloudAPI.Helper.Cloud
                 Value = ReservationNumber,
             };
 
-            
+
 
             #endregion
 
@@ -473,7 +475,7 @@ namespace CheckinPortalCloudAPI.Helper.Cloud
                 Value = ReservationNumber,
             };
 
-            
+
             #endregion
 
             try
@@ -488,7 +490,7 @@ namespace CheckinPortalCloudAPI.Helper.Cloud
             return DataTableToList<Models.Cloud.DB.ReservationStatusInCloud>(transaction);
         }
 
-        public List<Models.Cloud.DB.DataClearResponseDataTableModel> ClearData(string ConnectionString,string reservationNameID)
+        public List<Models.Cloud.DB.DataClearResponseDataTableModel> ClearData(string ConnectionString, string reservationNameID)
         {
             DataTable transaction = new DataTable();
             SQLHelpers.Instance.SetConnectionString(ConnectionString);
@@ -525,7 +527,7 @@ namespace CheckinPortalCloudAPI.Helper.Cloud
             }
             return DataTableToList<Models.Cloud.DB.CloudFetchCheckoutReservationModel>(transaction);
         }
-        public List<Models.Cloud.DB.CloudFetchCheckoutReservationModel> FetchReservationforLocalPushCheckOut(string ConnectionString,string reservationID)
+        public List<Models.Cloud.DB.CloudFetchCheckoutReservationModel> FetchReservationforLocalPushCheckOut(string ConnectionString, string reservationID)
         {
             SQLHelpers.Instance.SetConnectionString(ConnectionString);
             DataTable transaction = new DataTable();
@@ -548,7 +550,7 @@ namespace CheckinPortalCloudAPI.Helper.Cloud
         }
 
 
-        public List<Models.Cloud.DB.ProfileDocuments> FetchProfileDocuments(string ConnectionString,string ReservationNameID)
+        public List<Models.Cloud.DB.ProfileDocuments> FetchProfileDocuments(string ConnectionString, string ReservationNameID)
         {
             SQLHelpers.Instance.SetConnectionString(ConnectionString);
             SqlParameter reservationDetailsTypeParmeter = new SqlParameter()
@@ -625,9 +627,9 @@ namespace CheckinPortalCloudAPI.Helper.Cloud
             }
         }
 
-        public List<Models.Cloud.DB.PaymentAdditionalInfo> FetchpaymentAdditionalInfo(string ConnectionString,string ReservationNameID)
+        public List<Models.Cloud.DB.PaymentAdditionalInfo> FetchpaymentAdditionalInfo(string ConnectionString, string ReservationNameID)
         {
-            
+
             SQLHelpers.Instance.SetConnectionString(ConnectionString);
             SqlParameter reservationnameIDParmeter = new SqlParameter()
             {
@@ -670,7 +672,7 @@ namespace CheckinPortalCloudAPI.Helper.Cloud
             {
                 string Query = string.Empty;
                 transaction = SQLHelpers.Instance.ExecuteSP("usp_FetchPaymentHistoryforLocalPush", reservationnameIDParmeter);
-                if(transaction != null)
+                if (transaction != null)
                 {
                     List<Models.Cloud.DB.PaymentHistory> paymentHistories = DataTableToList<Models.Cloud.DB.PaymentHistory>(transaction);
                     return paymentHistories;
@@ -684,15 +686,15 @@ namespace CheckinPortalCloudAPI.Helper.Cloud
             {
                 throw ex;
             }
-           
+
         }
 
-       
+
 
         public List<Models.Cloud.DB.PaymentNotification> FetchPaymentNotifications(string ConnectionString)
         {
             SQLHelpers.Instance.SetConnectionString(ConnectionString);
-            
+
             DataTable transaction = new DataTable();
             try
             {
@@ -784,7 +786,7 @@ namespace CheckinPortalCloudAPI.Helper.Cloud
         public List<Models.Cloud.DB.RoomTypeMaster> FetchRoomTypeMaster(string ConnectionString)
         {
             SQLHelpers.Instance.SetConnectionString(ConnectionString);
-            
+
             DataTable transaction = new DataTable();
             try
             {
@@ -798,9 +800,9 @@ namespace CheckinPortalCloudAPI.Helper.Cloud
             return DataTableToList<Models.Cloud.DB.RoomTypeMaster>(transaction);
         }
 
-        public bool InsertPaymentNotifications(string EventCode, DateTime EventDate, string MerchantAccountCode,string MerchantReference,string OrginalReference,
-                                                string PaymentMethod,string PspReference,decimal Amount,string Currency,string Reason,bool TransactionStatus,
-                                                string NotificationJSON,string ConnectionString)
+        public bool InsertPaymentNotifications(string EventCode, DateTime EventDate, string MerchantAccountCode, string MerchantReference, string OrginalReference,
+                                                string PaymentMethod, string PspReference, decimal Amount, string Currency, string Reason, bool TransactionStatus,
+                                                string NotificationJSON, string ConnectionString)
         {
             bool isSavedSuccessfully = false;
             try
@@ -919,7 +921,7 @@ namespace CheckinPortalCloudAPI.Helper.Cloud
                 {
                     ParameterName = "@ReservationID",
                     Value = ReservationID,
-                    SqlDbType= SqlDbType.Int
+                    SqlDbType = SqlDbType.Int
                 };
 
                 SqlParameter questionParmeter = new SqlParameter()
@@ -933,7 +935,7 @@ namespace CheckinPortalCloudAPI.Helper.Cloud
                 {
                     ParameterName = "@Answer",
                     Value = Answer,
-                     SqlDbType= SqlDbType.VarChar
+                    SqlDbType = SqlDbType.VarChar
                 };
 
                 #endregion
@@ -1007,7 +1009,7 @@ namespace CheckinPortalCloudAPI.Helper.Cloud
                     PackageImageParmeter = new SqlParameter()
                     {
                         ParameterName = "@PackageImage",
-                        Value = packageImage ,
+                        Value = packageImage,
                         SqlDbType = SqlDbType.VarBinary
                     };
                 }
@@ -1087,14 +1089,14 @@ namespace CheckinPortalCloudAPI.Helper.Cloud
                 {
                     throw ex;
                 }
-                return DataTableToList<Models.Cloud.DB.PackageMasterDataTableModel>(transaction);    
+                return DataTableToList<Models.Cloud.DB.PackageMasterDataTableModel>(transaction);
             }
             catch (Exception ex)
             {
-                
+
                 throw ex;
             }
-           
+
         }
 
         public string FetchCardTypeInfo(string ConnectionString, string CardType)
@@ -1111,7 +1113,7 @@ namespace CheckinPortalCloudAPI.Helper.Cloud
                 };
 
                 DataTable transaction = new DataTable();
-                
+
                 string Query = string.Empty;
                 transaction = SQLHelpers.Instance.ExecuteSP("Usp_GetCardTypeInfo", cardTypeParameter);
                 if (transaction != null && transaction.Rows.Count > 0)
@@ -1119,7 +1121,7 @@ namespace CheckinPortalCloudAPI.Helper.Cloud
                     fundingSource = transaction.Rows[0][0].ToString();
 
                 }
-                
+
                 return fundingSource;
             }
             catch (Exception ex)
@@ -1129,7 +1131,250 @@ namespace CheckinPortalCloudAPI.Helper.Cloud
             }
 
         }
+        public List<Models.Cloud.DB.PolicyMaster> FetchPolicyMaster(string ConnectionString)
+        {
+            SQLHelpers.Instance.SetConnectionString(ConnectionString);
 
+            DataTable transaction = new DataTable();
+            try
+            {
+                string Query = string.Empty;
+                transaction = SQLHelpers.Instance.ExecuteSP("Usp_GetPolicyMaster");
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return DataTableToList<Models.Cloud.DB.PolicyMaster>(transaction);
+        }
+
+        public List<Models.Cloud.DB.CloudReservationModel> FetchReservationDetailsByReferenceNumber(string ConnectionString, string ReservationNumber)
+        {
+            SQLHelpers.Instance.SetConnectionString(ConnectionString);
+            DataTable transaction = new DataTable();
+            #region Parameters
+            SqlParameter reservationNumberParmeter = new SqlParameter()
+            {
+                ParameterName = "@ReferenceNumber",
+                Value = ReservationNumber,
+            };
+
+
+            #endregion
+
+            try
+            {
+                string Query = string.Empty;
+                transaction = SQLHelpers.Instance.ExecuteSP("Usp_GetReservationCloudDetailsByReferenceNumber", reservationNumberParmeter);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return DataTableToList<Models.Cloud.DB.CloudReservationModel>(transaction);
+        }
+        public List<Models.Cloud.DB.CountryMaster> FetchCountryMaster(string ConnectionString)
+        {
+            SQLHelpers.Instance.SetConnectionString(ConnectionString);
+
+            DataTable transaction = new DataTable();
+            try
+            {
+                string Query = string.Empty;
+                transaction = SQLHelpers.Instance.ExecuteSP("Usp_GetCountryMaster");
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return DataTableToList<Models.Cloud.DB.CountryMaster>(transaction);
+        }
+
+        public List<Models.Cloud.DB.StateMaster> FetchStateMaster(string ConnectionString, int CountryId)
+        {
+            SQLHelpers.Instance.SetConnectionString(ConnectionString);
+
+            DataTable transaction = new DataTable();
+            try
+            {
+                string Query = string.Empty;
+                #region Parameters
+                SqlParameter countryParmeter = new SqlParameter()
+                {
+                    ParameterName = "@countryId",
+                    Value = CountryId,
+                };
+
+
+                #endregion
+                transaction = SQLHelpers.Instance.ExecuteSP("Usp_GetStateMaster", countryParmeter);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return DataTableToList<Models.Cloud.DB.StateMaster>(transaction);
+        }
+
+        public bool UpdateReservationStatus(Models.Cloud.DB.ReservationStatusRequestModel reservation, string ConnectionString)
+        {
+            bool isUpdatedSuccessfully = false;
+            try
+            {
+                SQLHelpers.Instance.SetConnectionString(ConnectionString);
+
+
+                #region Parameters
+                SqlParameter TbTypeParmeter = new SqlParameter()
+                {
+                    ParameterName = "@ReservationID",
+                    Value = reservation.ReservationID,
+                };
+                SqlParameter TbNotificationListTypeParmeter = new SqlParameter()
+                {
+                    ParameterName = "@Type",
+                    Value = reservation.Type,
+                };
+                #endregion
+
+                var ResultTable = SQLHelpers.Instance.ExecuteSP("Usp_UpdateReservationStatusCloud", TbNotificationListTypeParmeter);
+
+                if (ResultTable != null && ResultTable.Rows.Count > 0)
+                {
+                    isUpdatedSuccessfully = ResultTable.Rows[0][0].ToString() == "1";
+                }
+
+                return isUpdatedSuccessfully;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+        //PayLink Methods
+        public bool InsertPayLinkRequestDetails(Models.Cloud.PayLinkRequest PayLinkRequest, string ConnectionString)
+        {
+
+            try
+            {
+                var spResponse = new KIOSK.DapperHelper().ExecuteSP("Usp_InsertPaymentrequest",
+                    ConnectionString, PayLinkRequest).ToList();
+                if (spResponse != null)
+                    return true;
+                else
+                    return false;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public bool InsertPaymentCloudDetails(List<Models.Cloud.DB.PaymentHistory> paymentHistories, List<Models.Cloud.DB.PaymentHeader> paymentHeaders, List<Models.Cloud.DB.PaymentAdditionalInfo> paymentAdditionalInfos, string ConnectionString)
+        {
+            bool isSavedSuccessfully = false;
+            try
+            {
+
+                SQLHelpers.Instance.SetConnectionString(ConnectionString);
+                try
+                {
+                    #region Parameters
+                    SqlParameter TbPaymentHeaderTypeParmeter = new SqlParameter()
+                    {
+                        ParameterName = "@TbPaymentHeaderType",
+                        Value = this.ToDataTable(paymentHeaders),
+                    };
+
+                    SqlParameter TbPaymentHistoryTypeParmeter = new SqlParameter()
+                    {
+                        ParameterName = "@TbPaymentHistoryType",
+                        Value = this.ToDataTable(paymentHistories),
+                    };
+
+                    SqlParameter TbPaymentAdditionalInfoTypeParmeter = new SqlParameter()
+                    {
+                        ParameterName = "@TbPaymentAdditionalInfoType",
+                        Value = paymentAdditionalInfos != null ? this.ToDataTable(paymentAdditionalInfos) : null,
+                    };
+
+                    #endregion
+
+                    var ResultTable = SQLHelpers.Instance.ExecuteSP("Usp_InsertPaymentTransactionsFromLocal", TbPaymentAdditionalInfoTypeParmeter, TbPaymentHeaderTypeParmeter, TbPaymentHistoryTypeParmeter);
+
+                    if (ResultTable != null && ResultTable.Rows.Count > 0)
+                    {
+                        isSavedSuccessfully = ResultTable.Rows[0][0].ToString() == "1";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return isSavedSuccessfully;
+        }
+
+        public bool UpdatePaymentRequeststatus(string UniqueNo, string ConnectionString)
+        {
+            bool isUpdatedSuccessfully = false;
+            try
+            {
+                SQLHelpers.Instance.SetConnectionString(ConnectionString);
+
+
+                #region Parameters
+                SqlParameter TbTypeParmeter = new SqlParameter()
+                {
+                    ParameterName = "@UniqueKey",
+                    Value = UniqueNo,
+                };
+               
+                #endregion
+
+                var ResultTable = SQLHelpers.Instance.ExecuteSP("Usp_UpdatePaymentLinkStatus", TbTypeParmeter);
+
+                if (ResultTable != null && ResultTable.Rows.Count > 0)
+                {
+                    isUpdatedSuccessfully = ResultTable.Rows[0][0].ToString() == "1";
+                }
+
+                return isUpdatedSuccessfully;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+        public List<Models.Cloud.PayLinkFetchRequest> FetchPaymentRequest(string ConnectionString, string uniqueNo)
+        {
+            SQLHelpers.Instance.SetConnectionString(ConnectionString);
+            DataTable transaction = new DataTable();
+            #region Parameters
+            SqlParameter reservationNumberParmeter = new SqlParameter()
+            {
+                ParameterName = "@ReferenceNumber",
+                Value = uniqueNo,
+            };
+
+
+            #endregion
+
+            try
+            {
+                string Query = string.Empty;
+                transaction = SQLHelpers.Instance.ExecuteSP("Usp_GetPaymentLinkRequest", reservationNumberParmeter);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return DataTableToList<Models.Cloud.PayLinkFetchRequest>(transaction);
+        }
     }
-
 }

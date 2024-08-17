@@ -1,0 +1,4 @@
+1.Hotel-logo --  paste it inside the  API Folder("Resources\Images\checkout").
+2.FolioHtml-      paste it inside the  API Folder("Resources\HTML").
+3.Email subject is from APP side that is completed
+

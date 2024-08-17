@@ -263,4 +263,33 @@ namespace CheckinPortalCloudAPI.Models.Cloud
         public bool isScreenNotificationEnabled { get; set; }
         public bool isGlobal { get; set; }
     }
+    ///paybylink
+    public class PayLinkRequest
+    {
+        public string ReservationNumber { get; set; }
+        public string ReservationNameID { get; set; }
+        public string LinkExpiry { get; set; }
+        public string WeblinkAmount { get; set; }
+        public string TransferType { get; set; }
+        public string EmailId { get; set; }
+        public string phonenumber { get; set; }
+        public string GuestName { get; set; }
+        public string UniqueKey { get; set; }
+          }
+    public class PayLinkFetchRequest
+    {
+        public string ReservationNumber { get; set; }
+        public string ReservationNameID { get; set; }
+        public string LinkExpiry { get; set; }
+        public string WeblinkAmount { get; set; }
+        public string TransferType { get; set; }
+        public string EmailId { get; set; }
+        public string phonenumber { get; set; }
+        public string GuestName { get; set; }
+        public string UniqueKey { get; set; }
+        public bool IsActive { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public int PaymentLinkRequestId { get;set; }
+    }
+
 }
