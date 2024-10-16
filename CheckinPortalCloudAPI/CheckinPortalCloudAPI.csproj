@@ -335,6 +335,7 @@
     <Compile Include="Models\KnowCross\KnowCross.cs" />
     <Compile Include="Models\Local\LocalDBModel.cs" />
     <Compile Include="Models\Local\LocalModel.cs" />
+    <Compile Include="Models\Nlog\NlogRequest.cs" />
     <Compile Include="Models\OWS\FolioModel.cs" />
     <Compile Include="Models\Cloud\CloudDBModel.cs" />
     <Compile Include="Models\OWS\OWSModel.cs" />

@@ -29,6 +29,7 @@ using System.Web.Http;
 using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using NLog;
 
 namespace CheckinPortalCloudAPI.Controllers
 {
@@ -2855,7 +2856,39 @@ namespace CheckinPortalCloudAPI.Controllers
             }
         }
 
-      
+        [HttpPost]
+        [ActionName("NLog")]
+        public async Task<LocalResponseModel> NLog(Models.Nlog.NlogRequest request)
+        {
+            try
+            {
+                if (request.Level == LogLevel.Warn)
+                    new LogHelper().Warn(request.Message, null, request.ActionName, request.ApplicationName, request.ActionGroup);
+                else if (request.Level == LogLevel.Debug)
+                    new LogHelper().Debug(request.Message, null, request.ActionName, request.ApplicationName, request.ActionGroup);
+                else if (request.Level == LogLevel.Debug)
+                    new LogHelper().Error(request.Exception, null, request.ActionName, request.ApplicationName, request.ActionGroup);
+                else
+                    new LogHelper().Log(request.Message, null, request.ActionName, request.ApplicationName, request.ActionGroup);
+
+                return new LocalResponseModel()
+                {
+                    result = true,
+                    responseMessage = "Success",
+                    statusCode = 101
+                };
+            }
+            catch (Exception ex)
+            {
+                return new LocalResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message,
+                    statusCode = -1
+                };
+            }
+
+        }
 
 
     }
