@@ -1225,19 +1225,19 @@ namespace CheckinPortalCloudAPI.Helper.Cloud
 
 
                 #region Parameters
-                SqlParameter TbTypeParmeter = new SqlParameter()
+                SqlParameter TbReservationIDParmeter = new SqlParameter()
                 {
                     ParameterName = "@ReservationID",
                     Value = reservation.ReservationID,
                 };
-                SqlParameter TbNotificationListTypeParmeter = new SqlParameter()
+                SqlParameter TbTypeParmeter = new SqlParameter()
                 {
                     ParameterName = "@Type",
                     Value = reservation.Type,
                 };
                 #endregion
 
-                var ResultTable = SQLHelpers.Instance.ExecuteSP("Usp_UpdateReservationStatusCloud", TbNotificationListTypeParmeter);
+                var ResultTable = SQLHelpers.Instance.ExecuteSP("Usp_UpdateReservationStatusCloud", TbReservationIDParmeter, TbTypeParmeter);
 
                 if (ResultTable != null && ResultTable.Rows.Count > 0)
                 {
