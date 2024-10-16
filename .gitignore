@@ -15,3 +15,5 @@ obj
 /CheckinPortalCloudAPI/bin/CheckinPortalCloudAPI.dll.config
 /CheckinPortalCloudAPI/bin/CheckinPortalCloudAPI.pdb
 /CheckinPortalCloudAPI/bin/EnvDTE.dll
+/CheckinPortalCloudAPI/obj/Debug/DesignTimeResolveAssemblyReferencesInput.cache
+/CheckinPortalCloudAPI/CheckinPortalCloudAPI.csproj.user
