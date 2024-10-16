@@ -7,3 +7,6 @@ obj
 .vs/CheckinPortalCloudAPI/v16/.suo
 *.zip
 /.vs
+/CheckinPortalCloudAPI/.vs
+/CheckinPortalCloudAPI/CheckinPortalCloudAPI.csproj
+/CheckinPortalCloudAPI/CheckinPortalCloudAPI.csproj.user
