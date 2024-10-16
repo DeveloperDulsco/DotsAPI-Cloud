@@ -10,3 +10,8 @@ obj
 /CheckinPortalCloudAPI/.vs
 /CheckinPortalCloudAPI/CheckinPortalCloudAPI.csproj
 /CheckinPortalCloudAPI/CheckinPortalCloudAPI.csproj.user
+/CheckinPortalCloudAPI/bin/Release/Publish
+/CheckinPortalCloudAPI/bin/CheckinPortalCloudAPI.dll
+/CheckinPortalCloudAPI/bin/CheckinPortalCloudAPI.dll.config
+/CheckinPortalCloudAPI/bin/CheckinPortalCloudAPI.pdb
+/CheckinPortalCloudAPI/bin/EnvDTE.dll
