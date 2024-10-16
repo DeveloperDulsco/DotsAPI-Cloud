@@ -5067,7 +5067,6 @@ namespace CheckinPortalCloudAPI.Helper.Local
                     new LogHelper().Log("Updating rate details failed because Rate details are blank in the reservation", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
                 #endregion
 
-
                 #region Processing MealPlan
                 if (pushReservationRequest.ServiceParameters.IsBreakFastValidationWithUDF != null && pushReservationRequest.ServiceParameters.IsBreakFastValidationWithUDF.Value)
                 {
@@ -5147,8 +5146,6 @@ namespace CheckinPortalCloudAPI.Helper.Local
                 }
                 #endregion
 
-
-
                 #region VerifyVIPReservationOrNot
                 new LogHelper().Log("Verifying reservation VIP status in UDF field", Reservation.ReservationNameID, "PushCloudDueInReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-In push");
                 if (Reservation.userDefinedFields != null && Reservation.userDefinedFields.Count > 0)
@@ -5219,9 +5216,6 @@ namespace CheckinPortalCloudAPI.Helper.Local
                     Reservation.ExpectedArrivalTime = null;
                 }
                 #endregion
-
-               
-
             
                 #region Sending Email
                 try
@@ -5380,14 +5374,18 @@ namespace CheckinPortalCloudAPI.Helper.Local
             Models.OWS.FolioModel guestFolio = null;
             string folioAsBase64 = "";
             bool isEmailSend = false;
+            //bool IsEmailProcessed = false;
+
+            bool IsPaymentDisabled = false;
+            IsPaymentDisabled = (ConfigurationManager.AppSettings["IsPaymentDisabled"] != null
+                            && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["IsPaymentDisabled"].ToString())
+                            && bool.TryParse(ConfigurationManager.AppSettings["IsPaymentDisabled"].ToString(), out IsPaymentDisabled)) ? IsPaymentDisabled : false;
+
             #endregion
 
             try
             {
                 new LogHelper().Debug("Pushing due out reservation details", null, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
-
-
-                isEmailSend = false;
 
                 new LogHelper().Debug("Processing reservation No. : " + pushReservationRequest.ReservationNumber, null, "PushCloudDueOutReservationDetails", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
 
@@ -5638,8 +5636,83 @@ namespace CheckinPortalCloudAPI.Helper.Local
                 #endregion
 
 
+                //if (!IsPaymentDisabled)
+                //{
+                //    #region Pushing Payment Details
 
-               
+                //    new LogHelper().Log("Pushing payment details to the cloud, reservation No. : " + Reservation.ReservationNumber, Reservation.ReservationNameID, "PushDueOutReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                //    Models.Cloud.CloudResponseModel cloudResponse = await new WSClientHelper().PushPaymentDetails(Reservation.ReservationNameID, new Models.Cloud.CloudRequestModel()
+                //    {
+                //        RequestObject = paymentHeaders
+                //    }, "Due-Out push", pushReservationRequest.ServiceParameters);
+                //    if (!cloudResponse.result)
+                //    {
+                //        new LogHelper().Log("Failled to push the payment details to cloud, so skipping the reservation ", Reservation.ReservationNameID, "PushDueOutReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                //        return new Models.Local.LocalResponseModel()
+                //        {
+                //            result = false,
+                //            responseMessage = "Failled to push the payment details to cloud, so skipping the reservation "
+                //        };
+                //    }
+                //    new LogHelper().Log("Payment details to cloud successfully", Reservation.ReservationNameID, "PushDueOutReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                //    #endregion
+
+                //}
+
+                #region Sending Email
+                try
+                {
+
+                    new LogHelper().Log("Verifying email send or not ", Reservation.ReservationNameID, "PushDueOutReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                    //if (!isReservationTrackPresent)
+                    new LogHelper().Log("Sending pre-checkout email", Reservation.ReservationNameID, "PushDueOutReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                    if (Reservation != null && Reservation.GuestProfiles != null && Reservation.GuestProfiles[0].Email != null && Reservation.GuestProfiles[0].Email.Count > 0)
+                    {
+                        TextInfo textInfo = new CultureInfo("en-US", false).TextInfo;
+                        foreach (Models.OWS.Email email in Reservation.GuestProfiles[0].Email)
+                        {
+                            if (email.primary != null && email.primary.Value)
+                            {
+                                Models.Email.EmailResponse emailResponse = await new WSClientHelper().SendEmail(Reservation.ReservationNameID, new Models.Email.EmailRequest()
+                                {
+                                    FromEmail = pushReservationRequest.ServiceParameters.PreCheckoutFromEmail,
+                                    ToEmail = email.email,
+                                    IsPrecheckinEmail = false,
+                                    GuestName = !string.IsNullOrEmpty(Reservation.GuestProfiles[0].GuestName) ? textInfo.ToTitleCase(Reservation.GuestProfiles[0].GuestName)
+                                        : Reservation.GuestProfiles[0].GuestName,//Reservation.GuestProfiles[0].GuestName,
+                                    Subject = pushReservationRequest.ServiceParameters.PreCheckoutEmailSubject,
+                                    confirmationNumber = "?id=" + HttpUtility.UrlEncode(new Helper().EncryptString("b14ca5898a4e4133bbce2ea2315a1916", Reservation.ReservationNumber)),
+                                    displayFromEmail = pushReservationRequest.ServiceParameters.EmailDisplayName,
+                                    EmailType = Models.Email.EmailType.PreCheckedout
+
+                                }, "Due-Out push", pushReservationRequest.ServiceParameters);
+                                if (!emailResponse.result)
+                                {
+                                    isEmailSend = false;
+                                    new LogHelper().Log("Failled to send confirmation email with reason :- " + emailResponse.responseMessage, Reservation.ReservationNameID, "PushDueOutReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                                    new LogHelper().Warn("Failled to send confirmation email with reason :- " + emailResponse.responseMessage, Reservation.ReservationNameID, "PushDueOutReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                                }
+                                else
+                                {
+                                    isEmailSend = true;
+                                    new LogHelper().Log("Email send successfully", Reservation.ReservationNameID, "PushDueOutReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        new LogHelper().Log("Failled to send pre-checkout since email address not found from pre checked in list response", Reservation.ReservationNameID, "PushDueOutReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                        new LogHelper().Warn("Failled to send pre-checkout since email address not found from pre checked in list response", Reservation.ReservationNameID, "PushDueOutReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    new LogHelper().Error(ex, Reservation.ReservationNameID, "PushDueOutReservation", pushReservationRequest.ServiceParameters.ClientID, "Due-Out push");
+                }
+                #endregion
+
 
 
 
