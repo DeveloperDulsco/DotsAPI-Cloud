@@ -2076,8 +2076,8 @@ The U.V.H. are binding for everyone who makes use of our services.</Value>
           <DataField>FolioNo</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="ConfirmationNumber">
-          <DataField>ConfirmationNumber</DataField>
+        <Field Name="ConfirmationNo">
+          <DataField>ConfirmationNo</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="CashierNo">
