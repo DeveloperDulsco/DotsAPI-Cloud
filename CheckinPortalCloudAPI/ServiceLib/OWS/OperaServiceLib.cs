@@ -639,6 +639,10 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                                     }
                                                     FolioItems.ItemName = BItems.Description;
                                                     FolioItems.Date = BItems.Date;
+                                                    if (BItems.QuantitySpecified)
+                                                    {
+                                                        FolioItems.Quantity = BItems.Quantity;
+                                                    }
                                                     if (GFolio.Items != null)
                                                     {
                                                         GFolio.Items.Add(FolioItems);
@@ -665,7 +669,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                                     FolioTaxItems.Amount = Amnt != null ? (decimal)Amnt.Value : 0;
                                                     
                                                     FolioTaxItems.ItemName = BTaxItems.Description;
-                                                    
+
                                                     
                                                     if (GFolio.TaxItems != null)
                                                         GFolio.TaxItems.Add(FolioTaxItems);
@@ -1500,6 +1504,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         FolioItemsTable.Columns.Add("Charges", typeof(string));
                         FolioItemsTable.Columns.Add("Credits", typeof(string));
                         FolioItemsTable.Columns.Add("ItemGroup", typeof(string));
+                        FolioItemsTable.Columns.Add("Qty", typeof(string));
                         decimal TotalAmount = 0;
                         decimal TotalCredit = 0;
                         decimal GST7 = 0;
@@ -1512,6 +1517,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                 DataRow folioRow = FolioItemsTable.NewRow();
                                 folioRow["Date"] = items.Date != null ? items.Date.Value.ToString("dd/MM/yyyy") : DateTime.Now.ToString("dd/MM/yyyy");
                                 folioRow["Description"] = items.ItemName;
+                                folioRow["Qty"] = items.Quantity;
                                 folioRow["AdditionalInformation"] = "";
 
                                 if (items.IsCredit)
@@ -1556,6 +1562,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         DataTable reportParameters = new DataTable();
 
                         #region Report Parameter Columns
+                        reportParameters.Columns.Add("GuestName", typeof(string));
                         reportParameters.Columns.Add("Address", typeof(string));
                         reportParameters.Columns.Add("RoomNo", typeof(string));
                         reportParameters.Columns.Add("FolioNo", typeof(string));
@@ -1579,6 +1586,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         reportParameters.Columns.Add("TotalAmount", typeof(string));
                         reportParameters.Columns.Add("TotalCredit", typeof(string));
 
+                        reportParameters.Columns.Add("BussinessRegNo", typeof(string));
+                        reportParameters.Columns.Add("ARNo", typeof(string));
+                        reportParameters.Columns.Add("TaxInvoiceNo", typeof(string));
+                        reportParameters.Columns.Add("CRSNo", typeof(string));
+                        reportParameters.Columns.Add("GuestCount", typeof(string));
+                        reportParameters.Columns.Add("Nationality", typeof(string));
+                        reportParameters.Columns.Add("InvoiceDate", typeof(string));
+                        reportParameters.Columns.Add("RoomRate", typeof(string));
+
+
                         #endregion
 
 
@@ -1591,6 +1608,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         DataRow parameterRow = reportParameters.NewRow();
 
                         #region Assign Values to DataRow
+                        parameterRow["GuestName"] = GuestFolio.GuestName;
                         parameterRow["Address"] = FullAddress;
 
 
@@ -1616,6 +1634,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         parameterRow["SignatureImagePath"] = string.IsNullOrEmpty(fetchFolioRequest.GuestSignature) ? "" : fetchFolioRequest.GuestSignature;
                         parameterRow["TotalAmount"] = TotalAmount.ToString("0.00");
                         parameterRow["TotalCredit"] = TotalCredit != 0 ? Math.Abs(TotalCredit).ToString("0.00") : "";
+
+                        parameterRow["BussinessRegNo"] =  "";
+                        parameterRow["ARNo"] =  "";
+                        parameterRow["TaxInvoiceNo"] =  "";
+                        parameterRow["CRSNo"] =  "";
+                        parameterRow["GuestCount"] =  "";
+                        parameterRow["Nationality"] =  "";
+                        parameterRow["InvoiceDate"] = $"{DateTime.Now:dd/MM/yyyy}";
+                        parameterRow["RoomRate"] = "";
+
                         #endregion
 
                         reportParameters.Rows.Add(parameterRow);

@@ -130,6 +130,7 @@ namespace CheckinPortalCloudAPI.Models.OWS
         public string TransactionNumber { get; set; }
         public bool? IsTax { get; set; }
         public int? WindowNumber { get; set; }
+        public int? Quantity { get; set; }
     }
 
     public class FolioTaxItemsModel
