@@ -669,7 +669,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                                     FolioTaxItems.Amount = Amnt != null ? (decimal)Amnt.Value : 0;
                                                     
                                                     FolioTaxItems.ItemName = BTaxItems.Description;
-                                                    
+
                                                     
                                                     if (GFolio.TaxItems != null)
                                                         GFolio.TaxItems.Add(FolioTaxItems);
@@ -1594,6 +1594,8 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         reportParameters.Columns.Add("Nationality", typeof(string));
                         reportParameters.Columns.Add("InvoiceDate", typeof(string));
                         reportParameters.Columns.Add("RoomRate", typeof(string));
+
+
                         #endregion
 
 
@@ -1633,14 +1635,15 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         parameterRow["TotalAmount"] = TotalAmount.ToString("0.00");
                         parameterRow["TotalCredit"] = TotalCredit != 0 ? Math.Abs(TotalCredit).ToString("0.00") : "";
 
-                        parameterRow["BussinessRegNo"] = "";
-                        parameterRow["ARNo"] = "";
-                        parameterRow["TaxInvoiceNo"] = "";
-                        parameterRow["CRSNo"] = "";
-                        parameterRow["GuestCount"] = "";
-                        parameterRow["Nationality"] = "";
+                        parameterRow["BussinessRegNo"] =  "";
+                        parameterRow["ARNo"] =  "";
+                        parameterRow["TaxInvoiceNo"] =  "";
+                        parameterRow["CRSNo"] =  "";
+                        parameterRow["GuestCount"] =  "";
+                        parameterRow["Nationality"] =  "";
                         parameterRow["InvoiceDate"] = $"{DateTime.Now:dd/MM/yyyy}";
                         parameterRow["RoomRate"] = "";
+
                         #endregion
 
                         reportParameters.Rows.Add(parameterRow);
