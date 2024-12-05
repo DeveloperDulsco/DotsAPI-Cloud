@@ -3130,7 +3130,6 @@ namespace CheckinPortalCloudAPI.Helper.Local
 
         public async Task<Models.Local.LocalResponseModel> PushPaymentLink(Models.Local.PushReservationRequest pushReservationRequest)
         {
-
             #region Variables
             List<Models.OWS.OperaReservation> operaReservationList = null;
             Models.OWS.OperaReservation Reservation = null;
@@ -3139,7 +3138,6 @@ namespace CheckinPortalCloudAPI.Helper.Local
             try
             {
                 new LogHelper().Log("Pushing payment link", null, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
-
 
                 bool? isEmailSent = null;
                 bool? IsEmailProcessed = null;
@@ -3209,7 +3207,6 @@ namespace CheckinPortalCloudAPI.Helper.Local
                 }
 
                 #endregion
-                
 
                 #region Pushing record copy in local DB
                 new LogHelper().Log("Updating the reservation in Local DB", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
@@ -3259,7 +3256,6 @@ namespace CheckinPortalCloudAPI.Helper.Local
                 else
                     new LogHelper().Log("Updating rate details failed because Rate details are blank in the reservation", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
                 #endregion
-
 
                 #region Processing MealPlan
                 if (pushReservationRequest.ServiceParameters.IsBreakFastValidationWithUDF != null && pushReservationRequest.ServiceParameters.IsBreakFastValidationWithUDF.Value)
@@ -3339,8 +3335,6 @@ namespace CheckinPortalCloudAPI.Helper.Local
                         new LogHelper().Log("No package or prefernce list in the reservation for meal plan not found", Reservation.ReservationNameID, "PushPaymentLink", "Grabber", "Payment link push");
                 }
                 #endregion
-
-
 
                 #region VerifyVIPReservationOrNot
                 new LogHelper().Log("Verifying reservation VIP status in UDF field", Reservation.ReservationNameID, "PushPaymentLink", pushReservationRequest.ServiceParameters.ClientID, "Payment link push");
@@ -3501,7 +3495,7 @@ namespace CheckinPortalCloudAPI.Helper.Local
                                         Subject = pushReservationRequest.ServiceParameters.PreArrivalEmailSubject,
                                         confirmationNumber = "?id=" + HttpUtility.UrlEncode(new Helper().EncryptString("b14ca5898a4e4133bbce2ea2315a1916", Reservation.ReservationNumber)),
                                         displayFromEmail = pushReservationRequest.ServiceParameters.EmailDisplayName,
-                                        EmailType = Models.Email.EmailType.Precheckedin,
+                                        EmailType = Models.Email.EmailType.PayByLink,
                                         AttachmentFileName = "WelcomeEmail.pdf",
                                         ReservationNumber = !string.IsNullOrEmpty(Reservation.ReservationNumber) ? (Reservation.ReservationNumber.Contains("||") ?
                                                             (Reservation.ReservationNumber.Substring(0, Reservation.ReservationNumber.IndexOf('|') - 1)) : (Reservation.ReservationNumber)) : (Reservation.ReservationNumber),
@@ -5747,6 +5741,1265 @@ namespace CheckinPortalCloudAPI.Helper.Local
                 {
                     result = false,
                     responseMessage = ex.Message
+                };
+            }
+        }
+
+        public async Task<Models.Local.LocalResponseModel> FetchCloudPreCheckedOutReservation(Models.Local.FetchReservationRequest fetchReservationRequest)
+        {
+            #region Variables
+            List<Models.Cloud.OperaReservation> PrecheckedoutReservationList = null;
+            Models.Local.PaymentDetails paymentDetails = null;
+            List<Models.OWS.OperaReservation> operaReservations = null;
+            string folioAsBase64 = "";
+            Models.OWS.FolioModel guestFolio = null;
+            #endregion
+
+            try
+            {
+
+                #region Fetching pre-checkeout records
+                new LogHelper().Log("Fetching pre checked-out reservation", null, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                Models.Cloud.CloudResponseModel cloudResponse = await new WSClientHelper().FetchPrechedoutRecord(new Models.Cloud.CloudRequestModel() { RequestObject = fetchReservationRequest }, fetchReservationRequest.ServiceParameters);
+                if (!cloudResponse.result)
+                {
+                    new LogHelper().Log("Failled to fetch pre checked-out reservation with reason :- " + cloudResponse.responseMessage, null, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Failled to fetch pre checked-out reservation with reason :- " + cloudResponse.responseMessage
+                    };
+                }
+                if (cloudResponse.responseData == null)
+                {
+                    new LogHelper().Log("Failled to fetch pre checked-out reservation with reason :- API response data is NULL" + cloudResponse.responseMessage, null, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Failled to fetch pre checked-out reservation with reason :- API response data is NULL" + cloudResponse.responseMessage
+                    };
+                }
+                new LogHelper().Debug("Converting API json to object", null, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                try
+                {
+                    PrecheckedoutReservationList = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Models.Cloud.OperaReservation>>(cloudResponse.responseData.ToString());
+                }
+                catch (Exception ex)
+                {
+                    new LogHelper().Error(ex, null, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                    new LogHelper().Log("Failled to covert API response to object", null, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "Failled to covert API response to object" + cloudResponse.responseMessage
+                    };
+                }
+                new LogHelper().Log("Pre checked-out reservation fetched", null, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+
+                #endregion
+
+                new LogHelper().Log("Iterating reservation list, Pre checked-out reservation count : - " + PrecheckedoutReservationList != null && PrecheckedoutReservationList.Count >= 0 ?
+                                                                PrecheckedoutReservationList.Count.ToString() : "", null, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                if (PrecheckedoutReservationList != null)
+                {
+                    foreach (Models.Cloud.OperaReservation reservation in PrecheckedoutReservationList)
+                    {
+                        new LogHelper().Log("Processing reservation No. : " + reservation.ReservationNumber, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+
+                        #region Fetchpaymentdetails
+                        new LogHelper().Log("Fetching payment details", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                        cloudResponse = await new WSClientHelper().FetchPaymentDetails(reservation.ReservationNameID, new Models.Cloud.CloudRequestModel()
+                        {
+                            RequestObject = reservation.ReservationNameID
+                        }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+                        if (!cloudResponse.result || cloudResponse.responseData == null)
+                        {
+                            new LogHelper().Log("Failled to fetch payment details with reason :- " + cloudResponse.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                            new LogHelper().Warn("Failled to fetch payment details with reason :- " + cloudResponse.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                        }
+                        else
+                            new LogHelper().Log("Payment details fetched successfully", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                        #endregion
+
+                        #region Update payment in opera
+                        if (cloudResponse.responseData != null)
+                        {
+                            new LogHelper().Log("Converting Json string to object", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                            try
+                            {
+                                paymentDetails = JsonConvert.DeserializeObject<Models.Local.PaymentDetails>(cloudResponse.responseData.ToString());
+                            }
+                            catch (Exception ex)
+                            {
+                                new LogHelper().Error(ex, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                            }
+                            if (paymentDetails == null)
+                            {
+                                new LogHelper().Log("payment detail object is null, skipping the payment update", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                            }
+                            else
+                            {
+                                int x = 0;
+                                new LogHelper().Log("Iterating the payment headers", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                foreach (Models.Local.PaymentHeader paymentHeader in paymentDetails.paymentHeaders)
+                                {
+                                    if (paymentHeader.IsActive == null)
+                                    {
+                                        new LogHelper().Log("Processing the payment header with psprefernce - " + paymentHeader.pspReferenceNumber + " where IsActive falg is NULL", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+
+                                        #region Update Opera
+                                        if (paymentDetails.paymentHeaders[x].TransactionType.Equals(Models.Local.TransactionType.PreAuth.ToString()))
+                                        {
+                                            new LogHelper().Log("Processing the payment header with psprefernce - " + paymentHeader.pspReferenceNumber + " as a pre-auth transaction", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+
+                                            paymentDetails.paymentHeaders[x].IsActive = true;
+
+                                            #region Updating UDF fields in Opera reservation
+                                            try
+                                            {
+                                                new LogHelper().Log("Updating pre auth code and amount in UDF fileds", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                                Models.OWS.OwsResponseModel owsResponse = await new WSClientHelper().ModifyBooking(reservation.ReservationNameID, new Models.OWS.OwsRequestModel()
+                                                {
+                                                    ChainCode = fetchReservationRequest.ServiceParameters.ChainCode,
+                                                    DestinationEntityID = fetchReservationRequest.ServiceParameters.DestinationEntityID,
+                                                    HotelDomain = fetchReservationRequest.ServiceParameters.HotelDomain,
+                                                    KioskID = fetchReservationRequest.ServiceParameters.KioskID,
+                                                    Language = fetchReservationRequest.ServiceParameters.Language,
+                                                    LegNumber = fetchReservationRequest.ServiceParameters.Legnumber,
+                                                    Password = fetchReservationRequest.ServiceParameters.Password,
+                                                    SystemType = fetchReservationRequest.ServiceParameters.SystemType,
+                                                    Username = fetchReservationRequest.ServiceParameters.Username,
+                                                    modifyBookingRequest = new Models.OWS.ModifyBookingRequest()
+                                                    {
+                                                        isUDFFieldSpecified = true,
+                                                        ReservationNumber = reservation.ReservationNumber,
+                                                        uDFFields = new List<Models.OWS.UDFField>()
+                                                                                {
+                                                                                    new Models.OWS.UDFField()
+                                                                                    {
+                                                                                        FieldName  = fetchReservationRequest.ServiceParameters.PreAuthUDF,
+                                                                                        FieldValue = paymentHeader.pspReferenceNumber
+                                                                                    },
+                                                                                    new Models.OWS.UDFField()
+                                                                                    {
+                                                                                        FieldName  = fetchReservationRequest.ServiceParameters.PreAuthAmntUDF,
+                                                                                        FieldValue = paymentHeader.Amount
+                                                                                    }
+                                                                                }
+                                                    }
+                                                }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+                                                if (!owsResponse.result)
+                                                {
+                                                    new LogHelper().Log("Updating pre auth code and amount in UDF fileds failled with reason : - " + owsResponse.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                                    new LogHelper().Warn("Updating pre auth code and amount in UDF fileds failled with reason : - " + owsResponse.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                                }
+                                                else
+                                                    new LogHelper().Log("Updating pre auth code and amount in UDF fileds succeeded ", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                new LogHelper().Error(ex, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                            }
+                                            #endregion
+
+                                        }
+                                        else if (paymentDetails.paymentHeaders[x].TransactionType.Equals(Models.Local.TransactionType.Sale.ToString()))
+                                        {
+                                            paymentDetails.paymentHeaders[x].IsActive = false;
+
+                                            #region Updating UDF fields in Opera reservation
+                                            try
+                                            {
+                                                new LogHelper().Log("Updating pre auth code and amount in UDF fileds", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                                Models.OWS.OwsResponseModel owsResponse = await new WSClientHelper().ModifyBooking(reservation.ReservationNameID, new Models.OWS.OwsRequestModel()
+                                                {
+                                                    ChainCode = fetchReservationRequest.ServiceParameters.ChainCode,
+                                                    DestinationEntityID = fetchReservationRequest.ServiceParameters.DestinationEntityID,
+                                                    HotelDomain = fetchReservationRequest.ServiceParameters.HotelDomain,
+                                                    KioskID = fetchReservationRequest.ServiceParameters.KioskID,
+                                                    Language = fetchReservationRequest.ServiceParameters.Language,
+                                                    LegNumber = fetchReservationRequest.ServiceParameters.Legnumber,
+                                                    Password = fetchReservationRequest.ServiceParameters.Password,
+                                                    SystemType = fetchReservationRequest.ServiceParameters.SystemType,
+                                                    Username = fetchReservationRequest.ServiceParameters.Username,
+                                                    modifyBookingRequest = new Models.OWS.ModifyBookingRequest()
+                                                    {
+                                                        isUDFFieldSpecified = true,
+                                                        ReservationNumber = reservation.ReservationNumber,
+                                                        uDFFields = new List<Models.OWS.UDFField>()
+                                                                                {
+                                                                                    new Models.OWS.UDFField()
+                                                                                    {
+                                                                                        FieldName  = fetchReservationRequest.ServiceParameters.PreAuthUDF,
+                                                                                        FieldValue = paymentHeader.pspReferenceNumber
+                                                                                    },
+                                                                                    new Models.OWS.UDFField()
+                                                                                    {
+                                                                                        FieldName  = fetchReservationRequest.ServiceParameters.PreAuthAmntUDF,
+                                                                                        FieldValue = paymentHeader.Amount
+                                                                                    }
+                                                                                }
+                                                    }
+                                                }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+                                                if (!owsResponse.result)
+                                                {
+                                                    new LogHelper().Log("Updating pre auth code and amount in UDF fileds failled with reason : - " + owsResponse.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                                    new LogHelper().Warn("Updating pre auth code and amount in UDF fileds failled with reason : - " + owsResponse.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                                }
+                                                else
+                                                    new LogHelper().Log("Updating pre auth code and amount in UDF fileds succeeded ", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                new LogHelper().Error(ex, reservation.ReservationNameID, "FetchPreCheckedInReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-in fetch");
+                                            }
+                                            #endregion
+
+                                            #region Posting payment in opera reservation
+                                            try
+                                            {
+                                                new LogHelper().Log("Posting payment in the reservation", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                                Models.OWS.OwsResponseModel owsResponse = await new WSClientHelper().MakePayment(reservation.ReservationNameID, new Models.OWS.OwsRequestModel()
+                                                {
+                                                    ChainCode = fetchReservationRequest.ServiceParameters.ChainCode,
+                                                    DestinationEntityID = fetchReservationRequest.ServiceParameters.DestinationEntityID,
+                                                    HotelDomain = fetchReservationRequest.ServiceParameters.HotelDomain,
+                                                    KioskID = fetchReservationRequest.ServiceParameters.KioskID,
+                                                    Language = fetchReservationRequest.ServiceParameters.Language,
+                                                    LegNumber = fetchReservationRequest.ServiceParameters.Legnumber,
+                                                    Password = fetchReservationRequest.ServiceParameters.Password,
+                                                    SystemType = fetchReservationRequest.ServiceParameters.SystemType,
+                                                    Username = fetchReservationRequest.ServiceParameters.Username,
+                                                    MakePaymentRequest = new Models.OWS.MakePaymentRequest()
+                                                    {
+                                                        Amount = Convert.ToDecimal(paymentHeader.Amount),
+                                                        PaymentInfo = "Auth code - (" + paymentHeader.pspReferenceNumber + ")",
+                                                        StationID = "MCI",
+                                                        WindowNumber = 1,
+                                                        ReservationNameID = reservation.ReservationNameID,
+                                                        MaskedCardNumber = paymentHeader.MaskedCardNumber.ToLower(),
+                                                        PaymentRefernce = "web checkin - (" + paymentHeader.MaskedCardNumber + ")",
+                                                        PaymentTypeCode = paymentHeader.OperaPaymentTypeCode,
+                                                        ApprovalCode = paymentHeader.pspReferenceNumber
+                                                    }
+                                                }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+                                                if (!owsResponse.result)
+                                                {
+                                                    new LogHelper().Log("Posting payment failled with reason : - " + owsResponse.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                                    new LogHelper().Warn("Posting payment failled with reason : - " + owsResponse.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                                }
+                                                else
+                                                    new LogHelper().Log("Posting payment in opera reservation succeeded ", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                new LogHelper().Error(ex, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                            }
+                                            #endregion
+                                        }
+                                        else if (paymentDetails.paymentHeaders[x].TransactionType.Equals(Models.Local.TransactionType.Capture.ToString()))
+                                        {
+                                            paymentDetails.paymentHeaders[x].IsActive = false;
+
+                                            #region Updating UDF fields in Opera reservation
+                                            try
+                                            {
+                                                new LogHelper().Log("Updating pre auth code and amount in UDF fileds", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                                Models.OWS.OwsResponseModel owsResponse = await new WSClientHelper().ModifyBooking(reservation.ReservationNameID, new Models.OWS.OwsRequestModel()
+                                                {
+                                                    ChainCode = fetchReservationRequest.ServiceParameters.ChainCode,
+                                                    DestinationEntityID = fetchReservationRequest.ServiceParameters.DestinationEntityID,
+                                                    HotelDomain = fetchReservationRequest.ServiceParameters.HotelDomain,
+                                                    KioskID = fetchReservationRequest.ServiceParameters.KioskID,
+                                                    Language = fetchReservationRequest.ServiceParameters.Language,
+                                                    LegNumber = fetchReservationRequest.ServiceParameters.Legnumber,
+                                                    Password = fetchReservationRequest.ServiceParameters.Password,
+                                                    SystemType = fetchReservationRequest.ServiceParameters.SystemType,
+                                                    Username = fetchReservationRequest.ServiceParameters.Username,
+                                                    modifyBookingRequest = new Models.OWS.ModifyBookingRequest()
+                                                    {
+                                                        isUDFFieldSpecified = true,
+                                                        ReservationNumber = reservation.ReservationNumber,
+                                                        uDFFields = new List<Models.OWS.UDFField>()
+                                                                                {
+                                                                                    new Models.OWS.UDFField()
+                                                                                    {
+                                                                                        FieldName  = fetchReservationRequest.ServiceParameters.PreAuthUDF,
+                                                                                        FieldValue = paymentHeader.pspReferenceNumber
+                                                                                    },
+                                                                                    new Models.OWS.UDFField()
+                                                                                    {
+                                                                                        FieldName  = fetchReservationRequest.ServiceParameters.PreAuthAmntUDF,
+                                                                                        FieldValue = paymentHeader.Amount
+                                                                                    }
+                                                                                }
+                                                    }
+                                                }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+                                                if (!owsResponse.result)
+                                                {
+                                                    new LogHelper().Log("Updating pre auth code and amount in UDF fileds failled with reason : - " + owsResponse.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                                    new LogHelper().Warn("Updating pre auth code and amount in UDF fileds failled with reason : - " + owsResponse.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                                }
+                                                else
+                                                    new LogHelper().Log("Updating pre auth code and amount in UDF fileds succeeded ", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                new LogHelper().Error(ex, reservation.ReservationNameID, "FetchPreCheckedInReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-in fetch");
+                                            }
+                                            #endregion
+
+                                            #region Posting payment in opera reservation
+                                            try
+                                            {
+                                                new LogHelper().Log("Posting payment in the reservation", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                                Models.OWS.OwsResponseModel owsResponse = await new WSClientHelper().MakePayment(reservation.ReservationNameID, new Models.OWS.OwsRequestModel()
+                                                {
+                                                    ChainCode = fetchReservationRequest.ServiceParameters.ChainCode,
+                                                    DestinationEntityID = fetchReservationRequest.ServiceParameters.DestinationEntityID,
+                                                    HotelDomain = fetchReservationRequest.ServiceParameters.HotelDomain,
+                                                    KioskID = fetchReservationRequest.ServiceParameters.KioskID,
+                                                    Language = fetchReservationRequest.ServiceParameters.Language,
+                                                    LegNumber = fetchReservationRequest.ServiceParameters.Legnumber,
+                                                    Password = fetchReservationRequest.ServiceParameters.Password,
+                                                    SystemType = fetchReservationRequest.ServiceParameters.SystemType,
+                                                    Username = fetchReservationRequest.ServiceParameters.Username,
+                                                    MakePaymentRequest = new Models.OWS.MakePaymentRequest()
+                                                    {
+                                                        Amount = Convert.ToDecimal(paymentHeader.Amount),
+                                                        PaymentInfo = "Auth code - (" + paymentHeader.AuthorisationCode + ")",
+                                                        StationID = "MCI",
+                                                        WindowNumber = 1,
+                                                        ReservationNameID = reservation.ReservationNameID,
+                                                        MaskedCardNumber = paymentHeader.MaskedCardNumber.ToLower(),
+                                                        PaymentRefernce = "web checkin - (" + paymentHeader.MaskedCardNumber + ")",
+                                                        PaymentTypeCode = paymentHeader.OperaPaymentTypeCode,
+                                                        ApprovalCode = paymentHeader.pspReferenceNumber
+                                                    }
+                                                }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+                                                if (!owsResponse.result)
+                                                {
+                                                    new LogHelper().Log("Posting payment failled with reason : - " + owsResponse.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                                    new LogHelper().Warn("Posting payment failled with reason : - " + owsResponse.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                                }
+                                                else
+                                                    new LogHelper().Log("Posting payment in opera reservation succeeded ", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                new LogHelper().Error(ex, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                            }
+                                            #endregion
+                                        }
+
+                                        #endregion
+                                    }
+                                    x++;
+                                }
+                                //new LogHelper().Log("payment details updated successfully", reservation.ReservationNameID, "FetchDueOutReservation",  fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                            }
+                        }
+                        #endregion
+
+                        #region Pushing Payment details in Local Db
+
+                        new LogHelper().Log("Updating payment details in local DB", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                        Models.Local.LocalResponseModel localResponse = await new WSClientHelper().PushPaymentDetails(reservation.ReservationNameID, new Models.Local.LocalRequestModel()
+                        {
+                            RequestObject = paymentDetails
+                        }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+                        if (!localResponse.result)
+                        {
+                            new LogHelper().Log("Failled to update payment details in Local DB with reason :- " + localResponse.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                            new LogHelper().Warn("Failled to update payment details in local DB with reason :- " + localResponse.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                        }
+                        else
+                            new LogHelper().Log("Payment details updated successfully", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                        #endregion
+
+                        #region Fetching Reservation from OWS
+                        new LogHelper().Log("Fetching opera reservation", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                        Models.OWS.OwsResponseModel owsResponse1 = await new WSClientHelper().FetchReservationAsync(reservation.ReservationNameID, new Models.OWS.OwsRequestModel()
+                        {
+                            ChainCode = fetchReservationRequest.ServiceParameters.ChainCode,
+                            DestinationEntityID = fetchReservationRequest.ServiceParameters.DestinationEntityID,
+                            HotelDomain = fetchReservationRequest.ServiceParameters.HotelDomain,
+                            KioskID = fetchReservationRequest.ServiceParameters.KioskID,
+                            Language = fetchReservationRequest.ServiceParameters.Language,
+                            LegNumber = fetchReservationRequest.ServiceParameters.Legnumber,
+                            Password = fetchReservationRequest.ServiceParameters.Password,
+                            SystemType = fetchReservationRequest.ServiceParameters.SystemType,
+                            Username = fetchReservationRequest.ServiceParameters.Username,
+                            FetchBookingRequest = new Models.OWS.FetchBookingRequestModel()
+                            {
+                                ReservationNumber = reservation.ReservationNumber
+                            }
+                        }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+
+                        if (!owsResponse1.result)
+                        {
+                            new LogHelper().Log("Failled to fetch opera reservation with reason :- " + owsResponse1.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                            new LogHelper().Warn("Failled to fetch opera reservation with reason :- " + owsResponse1.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                        }
+
+
+                        if (owsResponse1.responseData == null)
+                        {
+                            new LogHelper().Log("Failled to fetch opera reservation with reason :- API response data is NULL" + owsResponse1.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                            new LogHelper().Warn("Failled to fetch opera reservation with reason :- API response data is NULL" + owsResponse1.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                        }
+                        else
+                        {
+                            new LogHelper().Debug("Converting API json to object", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                            try
+                            {
+                                operaReservations = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Models.OWS.OperaReservation>>(owsResponse1.responseData.ToString());
+                                new LogHelper().Log("Opera reservation fetched successfully", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                            }
+                            catch (Exception ex)
+                            {
+                                new LogHelper().Error(ex, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                new LogHelper().Log("Failled to covert API response to object", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                new LogHelper().Warn("Failled to fetch opera reservation with reason :- " + ex.Message, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                new LogHelper().Debug("Failled to fetch opera reservation with reason :- " + ex.Message, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                            }
+                        }
+
+                        #endregion
+
+                        #region FetchFolioItemsByWindow
+                        new LogHelper().Log("Fetching reservation folio by window for reservation No. : " + operaReservations[0].ReservationNumber, operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                        owsResponse1 = await new WSClientHelper().GetFolioByWindow(operaReservations[0].ReservationNameID, new Models.OWS.OwsRequestModel()
+                        {
+                            ChainCode = fetchReservationRequest.ServiceParameters.ChainCode,
+                            DestinationEntityID = fetchReservationRequest.ServiceParameters.DestinationEntityID,
+                            HotelDomain = fetchReservationRequest.ServiceParameters.HotelDomain,
+                            KioskID = fetchReservationRequest.ServiceParameters.KioskID,
+                            Language = fetchReservationRequest.ServiceParameters.Language,
+                            LegNumber = fetchReservationRequest.ServiceParameters.Legnumber,
+                            Password = fetchReservationRequest.ServiceParameters.Password,
+                            SystemType = fetchReservationRequest.ServiceParameters.SystemType,
+                            Username = fetchReservationRequest.ServiceParameters.Username,
+                            FetchFolioRequest = new Models.OWS.FetchFolioRequest()
+                            {
+                                ReservationNameID = operaReservations[0].ReservationNameID,
+                                ProfileID = (operaReservations[0].GuestProfiles != null && operaReservations[0].GuestProfiles.Count > 0) ? operaReservations[0].GuestProfiles[0].PmsProfileID : ""
+                            }
+                        }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+
+                        if (!owsResponse1.result || owsResponse1.responseData == null)
+                        {
+                            new LogHelper().Log("Failled to fetch folio by window with reason :- " + owsResponse1.responseMessage, operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                            new LogHelper().Warn("Failled to fetch folio by window with reason :- " + owsResponse1.responseMessage, operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                            continue;
+                        }
+                        else
+                        {
+                            new LogHelper().Debug("Converting API json to object", operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                            try
+                            {
+                                guestFolio = JsonConvert.DeserializeObject<Models.OWS.FolioModel>(owsResponse1.responseData.ToString());
+                                new LogHelper().Log("Current guest balance of the reservation is : " + guestFolio.BalanceAmount, operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                new LogHelper().Log("Reservation folio by window fetched successfully", operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                            }
+                            catch (Exception ex)
+                            {
+                                new LogHelper().Error(ex, operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                new LogHelper().Log("Failled to covert API response to object", operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                new LogHelper().Warn("Failled to fetch folio by window with reason :- " + ex.Message, operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                new LogHelper().Debug("Failled to fetch folio by window with reason :- " + ex.Message, operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                            }
+                        }
+                        #endregion
+
+                        #region FetchFolioAsBase64
+                        if (fetchReservationRequest.ServiceParameters.sendFolioFromOpera != null && !fetchReservationRequest.ServiceParameters.sendFolioFromOpera.Value)
+                        {
+                            new LogHelper().Log("Fetching reservation folio as base64 for reservation No. : " + reservation.ReservationNumber, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                            owsResponse1 = await new WSClientHelper().GetFolio(reservation.ReservationNameID, new Models.OWS.OwsRequestModel()
+                            {
+                                ChainCode = fetchReservationRequest.ServiceParameters.ChainCode,
+                                DestinationEntityID = fetchReservationRequest.ServiceParameters.DestinationEntityID,
+                                HotelDomain = fetchReservationRequest.ServiceParameters.HotelDomain,
+                                KioskID = fetchReservationRequest.ServiceParameters.KioskID,
+                                Language = fetchReservationRequest.ServiceParameters.Language,
+                                LegNumber = fetchReservationRequest.ServiceParameters.Legnumber,
+                                Password = fetchReservationRequest.ServiceParameters.Password,
+                                SystemType = fetchReservationRequest.ServiceParameters.SystemType,
+                                Username = fetchReservationRequest.ServiceParameters.Username,
+                                FetchFolioRequest = new Models.OWS.FetchFolioRequest()
+                                {
+                                    ReservationNameID = reservation.ReservationNameID,
+                                    OperaReservation = operaReservations[0],
+                                    GuestSignature = reservation.GuestSignature,
+                                    ProfileID = (operaReservations[0].GuestProfiles != null && operaReservations[0].GuestProfiles.Count > 0) ? operaReservations[0].GuestProfiles[0].PmsProfileID : "",
+                                    FolioList = guestFolio
+
+                                }
+                            }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+
+                            if (!owsResponse1.result || owsResponse1.responseData == null)
+                            {
+                                new LogHelper().Log("Failled to fetch folio with reason :- " + owsResponse1.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                new LogHelper().Warn("Failled to fetch folio with reason :- " + owsResponse1.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                System.Threading.Thread.Sleep(60000);
+
+                                #region try again
+                                new LogHelper().Log("Fetching reservation folio as base64 for reservation No. : " + reservation.ReservationNumber + " again after 1 minute", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                owsResponse1 = await new WSClientHelper().GetFolio(reservation.ReservationNameID, new Models.OWS.OwsRequestModel()
+                                {
+                                    ChainCode = fetchReservationRequest.ServiceParameters.ChainCode,
+                                    DestinationEntityID = fetchReservationRequest.ServiceParameters.DestinationEntityID,
+                                    HotelDomain = fetchReservationRequest.ServiceParameters.HotelDomain,
+                                    KioskID = fetchReservationRequest.ServiceParameters.KioskID,
+                                    Language = fetchReservationRequest.ServiceParameters.Language,
+                                    LegNumber = fetchReservationRequest.ServiceParameters.Legnumber,
+                                    Password = fetchReservationRequest.ServiceParameters.Password,
+                                    SystemType = fetchReservationRequest.ServiceParameters.SystemType,
+                                    Username = fetchReservationRequest.ServiceParameters.Username,
+                                    FetchFolioRequest = new Models.OWS.FetchFolioRequest()
+                                    {
+                                        ReservationNameID = reservation.ReservationNameID,
+                                        OperaReservation = operaReservations[0],
+                                        GuestSignature = reservation.GuestSignature,
+                                        ProfileID = (operaReservations[0].GuestProfiles != null && operaReservations[0].GuestProfiles.Count > 0) ? operaReservations[0].GuestProfiles[0].PmsProfileID : ""
+                                    }
+                                }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+
+                                if (!owsResponse1.result || owsResponse1.responseData == null)
+                                {
+                                    new LogHelper().Log("Failled to fetch folio with reason :- " + owsResponse1.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                    new LogHelper().Warn("Failled to fetch folio with reason :- " + owsResponse1.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                }
+                                #endregion
+
+                                //new LogHelper().Log("Skipping the reservation since the fetching folio failled", reservation.ReservationNameID, "FetchDueOutReservation",  fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                //continue;
+                            }
+                            else
+                            {
+                                folioAsBase64 = owsResponse1.responseData.ToString();
+                                new LogHelper().Log("Fetched guest folio as base64 successfully", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                            }
+                        }
+                        #endregion
+
+                        #region UpdateEmailInProfile
+                        new LogHelper().Debug("Verifying the email to send is different from profile or not", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                        {
+                            if (fetchReservationRequest.ServiceParameters.sendFolioFromOpera != null && fetchReservationRequest.ServiceParameters.sendFolioFromOpera.Value && operaReservations != null && operaReservations.Count > 0 && operaReservations[0].GuestProfiles != null && operaReservations[0].GuestProfiles.Count > 0
+                                && operaReservations[0].GuestProfiles[0].Email != null && operaReservations[0].GuestProfiles[0].Email.Count > 0)
+                            {
+                                var email = operaReservations[0].GuestProfiles[0].Email.Find(x => x.primary != null && x.primary.Value);
+                                if (email != null && !string.IsNullOrEmpty(email.email) && !email.email.Equals(reservation.FolioEmail))
+                                {
+                                    #region Email
+
+                                    new LogHelper().Log("Updating email in opera ", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                    Models.OWS.OwsResponseModel owsResponse = await new WSClientHelper().UpdateProfileEmailAsync(reservation.ReservationNameID, new Models.OWS.OwsRequestModel()
+                                    {
+                                        ChainCode = fetchReservationRequest.ServiceParameters.ChainCode,
+                                        DestinationEntityID = fetchReservationRequest.ServiceParameters.DestinationEntityID,
+                                        HotelDomain = fetchReservationRequest.ServiceParameters.HotelDomain,
+                                        KioskID = fetchReservationRequest.ServiceParameters.KioskID,
+                                        Language = fetchReservationRequest.ServiceParameters.Language,
+                                        LegNumber = fetchReservationRequest.ServiceParameters.Legnumber,
+                                        Password = fetchReservationRequest.ServiceParameters.Password,
+                                        SystemType = fetchReservationRequest.ServiceParameters.SystemType,
+                                        Username = fetchReservationRequest.ServiceParameters.Username,
+                                        UpdateProileRequest = new Models.OWS.UpdateProfile()
+                                        {
+                                            ProfileID = operaReservations[0].GuestProfiles[0].PmsProfileID,
+                                            Emails = new List<Models.OWS.Email>()
+                                        {
+                                            new Models.OWS.Email()
+                                            {
+                                                email = operaReservations[0].GuestProfiles[0].Email[0].email,
+                                                //emailType = "BUSINESS",
+                                                displaySequence = 1,
+                                                primary = true
+                                            }
+                                        }
+                                        }
+                                    }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+                                    if (!owsResponse.result)
+                                    {
+                                        new LogHelper().Log("Failled to update email info with reason :- " + owsResponse.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                        new LogHelper().Warn("Failled to update email info with reason :- " + owsResponse.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                    }
+                                    else
+                                    {
+                                        new LogHelper().Log("Updated email successfully", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                    }
+
+
+                                    #endregion
+                                }
+                            }
+                        }
+                        #endregion
+
+                        #region Checkout Reservation
+
+                        if (fetchReservationRequest.ServiceParameters.isAutoCheckOutEnabled != null && fetchReservationRequest.ServiceParameters.isAutoCheckOutEnabled.Value)
+                        {
+                            new LogHelper().Log("Processing reservation No. : " + operaReservations[0].ReservationNumber + " to do check out", operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                            if (guestFolio != null)
+                            {
+                                new LogHelper().Log("verifying guest balance : " + guestFolio.BalanceAmount, operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                if (guestFolio.BalanceAmount > 0)
+                                {
+                                    #region Pushing Reservation Track
+
+                                    new LogHelper().Log("Pushing reservation track in local DB ", operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+
+                                    localResponse = await new WSClientHelper().PushReservationTrackLocally(operaReservations[0].ReservationNameID, new Models.Local.LocalRequestModel()
+                                    {
+                                        RequestObject = new Models.Local.ReservationTrackStatus()
+                                        {
+                                            ReservationNameID = operaReservations[0].ReservationNameID,
+                                            ProcessType = Models.Local.ReservationProcessType.CheckoutFailled.ToString(),
+                                            ReservationNumber = operaReservations[0].ReservationNumber,
+                                            ProcessStatus = "",
+                                            EmailSent = false
+                                        }
+                                    }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+                                    if (localResponse.result)
+                                    {
+                                        new LogHelper().Log("Reservation track in local DB updated successfully ", operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                    }
+                                    else
+                                    {
+                                        new LogHelper().Log("Failled to update reservation track in local DB with reason :- " + localResponse.responseMessage, operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                    }
+
+                                    #endregion
+
+                                    new LogHelper().Log("Failled to process check out, where the guest balance is greater than 0", operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                }
+                                else
+                                {
+                                    new LogHelper().Log("verifying reservation balance : " + guestFolio.ReservationBalance + " and isallowed to check out flag", operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+
+                                    if (guestFolio.ReservationBalance > 0)
+                                    {
+                                        #region Pushing Reservation Track
+
+                                        new LogHelper().Log("Pushing reservation track in local DB ", operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+
+                                        localResponse = await new WSClientHelper().PushReservationTrackLocally(operaReservations[0].ReservationNameID, new Models.Local.LocalRequestModel()
+                                        {
+                                            RequestObject = new Models.Local.ReservationTrackStatus()
+                                            {
+                                                ReservationNameID = operaReservations[0].ReservationNameID,
+                                                ProcessType = Models.Local.ReservationProcessType.CheckoutFailled.ToString(),
+                                                ReservationNumber = operaReservations[0].ReservationNumber,
+                                                ProcessStatus = "",
+                                                EmailSent = false
+                                            }
+                                        }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+                                        if (localResponse.result)
+                                        {
+                                            new LogHelper().Log("Reservation track in local DB updated successfully ", operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                        }
+                                        else
+                                        {
+                                            new LogHelper().Log("Failled to update reservation track in local DB with reason :- " + localResponse.responseMessage, operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                        }
+
+                                        #endregion
+
+                                        new LogHelper().Log("Failled to process check out, where the reservation balance is greater than 0", operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                    }
+                                    else
+                                    {
+                                        if (guestFolio.IsAllowedForCheckOut != null && guestFolio.IsAllowedForCheckOut.Value)
+                                        {
+
+                                            bool isAllowedForCheckout = true;
+                                            if (guestFolio != null && guestFolio.FolioWindows != null && guestFolio.FolioWindows.Count > 0)
+                                            {
+                                                int x = 0;
+                                                foreach (var folio in guestFolio.FolioWindows)
+                                                {
+                                                    if (x > 0)
+                                                    {
+                                                        if (folio.BalanceAmount != 0)
+                                                        {
+                                                            isAllowedForCheckout = false;
+                                                        }
+                                                    }
+                                                    x++;
+                                                }
+                                            }
+
+
+                                            if (isAllowedForCheckout)
+                                            {
+                                                owsResponse1 = await new WSClientHelper().CheckoutReservation(operaReservations[0].ReservationNameID, new Models.OWS.OwsRequestModel()
+                                                {
+                                                    ChainCode = fetchReservationRequest.ServiceParameters.ChainCode,
+                                                    DestinationEntityID = fetchReservationRequest.ServiceParameters.DestinationEntityID,
+                                                    HotelDomain = fetchReservationRequest.ServiceParameters.HotelDomain,
+                                                    KioskID = fetchReservationRequest.ServiceParameters.KioskID,
+                                                    Language = fetchReservationRequest.ServiceParameters.Language,
+                                                    LegNumber = fetchReservationRequest.ServiceParameters.Legnumber,
+                                                    Password = fetchReservationRequest.ServiceParameters.Password,
+                                                    SystemType = fetchReservationRequest.ServiceParameters.SystemType,
+                                                    Username = fetchReservationRequest.ServiceParameters.Username,
+                                                    SendFolio = fetchReservationRequest.ServiceParameters.sendFolioFromOpera != null && fetchReservationRequest.ServiceParameters.sendFolioFromOpera.Value ? true : false,
+                                                    OperaReservation = new Models.OWS.OperaReservation()
+                                                    {
+                                                        ReservationNameID = operaReservations[0].ReservationNameID
+                                                    }
+                                                }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+
+                                                if (!owsResponse1.result || owsResponse1.responseData == null)
+                                                {
+                                                    #region Pushing Reservation Track
+
+                                                    new LogHelper().Log("Pushing reservation track in local DB ", operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+
+                                                    localResponse = await new WSClientHelper().PushReservationTrackLocally(operaReservations[0].ReservationNameID, new Models.Local.LocalRequestModel()
+                                                    {
+                                                        RequestObject = new Models.Local.ReservationTrackStatus()
+                                                        {
+                                                            ReservationNameID = operaReservations[0].ReservationNameID,
+                                                            ProcessType = Models.Local.ReservationProcessType.CheckoutFailled.ToString(),
+                                                            ReservationNumber = operaReservations[0].ReservationNumber,
+                                                            ProcessStatus = "",
+                                                            EmailSent = false
+                                                        }
+                                                    }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+                                                    if (localResponse.result)
+                                                    {
+                                                        new LogHelper().Log("Reservation track in local DB updated successfully ", operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                                    }
+                                                    else
+                                                    {
+                                                        new LogHelper().Log("Failled to update reservation track in local DB with reason :- " + localResponse.responseMessage, operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                                    }
+
+                                                    #endregion
+
+                                                    new LogHelper().Log("Failled to check-out with reason :- " + owsResponse1.responseMessage, operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                                    new LogHelper().Warn("Failled to check-out with reason :- " + owsResponse1.responseMessage, operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+
+                                                }
+                                                else
+                                                {
+                                                    new LogHelper().Log("Checked out successfully", operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+
+                                                    #region Pushing Reservation Track
+
+                                                    new LogHelper().Log("Pushing reservation track in local DB ", operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+
+                                                    localResponse = await new WSClientHelper().PushReservationTrackLocally(operaReservations[0].ReservationNameID, new Models.Local.LocalRequestModel()
+                                                    {
+                                                        RequestObject = new Models.Local.ReservationTrackStatus()
+                                                        {
+                                                            ReservationNameID = operaReservations[0].ReservationNameID,
+                                                            ProcessType = Models.Local.ReservationProcessType.CheckedoutSuccessfully.ToString(),
+                                                            ReservationNumber = operaReservations[0].ReservationNumber,
+                                                            ProcessStatus = "",
+                                                            EmailSent = false
+                                                        }
+                                                    }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+                                                    if (localResponse.result)
+                                                    {
+                                                        new LogHelper().Log("Reservation track in local DB updated successfully ", operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                                    }
+                                                    else
+                                                    {
+                                                        new LogHelper().Log("Failled to update reservation track in local DB with reason :- " + localResponse.responseMessage, operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                                    }
+
+                                                    #endregion
+
+                                                    if (operaReservations[0].SharerReservations != null && operaReservations.Count > 0)
+                                                    {
+                                                        new LogHelper().Log("Processing sharers", operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                                        foreach (Models.OWS.OperaReservation sharer in operaReservations[0].SharerReservations)
+                                                        {
+                                                            new LogHelper().Log("Processing sharer reservation - " + sharer.ReservationNumber, operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+
+                                                            if (!string.IsNullOrEmpty(sharer.ReservationNameID))
+                                                            {
+                                                                owsResponse1 = await new WSClientHelper().CheckoutReservation(operaReservations[0].ReservationNameID, new Models.OWS.OwsRequestModel()
+                                                                {
+                                                                    ChainCode = fetchReservationRequest.ServiceParameters.ChainCode,
+                                                                    DestinationEntityID = fetchReservationRequest.ServiceParameters.DestinationEntityID,
+                                                                    HotelDomain = fetchReservationRequest.ServiceParameters.HotelDomain,
+                                                                    KioskID = fetchReservationRequest.ServiceParameters.KioskID,
+                                                                    Language = fetchReservationRequest.ServiceParameters.Language,
+                                                                    LegNumber = fetchReservationRequest.ServiceParameters.Legnumber,
+                                                                    Password = fetchReservationRequest.ServiceParameters.Password,
+                                                                    SystemType = fetchReservationRequest.ServiceParameters.SystemType,
+                                                                    Username = fetchReservationRequest.ServiceParameters.Username,
+                                                                    OperaReservation = new Models.OWS.OperaReservation()
+                                                                    {
+                                                                        ReservationNameID = sharer.ReservationNameID
+                                                                    }
+                                                                }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+
+                                                                if (!owsResponse1.result || owsResponse1.responseData == null)
+                                                                {
+                                                                    #region Pushing Reservation Track
+
+                                                                    new LogHelper().Log("Pushing reservation track in local DB for sharer " + sharer.ReservationNumber, operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+
+                                                                    localResponse = await new WSClientHelper().PushReservationTrackLocally(operaReservations[0].ReservationNameID, new Models.Local.LocalRequestModel()
+                                                                    {
+                                                                        RequestObject = new Models.Local.ReservationTrackStatus()
+                                                                        {
+                                                                            ReservationNameID = operaReservations[0].ReservationNameID,
+                                                                            ProcessType = Models.Local.ReservationProcessType.CheckoutFailled.ToString(),
+                                                                            ReservationNumber = sharer.ReservationNumber,
+                                                                            ProcessStatus = "",
+                                                                            EmailSent = false
+                                                                        }
+                                                                    }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+                                                                    if (localResponse.result)
+                                                                    {
+                                                                        new LogHelper().Log("Reservation track in local DB updated successfully ", operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        new LogHelper().Log("Failled to update reservation track in local DB with reason :- " + localResponse.responseMessage, operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                                                    }
+
+                                                                    #endregion
+
+                                                                    new LogHelper().Log("Failled to check-out sharer with reason :- " + owsResponse1.responseMessage + "sharer reservation no. : " + sharer.ReservationNumber, operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                                                    new LogHelper().Warn("Failled to check-out sharer with reason :- " + owsResponse1.responseMessage + "sharer reservation no. : " + sharer.ReservationNumber, operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+
+                                                                }
+                                                                else
+                                                                {
+                                                                    #region Pushing Reservation Track
+
+                                                                    new LogHelper().Log("Pushing reservation track in local DB for sharer " + sharer.ReservationNumber, operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+
+                                                                    localResponse = await new WSClientHelper().PushReservationTrackLocally(operaReservations[0].ReservationNameID, new Models.Local.LocalRequestModel()
+                                                                    {
+                                                                        RequestObject = new Models.Local.ReservationTrackStatus()
+                                                                        {
+                                                                            ReservationNameID = operaReservations[0].ReservationNameID,
+                                                                            ProcessType = Models.Local.ReservationProcessType.CheckedoutSuccessfully.ToString(),
+                                                                            ReservationNumber = sharer.ReservationNumber,
+                                                                            ProcessStatus = "",
+                                                                            EmailSent = false
+                                                                        }
+                                                                    }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+                                                                    if (localResponse.result)
+                                                                    {
+                                                                        new LogHelper().Log("Reservation track in local DB updated successfully ", operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        new LogHelper().Log("Failled to update reservation track in local DB with reason :- " + localResponse.responseMessage, operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                                                    }
+
+                                                                    #endregion
+
+                                                                    new LogHelper().Log("Sharer checked out successfully", operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                #region Pushing Reservation Track
+
+                                                                new LogHelper().Log("Pushing reservation track in local DB for sharer " + sharer.ReservationNumber, operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+
+                                                                localResponse = await new WSClientHelper().PushReservationTrackLocally(operaReservations[0].ReservationNameID, new Models.Local.LocalRequestModel()
+                                                                {
+                                                                    RequestObject = new Models.Local.ReservationTrackStatus()
+                                                                    {
+                                                                        ReservationNameID = operaReservations[0].ReservationNameID,
+                                                                        ProcessType = Models.Local.ReservationProcessType.CheckoutFailled.ToString(),
+                                                                        ReservationNumber = sharer.ReservationNumber,
+                                                                        ProcessStatus = "",
+                                                                        EmailSent = false
+                                                                    }
+                                                                }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+                                                                if (localResponse.result)
+                                                                {
+                                                                    new LogHelper().Log("Reservation track in local DB updated successfully ", operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                                                }
+                                                                else
+                                                                {
+                                                                    new LogHelper().Log("Failled to update reservation track in local DB with reason :- " + localResponse.responseMessage, operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                                                }
+
+                                                                #endregion
+
+                                                                new LogHelper().Log("Reservation name ID is NULL ", operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                new LogHelper().Log("Skipping check out because other than main window balnce is non zero", operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                            }
+                                        }
+                                        else
+                                        {
+                                            #region Pushing Reservation Track
+
+                                            new LogHelper().Log("Pushing reservation track in local DB ", operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+
+                                            localResponse = await new WSClientHelper().PushReservationTrackLocally(operaReservations[0].ReservationNameID, new Models.Local.LocalRequestModel()
+                                            {
+                                                RequestObject = new Models.Local.ReservationTrackStatus()
+                                                {
+                                                    ReservationNameID = operaReservations[0].ReservationNameID,
+                                                    ProcessType = Models.Local.ReservationProcessType.CheckoutFailled.ToString(),
+                                                    ReservationNumber = operaReservations[0].ReservationNumber,
+                                                    ProcessStatus = "",
+                                                    EmailSent = false
+                                                }
+                                            }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+                                            if (localResponse.result)
+                                            {
+                                                new LogHelper().Log("Reservation track in local DB updated successfully ", operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                            }
+                                            else
+                                            {
+                                                new LogHelper().Log("Failled to update reservation track in local DB with reason :- " + localResponse.responseMessage, operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                            }
+
+                                            #endregion
+
+                                            new LogHelper().Log("Failled to process check out, where the is allowedfor checkout flag is either null or  false", operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                #region Pushing Reservation Track
+
+                                new LogHelper().Log("Pushing reservation track in local DB ", operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+
+                                localResponse = await new WSClientHelper().PushReservationTrackLocally(operaReservations[0].ReservationNameID, new Models.Local.LocalRequestModel()
+                                {
+                                    RequestObject = new Models.Local.ReservationTrackStatus()
+                                    {
+                                        ReservationNameID = operaReservations[0].ReservationNameID,
+                                        ProcessType = Models.Local.ReservationProcessType.CheckoutFailled.ToString(),
+                                        ReservationNumber = operaReservations[0].ReservationNumber,
+                                        ProcessStatus = "",
+                                        EmailSent = false
+                                    }
+                                }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+                                if (localResponse.result)
+                                {
+                                    new LogHelper().Log("Reservation track in local DB updated successfully ", operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                }
+                                else
+                                {
+                                    new LogHelper().Log("Failled to update reservation track in local DB with reason :- " + localResponse.responseMessage, operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                }
+
+                                #endregion
+
+                                new LogHelper().Log("Failled to process check out, failled to retreave the guest balance", operaReservations[0].ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                            }
+                        }
+                        #endregion
+
+                        #region Updating Locally
+                        new LogHelper().Log("Pushing reservation to Local DB", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                        localResponse = await new WSClientHelper().PushRecordLocally(new Models.Local.LocalRequestModel()
+                        {
+                            RequestObject = new List<Models.Cloud.OperaReservation>() { reservation },
+                            SyncFromCloud = true
+                        }, reservation.ReservationNameID, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+                        if (!localResponse.result)
+                        {
+                            new LogHelper().Log("Failled to push pre checked-out reservation with reason :- " + localResponse.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                            return new Models.Local.LocalResponseModel()
+                            {
+                                result = false,
+                                responseMessage = "Failled to push pre checked-out reservation with reason :- " + localResponse.responseMessage
+                            };
+                        }
+
+                        new LogHelper().Log("Reservation successfully updated in Local DB", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                        #endregion
+
+                        #region Pushing folio to Local DB
+                        if (!string.IsNullOrEmpty(folioAsBase64))
+                        {
+                            try
+                            {
+                                new LogHelper().Log("Pushing signed folio to Local DB", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                byte[] folio = null;
+                                folio = Convert.FromBase64String(folioAsBase64);
+                                localResponse = await new WSClientHelper().InsertReservationDocuments(reservation.ReservationNameID, new Models.Local.LocalRequestModel()
+                                {
+                                    RequestObject = new List<Models.Local.ReservationDocumentsDataTableModel>()
+                                {
+                                    new Models.Local.ReservationDocumentsDataTableModel()
+                                    {
+                                        Document = folio,
+                                        DocumentType = "Folio",
+                                        ReservationNameID = operaReservations[0].ReservationNameID
+                                    }
+                                }
+                                }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+                                if (!localResponse.result)
+                                {
+                                    new LogHelper().Log("Failled to push reservation document with reason :- " + localResponse.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                    new LogHelper().Warn("Failled to push reservation document with reason :- " + localResponse.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                }
+                                else
+                                {
+                                    new LogHelper().Log("Reservation document updated successfully", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                }
+                            }
+                            catch (Exception exc)
+                            {
+                                new LogHelper().Error(exc, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                            }
+                        }
+                        #endregion
+
+                        #region Pushing Guest Signature to Local DB
+                        if (!string.IsNullOrEmpty(reservation.GuestSignature))
+                        {
+                            try
+                            {
+                                new LogHelper().Log("Pushing guest signature to Local DB", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                byte[] guestSignature = null;
+                                guestSignature = Convert.FromBase64String(reservation.GuestSignature);
+                                localResponse = await new WSClientHelper().InsertReservationDocuments(reservation.ReservationNameID, new Models.Local.LocalRequestModel()
+                                {
+                                    RequestObject = new List<Models.Local.ReservationDocumentsDataTableModel>()
+                                {
+                                    new Models.Local.ReservationDocumentsDataTableModel()
+                                    {
+                                        Document = guestSignature,
+                                        DocumentType = "Signature",
+                                        ReservationNameID = reservation.ReservationNameID
+                                    }
+                                }
+                                }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+                                if (!localResponse.result)
+                                {
+                                    new LogHelper().Log("Failled to push guest signature with reason :- " + localResponse.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                    new LogHelper().Warn("Failled to push guest signature with reason :- " + localResponse.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                }
+                                else
+                                {
+                                    new LogHelper().Log("Signature updated successfully", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                }
+                            }
+                            catch (Exception exc)
+                            {
+                                new LogHelper().Error(exc, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                            }
+                        }
+                        #endregion
+
+                        #region Sending Email
+                        new LogHelper().Log("Sending final folio email", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                        if (!string.IsNullOrEmpty(reservation.FolioEmail) && !string.IsNullOrEmpty(folioAsBase64))
+                        {
+                            TextInfo textInfo = new CultureInfo("en-US", false).TextInfo;
+                            Models.Email.EmailResponse emailResponse = await new WSClientHelper().SendEmail(reservation.ReservationNameID, new Models.Email.EmailRequest()
+                            {
+                                FromEmail = fetchReservationRequest.ServiceParameters.PreCheckoutFolioEmail,
+                                ToEmail = reservation.FolioEmail,
+                                GuestName = !string.IsNullOrEmpty(operaReservations[0].GuestProfiles[0].GuestName) ? textInfo.ToTitleCase(operaReservations[0].GuestProfiles[0].GuestName)
+                                        : operaReservations[0].GuestProfiles[0].GuestName,//operaReservations[0].GuestProfiles[0].GuestName,
+                                Subject = fetchReservationRequest.ServiceParameters.PreCheckoutFolioEmailSubject,
+                                confirmationNumber = operaReservations[0].ReservationNumber,
+                                displayFromEmail = fetchReservationRequest.ServiceParameters.EmailDisplayName,
+                                EmailType = Models.Email.EmailType.GuestFolio,
+                                AttchmentBase64 = folioAsBase64
+
+                            }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+                            if (!emailResponse.result)
+                            {
+                                new LogHelper().Log("Failled to send final folio email with reason :- " + emailResponse.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                new LogHelper().Warn("Failled to send final folio email with reason :- " + emailResponse.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+
+                                #region Pushing Reservation Track
+
+                                new LogHelper().Log("Pushing reservation track in local DB ", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+
+                                localResponse = await new WSClientHelper().PushReservationTrackLocally(reservation.ReservationNameID, new Models.Local.LocalRequestModel()
+                                {
+                                    RequestObject = new Models.Local.ReservationTrackStatus()
+                                    {
+                                        ReservationNameID = reservation.ReservationNameID,
+                                        ProcessType = Models.Local.ReservationProcessType.GuestFolioEmail.ToString(),
+                                        ReservationNumber = reservation.ReservationNumber,
+                                        ProcessStatus = "",
+                                        EmailSent = false
+                                    }
+                                }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+                                if (localResponse.result)
+                                {
+                                    new LogHelper().Log("Reservation track in local DB updated successfully ", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                }
+                                else
+                                {
+                                    new LogHelper().Log("Failled to update reservation track in local DB with reason :- " + localResponse.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                }
+
+                                #endregion
+                            }
+                            else
+                            {
+                                new LogHelper().Log("Email send successfully", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+
+                                #region Pushing Reservation Track
+
+                                new LogHelper().Log("Pushing reservation track in local DB ", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+
+                                localResponse = await new WSClientHelper().PushReservationTrackLocally(reservation.ReservationNameID, new Models.Local.LocalRequestModel()
+                                {
+                                    RequestObject = new Models.Local.ReservationTrackStatus()
+                                    {
+                                        ReservationNameID = reservation.ReservationNameID,
+                                        ProcessType = Models.Local.ReservationProcessType.GuestFolioEmail.ToString(),
+                                        ReservationNumber = reservation.ReservationNumber,
+                                        ProcessStatus = "",
+                                        EmailSent = true
+                                    }
+                                }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+                                if (localResponse.result)
+                                {
+                                    new LogHelper().Log("Reservation track in local DB updated successfully ", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                }
+                                else
+                                {
+                                    new LogHelper().Log("Failled to update reservation track in local DB with reason :- " + localResponse.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                                }
+
+                                #endregion
+                            }
+                        }
+                        else
+                        {
+                            new LogHelper().Log("Failled to send guest folio email since email address not found from pre checked out list response", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                            new LogHelper().Warn("Failled to send guest folio email since email address not found from pre checked out list response", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+
+                            #region Pushing Reservation Track
+
+                            new LogHelper().Log("Pushing reservation track in local DB ", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+
+                            localResponse = await new WSClientHelper().PushReservationTrackLocally(reservation.ReservationNameID, new Models.Local.LocalRequestModel()
+                            {
+                                RequestObject = new Models.Local.ReservationTrackStatus()
+                                {
+                                    ReservationNameID = reservation.ReservationNameID,
+                                    ProcessType = Models.Local.ReservationProcessType.GuestFolioEmail.ToString(),
+                                    ReservationNumber = reservation.ReservationNumber,
+                                    ProcessStatus = "",
+                                    EmailSent = false
+                                }
+                            }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+                            if (localResponse.result)
+                            {
+                                new LogHelper().Log("Reservation track in local DB updated successfully ", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                            }
+                            else
+                            {
+                                new LogHelper().Log("Failled to update reservation track in local DB with reason :- " + localResponse.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                            }
+
+                            #endregion
+                        }
+                        #endregion
+
+                        #region Final step
+
+                        new LogHelper().Log("Updating record in cloud as synced to local true", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                        cloudResponse = await new WSClientHelper().UpdateRecordInCloud(reservation.ReservationNameID, new Models.Cloud.CloudRequestModel()
+                        {
+                            RequestObject = new List<Models.Local.UpdateReservationByReservationNameIDModel>()
+                                                            {
+                                                                new Models.Local.UpdateReservationByReservationNameIDModel
+                                                                {
+                                                                    IsPushedToLocal = true,
+                                                                    ReservationNameID = reservation.ReservationNameID
+                                                                }
+                                                            }
+                        }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+                        if (!cloudResponse.result)
+                        {
+                            new LogHelper().Log("Failled to update record with reason :- " + cloudResponse.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+
+                        }
+                        else
+                            new LogHelper().Log("Record updated successfully", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+
+                        new LogHelper().Log("Clearing the record in the cloud", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                        cloudResponse = await new WSClientHelper().ClearRecords(reservation.ReservationNameID, new Models.Cloud.CloudRequestModel() { RequestObject = reservation.ReservationNameID }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+                        if (!cloudResponse.result)
+                        {
+                            new LogHelper().Log("Failled to clear the record with reason :- " + cloudResponse.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                        }
+                        else
+                            new LogHelper().Log("Record cleared successfully", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                        #endregion
+
+                        #region Pushing Reservation Track
+
+                        new LogHelper().Log("Pushing reservation track in local DB ", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+
+                        localResponse = await new WSClientHelper().PushReservationTrackLocally(reservation.ReservationNameID, new Models.Local.LocalRequestModel()
+                        {
+                            RequestObject = new Models.Local.ReservationTrackStatus()
+                            {
+                                ReservationNameID = reservation.ReservationNameID,
+                                ProcessType = Models.Local.ReservationProcessType.PreCheckedOutFetched.ToString(),
+                                ReservationNumber = reservation.ReservationNumber,
+                                ProcessStatus = "",
+                                EmailSent = false
+                            }
+                        }, "pre checked-out fetch", fetchReservationRequest.ServiceParameters);
+                        if (localResponse.result)
+                        {
+                            new LogHelper().Log("Reservation track in local DB updated successfully ", reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                        }
+                        else
+                        {
+                            new LogHelper().Log("Failled to update reservation track in local DB with reason :- " + localResponse.responseMessage, reservation.ReservationNameID, "FetchDueOutReservation", fetchReservationRequest.ServiceParameters.ClientID, "pre checked-out fetch");
+                        }
+
+                        #endregion
+                    }
+
+
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = true,
+                        responseMessage = "Success"
+                    };
+
+                }
+                else
+                {
+                    return new Models.Local.LocalResponseModel()
+                    {
+                        result = false,
+                        responseMessage = "No reservation found"
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new Models.Local.LocalResponseModel()
+                {
+                    result = false,
+                    responseMessage = ex.Message,
+                    statusCode = -1
                 };
             }
         }

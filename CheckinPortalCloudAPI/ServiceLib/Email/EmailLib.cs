@@ -460,7 +460,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.Email
                     htmlBody = htmlBody.Replace("$$BUTTON_IMAGE$$", buton_content_id);
                     htmlBody = htmlBody.Replace("$$GUEST_NAME$$", GuestName);
                     htmlBody = htmlBody.Replace("$$CONFIRMATION_NO$$", Confirmation_no);
-                                AlternateView avHtml = AlternateView.CreateAlternateViewFromString(htmlBody, null, MediaTypeNames.Text.Html);
+                    AlternateView avHtml = AlternateView.CreateAlternateViewFromString(htmlBody, null, MediaTypeNames.Text.Html);
                     LinkedResource inline = new LinkedResource(header_image_path, MediaTypeNames.Image.Jpeg);
                     inline.ContentId = header_content_id;
                     avHtml.LinkedResources.Add(inline);

@@ -49,7 +49,8 @@ namespace CheckinPortalCloudAPI.Helper
             request.Headers.RemoveAt(request.Headers.FindHeader("OGHeader", "http://webservices.micros.com/og/4.3/Core/"));
 
             request.Headers.Add(HelperClass.GetOGHeader(hotel_domain, og_header_usr_name, og_header_paswd, dest_entity_id, dest_system_type, source_entity_id, source_system_type));
-            System.IO.File.WriteAllText(System.Web.Hosting.HostingEnvironment.MapPath(@"~\request2.txt"), request.ToString());
+            Random rnd = new Random();
+            System.IO.File.WriteAllText(System.Web.Hosting.HostingEnvironment.MapPath($@"~\request{rnd.Next(1, 7).ToString()}.txt"), request.ToString());
             return null;
         }
 

@@ -28,7 +28,15 @@ namespace CheckinPortalCloudAPI.Controllers
         public async Task<Models.Local.LocalResponseModel> FetchPreCheckedOutReservation(Models.Local.LocalRequestModel localRequest)
         {
             Models.Local.FetchReservationRequest reservationRequest = JsonConvert.DeserializeObject<Models.Local.FetchReservationRequest>(localRequest.RequestObject.ToString());
-            return await new Helper.Local.LocalAPI().FetchPreCheckedOutReservation(reservationRequest);
+            bool IsCloud = true;
+            if(IsCloud)
+            {
+                return await new Helper.Local.LocalAPI().FetchCloudPreCheckedOutReservation(reservationRequest);
+            }
+            else
+            {
+                return await new Helper.Local.LocalAPI().FetchPreCheckedOutReservation(reservationRequest);
+            }
         }
 
         [HttpPost]
@@ -52,7 +60,7 @@ namespace CheckinPortalCloudAPI.Controllers
         public async Task<Models.Local.LocalResponseModel> PushPaymentLink(Models.Local.LocalRequestModel localRequest)
         {
             Models.Local.PushReservationRequest reservationRequest = JsonConvert.DeserializeObject<Models.Local.PushReservationRequest>(localRequest.RequestObject.ToString());
-            return await new Helper.Local.LocalAPI().PushDueInReservation(reservationRequest);
+            return await new Helper.Local.LocalAPI().PushPaymentLink(reservationRequest);
         }
 
         [HttpPost]

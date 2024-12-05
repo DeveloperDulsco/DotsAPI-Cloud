@@ -639,6 +639,10 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                                     }
                                                     FolioItems.ItemName = BItems.Description;
                                                     FolioItems.Date = BItems.Date;
+                                                    if (BItems.QuantitySpecified)
+                                                    {
+                                                        FolioItems.Quantity = BItems.Quantity;
+                                                    }
                                                     if (GFolio.Items != null)
                                                     {
                                                         GFolio.Items.Add(FolioItems);
@@ -1500,6 +1504,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         FolioItemsTable.Columns.Add("Charges", typeof(string));
                         FolioItemsTable.Columns.Add("Credits", typeof(string));
                         FolioItemsTable.Columns.Add("ItemGroup", typeof(string));
+                        FolioItemsTable.Columns.Add("Qty", typeof(string));
                         decimal TotalAmount = 0;
                         decimal TotalCredit = 0;
                         decimal GST7 = 0;
@@ -1512,6 +1517,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                 DataRow folioRow = FolioItemsTable.NewRow();
                                 folioRow["Date"] = items.Date != null ? items.Date.Value.ToString("dd/MM/yyyy") : DateTime.Now.ToString("dd/MM/yyyy");
                                 folioRow["Description"] = items.ItemName;
+                                folioRow["Qty"] = items.Quantity;
                                 folioRow["AdditionalInformation"] = "";
 
                                 if (items.IsCredit)
@@ -1556,6 +1562,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         DataTable reportParameters = new DataTable();
 
                         #region Report Parameter Columns
+                        reportParameters.Columns.Add("GuestName", typeof(string));
                         reportParameters.Columns.Add("Address", typeof(string));
                         reportParameters.Columns.Add("RoomNo", typeof(string));
                         reportParameters.Columns.Add("FolioNo", typeof(string));
@@ -1579,6 +1586,14 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         reportParameters.Columns.Add("TotalAmount", typeof(string));
                         reportParameters.Columns.Add("TotalCredit", typeof(string));
 
+                        reportParameters.Columns.Add("BussinessRegNo", typeof(string));
+                        reportParameters.Columns.Add("ARNo", typeof(string));
+                        reportParameters.Columns.Add("TaxInvoiceNo", typeof(string));
+                        reportParameters.Columns.Add("CRSNo", typeof(string));
+                        reportParameters.Columns.Add("GuestCount", typeof(string));
+                        reportParameters.Columns.Add("Nationality", typeof(string));
+                        reportParameters.Columns.Add("InvoiceDate", typeof(string));
+                        reportParameters.Columns.Add("RoomRate", typeof(string));
                         #endregion
 
 
@@ -1591,6 +1606,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         DataRow parameterRow = reportParameters.NewRow();
 
                         #region Assign Values to DataRow
+                        parameterRow["GuestName"] = GuestFolio.GuestName;
                         parameterRow["Address"] = FullAddress;
 
 
@@ -1616,6 +1632,15 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         parameterRow["SignatureImagePath"] = string.IsNullOrEmpty(fetchFolioRequest.GuestSignature) ? "" : fetchFolioRequest.GuestSignature;
                         parameterRow["TotalAmount"] = TotalAmount.ToString("0.00");
                         parameterRow["TotalCredit"] = TotalCredit != 0 ? Math.Abs(TotalCredit).ToString("0.00") : "";
+
+                        parameterRow["BussinessRegNo"] = "";
+                        parameterRow["ARNo"] = "";
+                        parameterRow["TaxInvoiceNo"] = "";
+                        parameterRow["CRSNo"] = "";
+                        parameterRow["GuestCount"] = "";
+                        parameterRow["Nationality"] = "";
+                        parameterRow["InvoiceDate"] = $"{DateTime.Now:dd/MM/yyyy}";
+                        parameterRow["RoomRate"] = "";
                         #endregion
 
                         reportParameters.Rows.Add(parameterRow);
@@ -6884,7 +6909,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 RB.ReservationID = UIDLIST;
                 CORequest.ReservationRequest = RB;
 
-                if (bool.Parse(ConfigurationManager.AppSettings["OPIEnabled"].ToString()))
+                if (bool.Parse(ConfigurationManager.AppSettings["OPIEnabled"].ToString()) && Request.MakePaymentRequest != null)
                 {
                     CORequest.Printer = new ReservationAdvancedService.Printer()
                     {
@@ -8924,6 +8949,415 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                     result = false,
                     responseMessage = ex.Message,
                     statusCode = 8002
+                };
+            }
+        }
+
+        public Models.OWS.OwsResponseModel UpdateMethodOfPayment(Models.OWS.OwsRequestModel Request)
+        {
+            try
+            {
+                //System.IO.File.AppendAllLines(System.Web.Hosting.HostingEnvironment.MapPath(@"~\GuestCheckin.txt"), new string[] { JsonConvert.SerializeObject(Request) });
+                new LogHelper().Debug("UpdateMethodOfPayment request : " + JsonConvert.SerializeObject(Request), Request.OperaReservation.ReservationNameID, "UpdateMethodOfPayment", "API", "OWS");
+                DateTime? PostingDate = null;
+                #region Request
+                #region Request Header
+                string temp = Helper.Helper.Get8Digits();
+                ReservationAdvancedService.OGHeader OGHeader = new ReservationAdvancedService.OGHeader();
+                OGHeader.transactionID = temp;
+                OGHeader.timeStamp = DateTime.Now;
+                OGHeader.primaryLangID = Request.Language; //English
+                ReservationAdvancedService.EndPoint orginEndPOint = new ReservationAdvancedService.EndPoint();
+                orginEndPOint.entityID = Request.KioskID; //Kiosk Identifier
+                orginEndPOint.systemType = Request.SystemType;
+                OGHeader.Origin = orginEndPOint;
+                ReservationAdvancedService.EndPoint destEndPOint = new ReservationAdvancedService.EndPoint();
+                destEndPOint.entityID = Request.DestinationEntityID;
+                destEndPOint.systemType = Request.DestinationSystemType;
+                OGHeader.Destination = destEndPOint;
+                ReservationAdvancedService.OGHeaderAuthentication Auth = new ReservationAdvancedService.OGHeaderAuthentication();
+                ReservationAdvancedService.OGHeaderAuthenticationUserCredentials userCredentials = new ReservationAdvancedService.OGHeaderAuthenticationUserCredentials();
+                userCredentials.UserName = Request.Username;
+                userCredentials.UserPassword = Request.Password;
+                userCredentials.Domain = Request.HotelDomain;
+                Auth.UserCredentials = userCredentials;
+                OGHeader.Authentication = Auth;
+                #endregion
+
+                #region Request Body
+
+                ReservationAdvancedService.UpdateMethodOfPaymentRequest UpdatePaymentRequest = new ReservationAdvancedService.UpdateMethodOfPaymentRequest();
+                //CIRequest.NoPost = Request.isNoPost;
+                if (Request.modifyBookingRequest?.PaymentMethod == null)
+                {
+                    return new Models.OWS.OwsResponseModel()
+                    {
+                        responseMessage = "Payment method cannot be blank",
+                        result = false,
+                        statusCode = -1
+                    };
+                }
+
+                ReservationAdvancedService.ReservationRequestBase RB = new ReservationAdvancedService.ReservationRequestBase();
+
+                ReservationAdvancedService.HotelReference HF = new ReservationAdvancedService.HotelReference();
+                HF.chainCode = Request.ChainCode;
+                HF.hotelCode = Request.HotelDomain;
+                RB.HotelReference = HF;
+
+                ReservationAdvancedService.UniqueID uID = new ReservationAdvancedService.UniqueID();
+                uID.type = (ReservationAdvancedService.UniqueIDType)ReservationService.UniqueIDType.EXTERNAL;
+                uID.source = "RESV_NAME_ID";
+                uID.Value = Request.modifyBookingRequest.ReservationNameID;
+                ReservationAdvancedService.UniqueID[] UIDLIST = new ReservationAdvancedService.UniqueID[1];
+                UIDLIST[0] = uID;
+                RB.ReservationID = UIDLIST;
+                UpdatePaymentRequest.ReservationRequest = RB;
+
+                UpdatePaymentRequest.canHandleVaultedCreditCard = false;
+                UpdatePaymentRequest.canHandleVaultedCreditCardSpecified = true;
+
+
+                UpdatePaymentRequest.MethodOfPayment = new ReservationAdvancedService.MethodOfPaymentInfo[1];
+                UpdatePaymentRequest.MethodOfPayment[0] = new ReservationAdvancedService.MethodOfPaymentInfo()
+                {
+                    FolioViewNo = 1,
+                    CreditCard = new ReservationAdvancedService.CreditCard()
+                    {
+                        cardType = Request?.modifyBookingRequest?.PaymentMethod?.PaymentType,
+                        chipAndPin = false,
+                        chipAndPinSpecified = true,
+                        cardCode = Request?.modifyBookingRequest?.PaymentMethod?.PaymentType,
+                        Item = Request?.modifyBookingRequest?.PaymentMethod?.MaskedCardNumber.ToLower()
+                    }
+                };
+                //CIRequest.EmailFolio = false;
+                //CIRequest.EmailStaff = false;
+                //CIRequest.GetKeyTrack = false;
+                // CIRequest.Keys = 0;
+                //CIRequest.PrintRegistration = false;
+                //CIRequest.KeyEncoder = null;
+
+                //CIRequest
+
+
+
+                //UpdatePaymentRequest.CreditCardInfo = new ReservationAdvancedService.CreditCardInfo();
+
+
+
+                //if (!string.IsNullOrEmpty(Request.ERegCard))
+                //{
+                //    ReservationAdvancedService.FileData ERegcard = new ReservationAdvancedService.FileData();
+                //    ERegcard.fileType = ReservationAdvancedService.FileType.PDF;
+                //    byte[] toBytes = Convert.FromBase64String(Request.ERegCard);
+                //    ERegcard.FileContents = toBytes;
+                //    CIRequest.SignedDocument = ERegcard;
+
+                //}
+
+                #endregion
+
+                #endregion
+
+                #region Response
+
+                ReservationAdvancedService.ResvAdvancedServiceSoapClient ResAdvPortClient = new ReservationAdvancedService.ResvAdvancedServiceSoapClient();
+                bool isOperaCloudEnabled = false;
+                isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
+                                && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
+                                && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
+                if (isOperaCloudEnabled)
+                {
+                    ResAdvPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            Request.Username, Request.Password, Request.HotelDomain));
+                }
+                ReservationAdvancedService.UpdateMethodOfPaymentResponse UpdatePaymentResponse = new ReservationAdvancedService.UpdateMethodOfPaymentResponse();
+                UpdatePaymentResponse = ResAdvPortClient.UpdateMethodOfPayment(ref OGHeader, UpdatePaymentRequest);
+
+                if (UpdatePaymentResponse.Result.resultStatusFlag == ReservationAdvancedService.ResultStatusFlag.SUCCESS)
+                {
+                    return new Models.OWS.OwsResponseModel
+                    {
+                        responseMessage = "Success",
+                        statusCode = 101,
+                        result = true
+                    };
+                }
+                else
+                {
+
+                    return new Models.OWS.OwsResponseModel
+                    {
+                        responseMessage = UpdatePaymentResponse.Result != null ? UpdatePaymentResponse.Result.Text[0].Value : "Update Method of Payment Failed",
+                        statusCode = 2001,
+                        result = false
+                    };
+
+                    #region OS And DI Handled
+
+                    //if (CIResponse.Result != null && CIResponse.Result.Text.Length > 0)
+                    //{
+                    //    if (CIResponse.Result.Text[0].Value.Contains("Kiosk cannot Checkin at this time Room is  DI  Please proceed to front desk for assistance"))
+                    //    {
+
+                    //        #region Modify Booking with Creditcard Number
+                    //        //try
+                    //        //{
+                    //        //    Models.ModifyReservation ModifyReservationRequest = new Models.ModifyReservation();
+                    //        //    ModifyReservationRequest.AdultCount = null;
+                    //        //    ModifyReservationRequest.AdultCountSpecified = false;
+                    //        //    ModifyReservationRequest.ApprovalCode = null;
+                    //        //    ModifyReservationRequest.CreditCardSpecified = true;
+                    //        //    ModifyReservationRequest.CreditCardNumber = Request.CardNumber;
+                    //        //    ModifyReservationRequest.CreditCardType = Request.CardType;
+                    //        //    ModifyReservationRequest.ChainCode = Request.ChainCode;
+                    //        //    ModifyReservationRequest.CheckoutTime = null;
+                    //        //    ModifyReservationRequest.CheckOutTimeSpecified = false;
+                    //        //    ModifyReservationRequest.ConfirmationNo = Request.ConfirmationNo;
+                    //        //    ModifyReservationRequest.HotelDomain = Request.HotelDomain;
+                    //        //    ModifyReservationRequest.KioskID = Request.KioskID;
+                    //        //    ModifyReservationRequest.KioskPassword = Request.KioskPassword;
+                    //        //    ModifyReservationRequest.KioskUserName = Request.KioskUserName;
+                    //        //    ModifyReservationRequest.Language = "EN";
+                    //        //    ModifyReservationRequest.LegNumber = Request.LegNumber;
+                    //        //    ModifyReservationRequest.PrimaryGuestNameID = Request.PrimaryGuestNameID;
+                    //        //    ModifyReservationRequest.ReservationNameID = Request.ReservationNameID;
+                    //        //    ModifyReservationRequest.SystemType = Request.SystemType;
+                    //        //    ModifyReservationRequest.UDFFieldSpecified = false;
+                    //        //    ModifyBooking(ModifyReservationRequest);
+                    //        //}
+                    //        //catch (Exception) { }
+                    //        #endregion
+
+                    //        #region GetReservationDeatils
+                    //        //try
+                    //        //{
+                    //        //    Models.ReservationRequest RRequest = new Models.ReservationRequest();
+                    //        //    RRequest.ChainCode = Request.ChainCode;
+                    //        //    RRequest.ConfirmationNo = Request.ConfirmationNo;
+                    //        //    RRequest.HotelDomain = Request.HotelDomain;
+                    //        //    RRequest.KioskID = Request.KioskID;
+                    //        //    RRequest.KioskPassword = Request.KioskPassword;
+                    //        //    RRequest.KioskUserName = Request.KioskUserName;
+                    //        //    RRequest.Language = "EN";
+                    //        //    RRequest.LegNumber = Request.LegNumber;
+                    //        //    RRequest.ReservationNameID = Request.ReservationNameID;
+                    //        //    RRequest.SystemType = Request.SystemType;
+                    //        //    SamsotechOWSGateway.Models.ServiceResponse ReservationDetails = new Models.ServiceResponse();
+                    //        //    //OWSControllerServiceLib ServiceLib = new OWSControllerServiceLib();
+                    //        //    ReservationDetails = ServiceLib.GetReservationDetailsFromPMS(RRequest);
+                    //        //    return new SamsotechOWSGateway.Models.ServiceResponse
+                    //        //    {
+                    //        //        Data = ReservationDetails.Data != null ? ReservationDetails.Data : null,
+                    //        //        ResponseMessage = CIResponse.Result != null ? CIResponse.Result.Text[0].Value : "Check in Failled",
+                    //        //        StatusCode = 2001,
+                    //        //        ProceedWithCheckin = true,
+                    //        //        Result = false
+                    //        //    };
+                    //        //}
+                    //        //catch (Exception)
+                    //        //{
+                    //        //    return new SamsotechOWSGateway.Models.ServiceResponse
+                    //        //    {
+                    //        //        Data = null,
+                    //        //        ResponseMessage = CIResponse.Result != null ? CIResponse.Result.Text[0].Value : "Check in Failled",
+                    //        //        StatusCode = 2001,
+                    //        //        ProceedWithCheckin = true,
+                    //        //        Result = false
+                    //        //    };
+                    //        //}
+                    //        #endregion
+
+                    //        //return new SamsotechOWSGateway.Models.ServiceResponse
+                    //        //{
+                    //        //    Data = null,
+                    //        //    ResponseMessage = CIResponse.Result != null ? CIResponse.Result.Text[0].Value : "Check in Failled",
+                    //        //    StatusCode = 2001,
+                    //        //    ProceedWithCheckin = true,
+                    //        //    Result = false
+                    //        //};
+                    //    }
+                    //    else if (CIResponse.Result.Text[0].Value.Contains("Kiosk cannot Checkin at this time Room is  OS  Please proceed to front desk for assistance"))
+                    //    {
+                    //        #region Modify Booking with Creditcard Number
+                    //        //try
+                    //        //{
+                    //        //    Models.ModifyReservation ModifyReservationRequest = new Models.ModifyReservation();
+                    //        //    ModifyReservationRequest.AdultCount = null;
+                    //        //    ModifyReservationRequest.AdultCountSpecified = false;
+                    //        //    ModifyReservationRequest.ApprovalCode = null;
+                    //        //    ModifyReservationRequest.CreditCardNumber = Request.CardNumber;
+                    //        //    ModifyReservationRequest.CreditCardType = Request.CardType;
+                    //        //    ModifyReservationRequest.ChainCode = Request.ChainCode;
+                    //        //    ModifyReservationRequest.CheckoutTime = null;
+                    //        //    ModifyReservationRequest.CheckOutTimeSpecified = false;
+                    //        //    ModifyReservationRequest.ConfirmationNo = Request.ConfirmationNo;
+                    //        //    ModifyReservationRequest.HotelDomain = Request.HotelDomain;
+                    //        //    ModifyReservationRequest.KioskID = Request.KioskID;
+                    //        //    ModifyReservationRequest.KioskPassword = Request.KioskPassword;
+                    //        //    ModifyReservationRequest.KioskUserName = Request.KioskUserName;
+                    //        //    ModifyReservationRequest.Language = "EN";
+                    //        //    ModifyReservationRequest.LegNumber = Request.LegNumber;
+                    //        //    ModifyReservationRequest.PrimaryGuestNameID = Request.PrimaryGuestNameID;
+                    //        //    ModifyReservationRequest.ReservationNameID = Request.ReservationNameID;
+                    //        //    ModifyReservationRequest.SystemType = Request.SystemType;
+                    //        //    ModifyReservationRequest.UDFFieldSpecified = false;
+                    //        //    ModifyBooking(ModifyReservationRequest);
+                    //        //}
+                    //        //catch (Exception) { }
+                    //        #endregion
+
+                    //        #region GetReservationDeatils
+                    //        //try
+                    //        //{
+                    //        //    Models.ReservationRequest RRequest = new Models.ReservationRequest();
+                    //        //    RRequest.ChainCode = Request.ChainCode;
+                    //        //    RRequest.ConfirmationNo = Request.ConfirmationNo;
+                    //        //    RRequest.HotelDomain = Request.HotelDomain;
+                    //        //    RRequest.KioskID = Request.KioskID;
+                    //        //    RRequest.KioskPassword = Request.KioskPassword;
+                    //        //    RRequest.KioskUserName = Request.KioskUserName;
+                    //        //    RRequest.Language = "EN";
+                    //        //    RRequest.LegNumber = Request.LegNumber;
+                    //        //    RRequest.ReservationNameID = Request.ReservationNameID;
+                    //        //    RRequest.SystemType = Request.SystemType;
+                    //        //    SamsotechOWSGateway.Models.ServiceResponse ReservationDetails = new Models.ServiceResponse();
+                    //        //    //OWSControllerServiceLib ServiceLib = new OWSControllerServiceLib();
+                    //        //    ReservationDetails = ServiceLib.GetReservationDetailsFromPMS(RRequest);
+                    //        //    return new SamsotechOWSGateway.Models.ServiceResponse
+                    //        //    {
+                    //        //        Data = ReservationDetails.Data != null ? ReservationDetails.Data : null,
+                    //        //        ResponseMessage = CIResponse.Result != null ? CIResponse.Result.Text[0].Value : "Check in Failled",
+                    //        //        StatusCode = 2001,
+                    //        //        ProceedWithCheckin = true,
+                    //        //        Result = false
+                    //        //    };
+                    //        //}
+                    //        //catch (Exception)
+                    //        //{
+                    //        //    return new SamsotechOWSGateway.Models.ServiceResponse
+                    //        //    {
+                    //        //        Data = null,
+                    //        //        ResponseMessage = CIResponse.Result != null ? CIResponse.Result.Text[0].Value : "Check in Failled",
+                    //        //        StatusCode = 2001,
+                    //        //        ProceedWithCheckin = true,
+                    //        //        Result = false
+                    //        //    };
+                    //        //}
+                    //        #endregion
+
+                    //        //return new SamsotechOWSGateway.Models.ServiceResponse
+                    //        //{
+                    //        //    Data = null,
+                    //        //    ResponseMessage = CIResponse.Result != null ? CIResponse.Result.Text[0].Value : "Check in Failled",
+                    //        //    StatusCode = 2001,
+                    //        //    ProceedWithCheckin = true,
+                    //        //    Result = false
+                    //        //};
+                    //    }
+                    //    else if (CIResponse.Result.Text[0].Value.Contains("Kiosk cannot Checkin at this time Room is  OO  Please proceed to front desk for assistance"))
+                    //    {
+                    //        #region Modify Booking with Creditcard Number
+                    //        //try
+                    //        //{
+                    //        //    Models.ModifyReservation ModifyReservationRequest = new Models.ModifyReservation();
+                    //        //    ModifyReservationRequest.AdultCount = null;
+                    //        //    ModifyReservationRequest.AdultCountSpecified = false;
+                    //        //    ModifyReservationRequest.ApprovalCode = null;
+                    //        //    ModifyReservationRequest.CreditCardNumber = Request.CardNumber;
+                    //        //    ModifyReservationRequest.CreditCardType = Request.CardType;
+                    //        //    ModifyReservationRequest.ChainCode = Request.ChainCode;
+                    //        //    ModifyReservationRequest.CheckoutTime = null;
+                    //        //    ModifyReservationRequest.CheckOutTimeSpecified = false;
+                    //        //    ModifyReservationRequest.ConfirmationNo = Request.ConfirmationNo;
+                    //        //    ModifyReservationRequest.HotelDomain = Request.HotelDomain;
+                    //        //    ModifyReservationRequest.KioskID = Request.KioskID;
+                    //        //    ModifyReservationRequest.KioskPassword = Request.KioskPassword;
+                    //        //    ModifyReservationRequest.KioskUserName = Request.KioskUserName;
+                    //        //    ModifyReservationRequest.Language = "EN";
+                    //        //    ModifyReservationRequest.LegNumber = Request.LegNumber;
+                    //        //    ModifyReservationRequest.PrimaryGuestNameID = Request.PrimaryGuestNameID;
+                    //        //    ModifyReservationRequest.ReservationNameID = Request.ReservationNameID;
+                    //        //    ModifyReservationRequest.SystemType = Request.SystemType;
+                    //        //    ModifyReservationRequest.UDFFieldSpecified = false;
+                    //        //    ModifyBooking(ModifyReservationRequest);
+                    //        //}
+                    //        //catch (Exception) { }
+                    //        #endregion
+
+                    //        //return new SamsotechOWSGateway.Models.ServiceResponse
+                    //        //{
+                    //        //    Data = null,
+                    //        //    ResponseMessage = CIResponse.Result != null ? CIResponse.Result.Text[0].Value : "Check in Failled",
+                    //        //    StatusCode = 2001,
+                    //        //    ProceedWithCheckin = true,
+                    //        //    Result = false
+                    //        //};
+
+                    //        #region GetReservationDeatils
+                    //        //try
+                    //        //{
+                    //        //    Models.ReservationRequest RRequest = new Models.ReservationRequest();
+                    //        //    RRequest.ChainCode = Request.ChainCode;
+                    //        //    RRequest.ConfirmationNo = Request.ConfirmationNo;
+                    //        //    RRequest.HotelDomain = Request.HotelDomain;
+                    //        //    RRequest.KioskID = Request.KioskID;
+                    //        //    RRequest.KioskPassword = Request.KioskPassword;
+                    //        //    RRequest.KioskUserName = Request.KioskUserName;
+                    //        //    RRequest.Language = "EN";
+                    //        //    RRequest.LegNumber = Request.LegNumber;
+                    //        //    RRequest.ReservationNameID = Request.ReservationNameID;
+                    //        //    RRequest.SystemType = Request.SystemType;
+                    //        //    SamsotechOWSGateway.Models.ServiceResponse ReservationDetails = new Models.ServiceResponse();
+
+                    //        //    ReservationDetails = ServiceLib.GetReservationDetailsFromPMS(RRequest);
+                    //        //    return new SamsotechOWSGateway.Models.ServiceResponse
+                    //        //    {
+                    //        //        Data = ReservationDetails.Data != null ? ReservationDetails.Data : null,
+                    //        //        ResponseMessage = CIResponse.Result != null ? CIResponse.Result.Text[0].Value : "Check in Failled",
+                    //        //        StatusCode = 2001,
+                    //        //        ProceedWithCheckin = true,
+                    //        //        Result = false
+                    //        //    };
+                    //        //}
+                    //        //catch (Exception)
+                    //        //{
+                    //        //    return new SamsotechOWSGateway.Models.ServiceResponse
+                    //        //    {
+                    //        //        Data = null,
+                    //        //        ResponseMessage = CIResponse.Result != null ? CIResponse.Result.Text[0].Value : "Check in Failled",
+                    //        //        StatusCode = 2001,
+                    //        //        ProceedWithCheckin = true,
+                    //        //        Result = false
+                    //        //    };
+                    //        //}
+                    //        #endregion
+                    //    }
+                    //    else
+                    //    {
+                    //        return new SamsotechOWSGateway.Models.ServiceResponse
+                    //        {
+                    //            Data = null,
+                    //            ResponseMessage = CIResponse.Result != null ? CIResponse.Result.Text[0].Value : "Check in Failled",
+                    //            StatusCode = 2001,
+                    //            ProceedWithCheckin = false,
+                    //            Result = false
+                    //        };
+                    //    }
+                    //}
+                    #endregion
+                }
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                return new Models.OWS.OwsResponseModel
+                {
+                    responseMessage = "Generic Exception : " + ex.Message,
+                    statusCode = 1002,
+                    result = false
                 };
             }
         }

@@ -4759,8 +4759,7 @@ namespace CheckinPortalCloudAPI.Controllers
             {
 
                 Models.Cloud.DB.StateMaster stateMaster = JsonConvert.DeserializeObject<StateMaster>(cloudReques.RequestObject.ToString());
-                List<Models.Cloud.DB.StateMaster> reservationStatusInClouds = Helper.Cloud.DBHelper.Instance.FetchStateMaster
-(ConfigurationManager.AppSettings["ConnectionString"], stateMaster.CountryMasterID.Value);
+                List<Models.Cloud.DB.StateMaster> reservationStatusInClouds = Helper.Cloud.DBHelper.Instance.FetchStateMaster(ConfigurationManager.AppSettings["ConnectionString"], stateMaster.CountryMasterID.Value);
 
                 if (reservationStatusInClouds != null && reservationStatusInClouds.Count > 0)
                 {

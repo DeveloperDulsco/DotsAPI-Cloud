@@ -130,12 +130,14 @@ namespace CheckinPortalCloudAPI.Models.OWS
         public string TransactionNumber { get; set; }
         public bool? IsTax { get; set; }
         public int? WindowNumber { get; set; }
+        public int? Quantity { get; set; }
     }
 
     public class FolioTaxItemsModel
     {
         public string ItemName { get; set; }
         public decimal Amount { get; set; }
+        public decimal AmountEuro { get; set; }
         public int? WindowNumber { get; set; }
         public string TransactionCode { get; set; }
         public string TransactionNumber { get; set; }
@@ -213,6 +215,7 @@ namespace CheckinPortalCloudAPI.Models.OWS
     public class ModifyBookingRequest
     {
         public string ReservationNumber { get; set; }
+        public string ReservationNameID { get; set; }
         public bool? isUDFFieldSpecified { get; set; }
         public List<UDFField> uDFFields { get; set; }
         public bool? updateCreditCardDetails { get; set; }

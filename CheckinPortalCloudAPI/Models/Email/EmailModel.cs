@@ -30,10 +30,10 @@ namespace CheckinPortalCloudAPI.Models.Email
         Precheckedin,
         PreCheckedout,
         CheckinConfirmation,
-            GuestFolio,
-            AcceptRequest,
-            RejectRequest,
-            CheckinSlip,
+        GuestFolio,
+        AcceptRequest,
+        RejectRequest,
+        CheckinSlip,
         ServiceError,
         PayByLink
     }

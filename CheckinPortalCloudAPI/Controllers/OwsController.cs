@@ -76,6 +76,10 @@ namespace CheckinPortalCloudAPI.Controllers
         [ActionName("ModifyBooking")]
         public async Task<Models.OWS.OwsResponseModel> ModifyBooking(Models.OWS.OwsRequestModel owsRequest)
         {
+            if (owsRequest.modifyBookingRequest?.updateCreditCardDetails ?? false)
+            {
+                return new ServiceLib.OWS.OperaServiceLib().UpdateMethodOfPayment(owsRequest);
+            }
             return new ServiceLib.OWS.OperaServiceLib().ModifyReservation(owsRequest);
         }
 
