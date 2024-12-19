@@ -60,11 +60,11 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 isOperaCloudEnabled = (ConfigurationManager.AppSettings["OperaCloudEnabled"] != null
                                 && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString())
                                 && bool.TryParse(ConfigurationManager.AppSettings["OperaCloudEnabled"].ToString(), out isOperaCloudEnabled)) ? isOperaCloudEnabled : false;
-                if(isOperaCloudEnabled)
+                if (isOperaCloudEnabled)
                 {
                     ResSoapCLient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour(ConfigurationManager.AppSettings["WSSEUserName"].ToString(),
-                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(), 
-                                            modifyReservation.Username, modifyReservation.Password, modifyReservation.HotelDomain));                                            
+                                            ConfigurationManager.AppSettings["WSSEPassword"].ToString(),
+                                            modifyReservation.Username, modifyReservation.Password, modifyReservation.HotelDomain));
                 }
 
                 ReservationService.UniqueID uID = new ReservationService.UniqueID();
@@ -182,21 +182,21 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         hotelCode = reservationQueRquest.HotelDomain
                     },
                     ReservationID = UIDLIST
-                    
+
                 };
 
-                
 
-                
-               
+
+
+
 
                 queueReservationReq.ActionType = ReservationAdvancedService.RequestActionType.ADD;
 
 
 
-               
 
-                
+
+
 
                 queueReservationRes = ResSoapCLient.QueueReservation(ref OGHeader, queueReservationReq);
 
@@ -235,7 +235,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
         }
 
 
-        
+
 
         public Models.OWS.OwsResponseModel FetchPackages(Models.OWS.OwsRequestModel modifyReservation)
         {
@@ -402,7 +402,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 PName.middleName = middleName;
 
                 AccompanyingCustomer.PersonName = PName;
-                
+
                 AccompanyGuestProfile.Item = (ReservationService.Customer)AccompanyingCustomer;
 
                 AcmpnyRequest.Profile = AccompanyGuestProfile;
@@ -478,7 +478,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         responseMessage = AcmpnyResponse.Result.GDSError.Value,
                         result = false
                     };
-                    
+
                 }
 
 
@@ -501,8 +501,8 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
         {
             try
             {
-               #region Request
-                
+                #region Request
+
                 #region Request Header
                 string temp = Helper.Helper.Get8Digits();
                 ReservationAdvancedService.OGHeader OGHeader = new ReservationAdvancedService.OGHeader();
@@ -569,21 +569,21 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                     {
                         List<Models.OWS.FolioWindow> FolioWindows = new List<FolioWindow>();
                         int InvoiceWindows = 0;
-                        
+
                         foreach (ReservationAdvancedService.BillHeader Invoices in InvResponse.Invoice)
                         {
                             InvoiceWindows++;
                             if (Invoices.ProfileIDs != null)
                             {
-                                foreach(ReservationAdvancedService.UniqueID uniqueID in Invoices.ProfileIDs)
+                                foreach (ReservationAdvancedService.UniqueID uniqueID in Invoices.ProfileIDs)
                                 {
                                     if (uniqueID.source != null && uniqueID.source.Equals("OPERA_NAME_ID"))
                                     {
                                         if (!string.IsNullOrEmpty(Request.FetchFolioRequest.ProfileID) && Request.FetchFolioRequest.ProfileID.Equals(uniqueID.Value))
                                         {
                                             FolioWindow folioWindow = new FolioWindow();
-                                            
-                                            
+
+
                                             ReservationAdvancedService.NativeName Name = new ReservationAdvancedService.NativeName();
                                             Name = Invoices.Name;
                                             ReservationAdvancedService.NameAddress FolioAddress = Invoices.Address;
@@ -613,7 +613,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                             UId = Invoices.BillNumber;
                                             GFolio.FolioNo = uID.Value;
                                             List<Models.OWS.FolioItemsModel> ListFolioItems = new List<Models.OWS.FolioItemsModel>();
-                                            List< Models.OWS.FolioTaxItemsModel > ListFolioTaxItems = new List<Models.OWS.FolioTaxItemsModel>();
+                                            List<Models.OWS.FolioTaxItemsModel> ListFolioTaxItems = new List<Models.OWS.FolioTaxItemsModel>();
                                             if (Invoices.BillItems != null)
                                             {
                                                 foreach (ReservationAdvancedService.BillItem BItems in Invoices.BillItems)
@@ -627,7 +627,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                                     FolioItems.TransactionCode = BItems.TransactionCode;
                                                     if (FolioItems.TransactionCode != null)
                                                     {
-                                                        if(!string.IsNullOrEmpty(BItems.RevenueGroup) &&
+                                                        if (!string.IsNullOrEmpty(BItems.RevenueGroup) &&
                                                             BItems.RevenueGroup.Equals("PAYMENT"))
                                                         {
                                                             FolioItems.IsCredit = true;
@@ -654,23 +654,23 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                                     }
                                                     ListFolioItems.Add(FolioItems);
                                                 }
-                                                
+
                                             }
                                             if (Invoices.BillTaxes != null)
                                             {
                                                 foreach (ReservationAdvancedService.BillTax BTaxItems in Invoices.BillTaxes)
                                                 {
                                                     Models.OWS.FolioTaxItemsModel FolioTaxItems = new Models.OWS.FolioTaxItemsModel();
-                                                   
+
                                                     FolioTaxItems.WindowNumber = InvoiceWindows;
-                                                   
+
                                                     ReservationAdvancedService.Amount Amnt = new ReservationAdvancedService.Amount();
                                                     Amnt = BTaxItems.VatAmount;
                                                     FolioTaxItems.Amount = Amnt != null ? (decimal)Amnt.Value : 0;
-                                                    
+
                                                     FolioTaxItems.ItemName = BTaxItems.Description;
 
-                                                    
+
                                                     if (GFolio.TaxItems != null)
                                                         GFolio.TaxItems.Add(FolioTaxItems);
                                                     else
@@ -680,13 +680,13 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                                     }
                                                     ListFolioTaxItems.Add(FolioTaxItems);
                                                 }
-                                                
+
                                             }
                                             folioWindow.Items = ListFolioItems;
                                             folioWindow.TaxItems = ListFolioTaxItems;
                                             try
                                             {
-                                                ReservationAdvancedService.Amount Balance = new              ReservationAdvancedService.Amount();
+                                                ReservationAdvancedService.Amount Balance = new ReservationAdvancedService.Amount();
                                                 Balance = Invoices.CurrentBalance;
                                                 GFolio.BalanceAmount += Balance != null ? (decimal)Balance.Value : 0;
                                                 GFolio.ReservationBalance += Balance != null ? (decimal)Balance.Value : 0;
@@ -696,11 +696,11 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                             {
                                                 //System.IO.File.AppendAllText(System.Web.Hosting.HostingEnvironment.MapPath(@"~\log.txt"), "Balance item error " + ex.ToString());
                                             }
-                                            FolioWindows.Add(folioWindow);     
-                                            if(!string.IsNullOrEmpty(ConfigurationManager.AppSettings["isFolioWindowControlled"]) && bool.Parse(ConfigurationManager.AppSettings["isFolioWindowControlled"])
+                                            FolioWindows.Add(folioWindow);
+                                            if (!string.IsNullOrEmpty(ConfigurationManager.AppSettings["isFolioWindowControlled"]) && bool.Parse(ConfigurationManager.AppSettings["isFolioWindowControlled"])
                                                 && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["GuestFolioWindowNumber"]) && Int32.Parse(ConfigurationManager.AppSettings["GuestFolioWindowNumber"]) > 0)
                                             {
-                                                if(Int32.Parse(ConfigurationManager.AppSettings["GuestFolioWindowNumber"]) <= InvoiceWindows)
+                                                if (Int32.Parse(ConfigurationManager.AppSettings["GuestFolioWindowNumber"]) <= InvoiceWindows)
                                                 {
                                                     GFolio.FolioWindows = FolioWindows;
 
@@ -718,7 +718,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                             ReservationAdvancedService.Amount Balance = new ReservationAdvancedService.Amount();
                                             Balance = Invoices.CurrentBalance;
                                             GFolio.ReservationBalance += Balance != null ? (decimal)Balance.Value : 0;
-                                            if(Balance != null && (decimal)Balance.Value > 0)
+                                            if (Balance != null && (decimal)Balance.Value > 0)
                                                 GFolio.IsAllowedForCheckOut = false;
                                         }
 
@@ -794,7 +794,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
         {
             try
             {
-                string currentyeartransactioncode = ConfigurationManager.AppSettings["currentyeartransactioncode"]!=null? ConfigurationManager.AppSettings["currentyeartransactioncode"].ToString():"";
+                string currentyeartransactioncode = ConfigurationManager.AppSettings["currentyeartransactioncode"] != null ? ConfigurationManager.AppSettings["currentyeartransactioncode"].ToString() : "";
                 string previousyeartransactioncode = ConfigurationManager.AppSettings["previousyeartransactioncode"] != null ? ConfigurationManager.AppSettings["previousyeartransactioncode"].ToString() : "";
                 //Models.OWS.OwsResponseModel owsResponse = getFolioAsAList(reservationRequest);
                 Models.OWS.FetchFolioRequest fetchFolioRequest = reservationRequest.FetchFolioRequest;
@@ -1105,8 +1105,10 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
 
 
                                     string FullAddress = "";
+                                    string guestName = "";
                                     if (fetchFolioRequest.OperaReservation.GuestProfiles != null && fetchFolioRequest.OperaReservation.GuestProfiles.Count > 0 && fetchFolioRequest.OperaReservation.GuestProfiles[0].Address != null && fetchFolioRequest.OperaReservation.GuestProfiles[0].Address.Count > 0)
                                     {
+                                        guestName = fetchFolioRequest.OperaReservation.GuestProfiles[0].FirstName + " " + fetchFolioRequest.OperaReservation.GuestProfiles[0].MiddleName + " " + fetchFolioRequest.OperaReservation.GuestProfiles[0].LastName;
                                         FullAddress = fetchFolioRequest.OperaReservation.GuestProfiles[0].FirstName + " " + fetchFolioRequest.OperaReservation.GuestProfiles[0].MiddleName + " " + fetchFolioRequest.OperaReservation.GuestProfiles[0].LastName + "\n";
                                         FullAddress += !string.IsNullOrEmpty(fetchFolioRequest.OperaReservation.GuestProfiles[0].Address[0].address1) ? fetchFolioRequest.OperaReservation.GuestProfiles[0].Address[0].address1 : "" + "\n";
                                         FullAddress += !string.IsNullOrEmpty(fetchFolioRequest.OperaReservation.GuestProfiles[0].Address[0].address2) ? fetchFolioRequest.OperaReservation.GuestProfiles[0].Address[0].address2 : "" + "\n";
@@ -1118,6 +1120,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                     DataTable reportParameters = new DataTable();
 
                                     #region Report Parameter Columns
+                                    reportParameters.Columns.Add("GuestName", typeof(string));
                                     reportParameters.Columns.Add("Address", typeof(string));
                                     reportParameters.Columns.Add("RoomNo", typeof(string));
                                     reportParameters.Columns.Add("FolioNo", typeof(string));
@@ -1161,6 +1164,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                     DataRow parameterRow = reportParameters.NewRow();
 
                                     #region Assign Values to DataRow
+                                    parameterRow["GuestName"] = guestName;
                                     parameterRow["Address"] = FullAddress;
                                     parameterRow["RoomNo"] = fetchFolioRequest.OperaReservation.RoomDetails.RoomNumber;
                                     parameterRow["FolioNo"] = "";
@@ -1310,6 +1314,10 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                                     folioRow["Date"] = items.Date != null ? items.Date.Value.ToString("dd/MM/yyyy") : DateTime.Now.ToString("dd/MM/yyyy");
                                                 if (dataTable.Columns.Contains("Description"))
                                                     folioRow["Description"] = items.ItemName;
+
+                                                if (dataTable.Columns.Contains("Qty"))
+                                                    folioRow["Qty"] = items.Quantity;
+
                                                 if (dataTable.Columns.Contains("AdditionalInformation"))
                                                     folioRow["AdditionalInformation"] = "";
 
@@ -1369,6 +1377,10 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                         #endregion
 
                                         DataRow ParameterRow = dataTable.NewRow();
+
+                                        if (dataTable.Columns.Contains("GuestName"))
+                                            ParameterRow["GuestName"] = GuestFolio.GuestName;
+
                                         if (dataTable.Columns.Contains("Address"))
                                             ParameterRow["Address"] = fullAddress;
 
@@ -1541,7 +1553,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                 {
                                     GST8 += items.Amount;
                                 }
-                                else if (!string.IsNullOrEmpty(currentyeartransactioncode) &&  items.TransactionCode != null && items.TransactionCode.Contains(currentyeartransactioncode))
+                                else if (!string.IsNullOrEmpty(currentyeartransactioncode) && items.TransactionCode != null && items.TransactionCode.Contains(currentyeartransactioncode))
                                 {
                                     GST9 += items.Amount;
                                 }
@@ -1635,12 +1647,12 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         parameterRow["TotalAmount"] = TotalAmount.ToString("0.00");
                         parameterRow["TotalCredit"] = TotalCredit != 0 ? Math.Abs(TotalCredit).ToString("0.00") : "";
 
-                        parameterRow["BussinessRegNo"] =  "";
-                        parameterRow["ARNo"] =  "";
-                        parameterRow["TaxInvoiceNo"] =  "";
-                        parameterRow["CRSNo"] =  "";
-                        parameterRow["GuestCount"] =  "";
-                        parameterRow["Nationality"] =  "";
+                        parameterRow["BussinessRegNo"] = "";
+                        parameterRow["ARNo"] = "";
+                        parameterRow["TaxInvoiceNo"] = "";
+                        parameterRow["CRSNo"] = "";
+                        parameterRow["GuestCount"] = "";
+                        parameterRow["Nationality"] = "";
                         parameterRow["InvoiceDate"] = $"{DateTime.Now:dd/MM/yyyy}";
                         parameterRow["RoomRate"] = "";
 
@@ -1715,7 +1727,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 OGHeader.Origin = orginEndPOint;
                 NameService.EndPoint destEndPOint = new NameService.EndPoint();
                 destEndPOint.entityID = Request.DestinationEntityID;
-                destEndPOint.systemType =Request.DestinationSystemType;
+                destEndPOint.systemType = Request.DestinationSystemType;
                 OGHeader.Destination = destEndPOint;
                 NameService.OGHeaderAuthentication Auth = new NameService.OGHeaderAuthentication();
                 NameService.OGHeaderAuthenticationUserCredentials userCredentials = new NameService.OGHeaderAuthenticationUserCredentials();
@@ -1761,7 +1773,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 {
                     return new Models.OWS.OwsResponseModel
                     {
-                        
+
                         responseMessage = PassportResponse.Result != null ? string.Join(" ", PassportResponse.Result.Text[0].Value) : "Document not returned",
                         statusCode = 8002,
                         result = false
@@ -1836,12 +1848,12 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 {
                     GId.documentType = "UNKNOWN";
                 }
-                GId.documentNumber = string.IsNullOrEmpty(Request.UpdateProileRequest.DocumentNumber) ? " ": Request.UpdateProileRequest.DocumentNumber;
+                GId.documentNumber = string.IsNullOrEmpty(Request.UpdateProileRequest.DocumentNumber) ? " " : Request.UpdateProileRequest.DocumentNumber;
 
                 GId.documentIDSpecified = false;
                 GId.effectiveDate = Request.UpdateProileRequest.IssueDate != null ? Request.UpdateProileRequest.IssueDate.Value : new DateTime();
                 GId.effectiveDateSpecified = Request.UpdateProileRequest.IssueDate != null ? true : false;
-                
+
 
                 GId.countryOfIssue = Request.UpdateProileRequest.IssueCountry;
                 GId.displaySequence = 1;
@@ -1876,7 +1888,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 }
                 else
                 {
-                    new LogHelper().Debug("UpdatePassport failed with reason"+ DocumentResponse.Result != null ? string.Join(" ", DocumentResponse.Result.Text[0].Value) : "Document not updated", "", "UpdatePassport", "API", "OWS");
+                    new LogHelper().Debug("UpdatePassport failed with reason" + DocumentResponse.Result != null ? string.Join(" ", DocumentResponse.Result.Text[0].Value) : "Document not updated", "", "UpdatePassport", "API", "OWS");
                     return new Models.OWS.OwsResponseModel
                     {
                         responseMessage = DocumentResponse.Result != null ? string.Join(" ", DocumentResponse.Result.Text[0].Value) : "Document not updated",
@@ -1976,10 +1988,10 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
 
                 if (Request.UpdateProileRequest.DOB != null && !Request.UpdateProileRequest.DOB.Value.Equals(new DateTime(1900, 01, 01)))
                 {
-                    UpdateNameReq.Birthdate = Request.UpdateProileRequest.DOB.Value ;
-                    UpdateNameReq.BirthdateSpecified =  true;
+                    UpdateNameReq.Birthdate = Request.UpdateProileRequest.DOB.Value;
+                    UpdateNameReq.BirthdateSpecified = true;
                 }
-                
+
                 //UpdateNameReq.Birthdate = DateTime.Now;
                 //UpdateNameReq.BirthdateSpecified = true;
 
@@ -2049,7 +2061,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                     }
                     #endregion
                 }
-                
+
 
 
                 #region Response
@@ -2077,7 +2089,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 }
                 else
                 {
-                   
+
                     return new Models.OWS.OwsResponseModel
                     {
                         responseMessage = UpdateNameRes.Result != null ? UpdateNameRes.Result.Text[0].Value : "Document not updated",
@@ -2090,7 +2102,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
             }
             catch (Exception ex)
             {
-              
+
                 return new Models.OWS.OwsResponseModel
                 {
                     responseMessage = ex.Message,
@@ -2655,12 +2667,12 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
         {
             try
             {
-                new LogHelper().Debug("Raw Get ReservationSummaryList : " + JsonConvert.SerializeObject(Request),"", "GetReservationSummaryList", "API", "GetReservationSummaryList");
+                new LogHelper().Debug("Raw Get ReservationSummaryList : " + JsonConvert.SerializeObject(Request), "", "GetReservationSummaryList", "API", "GetReservationSummaryList");
 
 
                 //NLog with Debug
                 List<Models.OWS.OperaReservation> RList = new List<Models.OWS.OperaReservation>();
-                List<Models.OWS.PreferanceDetails> RPreferencesList = new List<Models.OWS.PreferanceDetails> ();
+                List<Models.OWS.PreferanceDetails> RPreferencesList = new List<Models.OWS.PreferanceDetails>();
                 List<Models.OWS.PackageDetails> RPackagesList = new List<Models.OWS.PackageDetails>();
 
 
@@ -2709,7 +2721,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
 
 
                 fetchBookingSummaryReq.numberOfReservationsToBeFetched = Request.BookingSummaryRequest.ReservationCountToBeFetched != null ? Request.BookingSummaryRequest.ReservationCountToBeFetched.Value : 0;
-                fetchBookingSummaryReq.numberOfReservationsToBeFetchedSpecified = Request.BookingSummaryRequest.ReservationCountToBeFetched != null ? Request.BookingSummaryRequest.ReservationCountToBeFetched != 0 ? true :  false : false;
+                fetchBookingSummaryReq.numberOfReservationsToBeFetchedSpecified = Request.BookingSummaryRequest.ReservationCountToBeFetched != null ? Request.BookingSummaryRequest.ReservationCountToBeFetched != 0 ? true : false : false;
                 fetchBookingSummaryReq.summaryOnly = Request.BookingSummaryRequest.IsSummaryOnly != null ? Request.BookingSummaryRequest.IsSummaryOnly.Value : false;
 
                 var st = ConfigurationManager.AppSettings["IsOperaOlderVersion"].ToString();
@@ -2725,9 +2737,9 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                     };
 
 
-                  
+
                 }
-                
+
                 else if (Request.BookingSummaryRequest.FromDepartureDate != null && Request.BookingSummaryRequest.ToDepartureDate != null
                     && (!string.IsNullOrEmpty(ConfigurationManager.AppSettings["IsOperaOlderVersion"].ToString()) && !bool.Parse(ConfigurationManager.AppSettings["IsOperaOlderVersion"].ToString())))
                 {
@@ -2784,7 +2796,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 }
 
                 ReservationService.ReservationDispositionType reservationDispositionType = ReservationService.ReservationDispositionType.NONE;
-                if(!string.IsNullOrEmpty(ConfigurationManager.AppSettings["IsOperaOlderVersion"].ToString()) && bool.Parse(ConfigurationManager.AppSettings["IsOperaOlderVersion"].ToString())
+                if (!string.IsNullOrEmpty(ConfigurationManager.AppSettings["IsOperaOlderVersion"].ToString()) && bool.Parse(ConfigurationManager.AppSettings["IsOperaOlderVersion"].ToString())
                     && !string.IsNullOrEmpty(Request.BookingSummaryRequest.ReservatioStatus))
                 {
                     switch (Request.BookingSummaryRequest.ReservatioStatus)
@@ -2799,8 +2811,8 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                             reservationDispositionType = ReservationService.ReservationDispositionType.DUEOUT;
                             break;
 
-                        //default: reservationDispositionType = ReservationService.ReservationDispositionType.NONE;
-                        //    break;
+                            //default: reservationDispositionType = ReservationService.ReservationDispositionType.NONE;
+                            //    break;
                     }
                 }
                 ReservationService.FetchBookingFilters fetchBookingFilters = new ReservationService.FetchBookingFilters();
@@ -2843,14 +2855,14 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 };
                 fetchBookingFilters.RoomClass = string.IsNullOrEmpty(Request.BookingSummaryRequest.RoomClass) ? null : Request.BookingSummaryRequest.RoomClass;
                 fetchBookingFilters.RoomNumber = string.IsNullOrEmpty(Request.BookingSummaryRequest.RoomNumber) ? null : Request.BookingSummaryRequest.RoomNumber;
-                
+
                 fetchBookingSummaryReq.AdditionalFilters = fetchBookingFilters;
 
 
                 #endregion
 
                 //ResSoapCLient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour("Test USE", "Request.WSSEPassword", "Request.KioskUserName", "Request.KioskPassword", "Request.HotelDomain"));
-                
+
                 fetchBookingSummaryRes = ResSoapCLient.FutureBookingSummary(ref OGHeader, fetchBookingSummaryReq);
                 ReservationService.GDSResultStatus status = fetchBookingSummaryRes.Result;
 
@@ -2989,7 +3001,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                     catch (Exception ex)
                                     {
                                         //NLog with Debug
-                                        
+
                                         Reservation.RateDetails = new Models.OWS.RateDetails();
                                     }
                                 }
@@ -3124,7 +3136,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                             pk.PackageCode = pe.packageCode;
                                             ReservationService.Amount pckAmount = pe.PackageAmount;
                                             if (pckAmount != null)
-                                                pk.TotalPackageAmount = (decimal)pckAmount.Value;                                           
+                                                pk.TotalPackageAmount = (decimal)pckAmount.Value;
                                             RPackagesList.Add(pk);
                                         }
                                     }
@@ -3193,7 +3205,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
 
                                             #region Profile ID
                                             guestProfile.PmsProfileID = gProfile.ProfileIDs[0].Value;
-                                            
+
                                             #endregion
 
                                             #region Fetch Profile details seperately
@@ -3706,7 +3718,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                     RSRequest.IncludePseudoRoomSpecified = true;
                     //ReservationAdvancedService.RoomFeature roomFeature = new ReservationAdvancedService.RoomFeature()
                     //{
-                        
+
                     //}
                     //RSRequest.Features features = new RSRequest.Features[]
                     ReservationAdvancedService.ResvAdvancedServiceSoapClient ResAdvPortClient = new ReservationAdvancedService.ResvAdvancedServiceSoapClient();
@@ -3724,24 +3736,24 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                     #endregion
 
                     RSResponse = ResAdvPortClient.FetchRoomStatus(ref OGHeader, RSRequest);
-                    
+
                     if (RSResponse.Result.resultStatusFlag == ReservationAdvancedService.ResultStatusFlag.SUCCESS)
                     {
                         foreach (ReservationAdvancedService.RoomStatus RS in RSResponse.RoomStatus)
                         {
                             Models.OWS.RoomDetails RT = new Models.OWS.RoomDetails();
 
-                            if(string.IsNullOrEmpty(Request.FetchRoomList.RoomStatus))
+                            if (string.IsNullOrEmpty(Request.FetchRoomList.RoomStatus))
                             {
                                 //for sts
                                 if ((RS.RoomStatus1 == "CL" || RS.RoomStatus1 == "IP")
-                                    //for other property
-                                    //if ((RS.RoomStatus1 == "IP")
+                                         //for other property
+                                         //if ((RS.RoomStatus1 == "IP")
                                          && RS.FrontOfficeStatus == "VAC")//|| RSResponse.RoomStatus[0].RoomStatus1 == "IP"
                                 {
                                     if (RS.NextReservationDateSpecified)
                                     {
-                                    
+
                                         if (Request.FetchRoomList.DepartureDate != null)
                                         {
                                             DateTime dt = Request.FetchRoomList.DepartureDate.Value;//DateTime.ParseExact(Request.DepartureDate, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
@@ -3752,7 +3764,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                                 RT.RoomType = RS.RoomType;
                                                 RT.RoomStatus = RS.RoomStatus1;
                                                 RT.Floor = RS.Floor;
-                                            
+
                                                 LRoomTypes.Add(RT);
                                             }
                                         }
@@ -3817,7 +3829,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                 }
                             }
                         }
-                        
+
 
                     }
                     else
@@ -3847,10 +3859,10 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 {
                     return new Models.OWS.OwsResponseModel()
                     {
-                        
-                    responseMessage = "No Vaccant or availavle room for check-in",
-                    statusCode = 102,
-                    result = true
+
+                        responseMessage = "No Vaccant or availavle room for check-in",
+                        statusCode = 102,
+                        result = true
                     };
                 }
             }
@@ -4030,7 +4042,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 }
                 ReservationAdvancedService.CheckInResponse CIResponse = new ReservationAdvancedService.CheckInResponse();
                 CIResponse = ResAdvPortClient.CheckIn(ref OGHeader, CIRequest);
-                
+
                 if (CIResponse.Result.resultStatusFlag == ReservationAdvancedService.ResultStatusFlag.SUCCESS)
                 {
                     return new Models.OWS.OwsResponseModel
@@ -4610,7 +4622,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
 
                 ReservationService.UniqueID uID = new ReservationService.UniqueID();
                 uID.type = ReservationService.UniqueIDType.INTERNAL;
-                
+
                 uID.Value = Request.FetchGuestRequest.ReservationNumber;
                 GRRequest.ConfirmationNumber = uID;
 
@@ -4620,7 +4632,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
 
                 GRRequest.RequestType = "COMMENTS";
 
-               
+
 
 
                 ReservationService.ReservationServiceSoapClient ResPortClient = new ReservationService.ReservationServiceSoapClient();
@@ -4649,7 +4661,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         foreach (ReservationService.ReservationComment GC in GRResponse.GuestRequests.Comments)
                         {
                             Models.OWS.GuestComments GuestComments = new Models.OWS.GuestComments();
-                            GuestComments.commentID = GC.CommentIdSpecified ?  GC.CommentId.ToString() : "";
+                            GuestComments.commentID = GC.CommentIdSpecified ? GC.CommentId.ToString() : "";
                             if (GC.Items.Length > 0)
                             {
                                 ReservationService.Text obj = (ReservationService.Text)GC.Items.First();
@@ -4839,7 +4851,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
             }
             catch (Exception ex)
             {
-             
+
                 return new Models.OWS.OwsResponseModel
                 {
                     responseData = null,
@@ -4986,7 +4998,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         Reservation.isInQueue = hReservation.queueExists;
                         Reservation.ReservationStatus = hReservation.computedReservationStatus.ToString();
                         Reservation.ComputedReservationStatus = hReservation.computedReservationStatus.ToString();
-                        
+
 
                         ReservationService.Paragraph p;
 
@@ -5110,12 +5122,12 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                 {
                                     Reservation.RoomDetails = new Models.OWS.RoomDetails()
                                     {
-                                        
+
                                         RoomStatus = rmType.roomStatus
                                     };
                                 }
 
-                                
+
 
                                 #region RoomNumber
                                 string[] roomNo = rmType.RoomNumber;
@@ -6297,7 +6309,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         Address.primary = NAddress.primary;
                         AddrList.Add(Address);
                     }
-                    
+
                     return new Models.OWS.OwsResponseModel
                     {
                         responseData = AddrList,
@@ -6326,7 +6338,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 //Nlog debug
                 return new Models.OWS.OwsResponseModel
                 {
-                    
+
                     responseMessage = "Generic Exception : " + ex.Message,
                     statusCode = 1002,
                     result = false
@@ -6418,7 +6430,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 {
                     return new Models.OWS.OwsResponseModel()
                     {
-                       
+
                         responseMessage = "Get folio function failled",
                         statusCode = 1402,
                         result = false
@@ -6522,18 +6534,18 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                     ReservationService.RoomStay[] ArrayRstay = { Rstay };
                     hReservation.RoomStays = ArrayRstay;
 
-                    
+
                     modifyBookingReq.HotelReservation = hReservation;
                     //ResSoapCLient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour("Test USE", "Request.WSSEPassword", "Request.KioskUserName", "Request.KioskPassword", "Request.HotelDomain"));
                     modifyBookingRes = ResSoapCLient.ModifyBooking(ref OGHeader, modifyBookingReq);
                     ReservationService.GDSResultStatus status = modifyBookingRes.Result;
                     if (status.resultStatusFlag.Equals(ReservationService.ResultStatusFlag.SUCCESS))
                     {
-                        
+
                         if (modifyBookingRes.HotelReservation != null)
                         {
                             bool foundFlag = true;
-                           
+
                             if (foundFlag)
                             {
                                 return new Models.OWS.OwsResponseModel
@@ -6551,7 +6563,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                     statusCode = -1,
                                     result = false
                                 };
-                                
+
                             }
                         }
                         else
@@ -6572,16 +6584,16 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                             statusCode = -102,
                             result = false
                         };
-                        
+
                     }
-                        
-                    
+
+
                 }
                 #endregion
 
                 #region UpdatePaymentDetails
 
-                else if(modifyReservation.modifyBookingRequest.updateCreditCardDetails != null && modifyReservation.modifyBookingRequest.updateCreditCardDetails.Value && modifyReservation.modifyBookingRequest.PaymentMethod != null && !string.IsNullOrEmpty(modifyReservation.modifyBookingRequest.PaymentMethod.MaskedCardNumber))
+                else if (modifyReservation.modifyBookingRequest.updateCreditCardDetails != null && modifyReservation.modifyBookingRequest.updateCreditCardDetails.Value && modifyReservation.modifyBookingRequest.PaymentMethod != null && !string.IsNullOrEmpty(modifyReservation.modifyBookingRequest.PaymentMethod.MaskedCardNumber))
                 {
 
                     ReservationService.Guarantee Gurantee = new ReservationService.Guarantee();
@@ -6594,7 +6606,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                     CC.chipAndPin = false;
                     CC.chipAndPinSpecified = true;
                     CC.cardType = modifyReservation.modifyBookingRequest.PaymentMethod.PaymentType;//"WEB";
-                    
+
                     bool isOPIEnabled = false;
                     isOPIEnabled = (ConfigurationManager.AppSettings["OPIEnabled"] != null
                                     && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OPIEnabled"].ToString())
@@ -6605,14 +6617,14 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         Regex rgx = new Regex("[^a-zA-Z0-9 -]");
                         modifyReservation.modifyBookingRequest.PaymentMethod.MaskedCardNumber = rgx.Replace(modifyReservation.modifyBookingRequest.PaymentMethod.MaskedCardNumber, "");
                         CC.Item = modifyReservation.modifyBookingRequest.PaymentMethod.MaskedCardNumber;
-                        
+
                     }
                     else
                     {
                         CC.Item = modifyReservation.modifyBookingRequest.PaymentMethod.MaskedCardNumber.ToLower();// "4687560100136162";
                     }
-                    CC.expirationDate =  !string.IsNullOrEmpty(modifyReservation.modifyBookingRequest.PaymentMethod.ExpiryDate) ? 
-                        DateTime.ParseExact(modifyReservation.modifyBookingRequest.PaymentMethod.ExpiryDate,"d/M/yyyy", CultureInfo.InvariantCulture,
+                    CC.expirationDate = !string.IsNullOrEmpty(modifyReservation.modifyBookingRequest.PaymentMethod.ExpiryDate) ?
+                        DateTime.ParseExact(modifyReservation.modifyBookingRequest.PaymentMethod.ExpiryDate, "d/M/yyyy", CultureInfo.InvariantCulture,
     DateTimeStyles.None) : DateTime.Now.AddYears(2);
                     CC.expirationDateSpecified = true;
                     GuranteeAccptd.GuaranteeCreditCard = CC;
@@ -6624,15 +6636,15 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                     HF.hotelCode = modifyReservation.HotelDomain;
                     HF.chainCode = modifyReservation.ChainCode;
                     Rstay.HotelReference = HF;
-                    
+
                     ReservationService.RoomStay[] ArrayRstay = { Rstay };
                     hReservation.RoomStays = ArrayRstay;
-                    
+
                     modifyBookingReq.HotelReservation = hReservation;
                     //ResSoapCLient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour("Test USE", "Request.WSSEPassword", "Request.KioskUserName", "Request.KioskPassword", "Request.HotelDomain"));
                     modifyBookingRes = ResSoapCLient.ModifyBooking(ref OGHeader, modifyBookingReq);
                     ReservationService.GDSResultStatus status = modifyBookingRes.Result;
-                    
+
                     if (status.resultStatusFlag.Equals(ReservationService.ResultStatusFlag.SUCCESS))
                     {
                         return new Models.OWS.OwsResponseModel
@@ -6642,13 +6654,13 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                             statusCode = 101,
                             result = true
                         };
-                        
+
                     }
                     else
                     {
                         return new Models.OWS.OwsResponseModel
                         {
-                            
+
                             responseMessage = string.IsNullOrEmpty(status.OperaErrorCode) ? (status.GDSError != null ? status.GDSError.Value : "Opera error") : status.OperaErrorCode,
                             statusCode = 102,
                             result = false
@@ -6661,7 +6673,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 if (modifyReservation.modifyBookingRequest.isETASpecified != null && modifyReservation.modifyBookingRequest.isETASpecified.Value && modifyReservation.modifyBookingRequest.ETA != null)
                 {
                     try
-                    {                        
+                    {
                         hReservation.checkInTime = modifyReservation.modifyBookingRequest.ETA.Value;
                         hReservation.checkInTimeSpecified = true;
                         ReservationService.HotelReference HF = new ReservationService.HotelReference();
@@ -6721,7 +6733,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                             };
 
                         }
-                        
+
                     }
                     catch (Exception ex)
                     {
@@ -6747,7 +6759,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                     statusCode = -1,
                     result = false
                 };
-                
+
             }
         }
 
@@ -6755,7 +6767,8 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
         {
             try
             {
-                var ReservationResult = GetReservationDetailsFromPMS(new OwsRequestModel() {
+                var ReservationResult = GetReservationDetailsFromPMS(new OwsRequestModel()
+                {
                     HotelDomain = Request.HotelDomain,
                     KioskID = Request.KioskID,
                     Username = Request.Username,
@@ -6771,7 +6784,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         ReservationNameID = Request.OperaReservation.ReservationNameID
                     }
                 });
-                
+
                 if (ReservationResult != null && ReservationResult.result)
                 {
                     var reservationList = (List<Models.OWS.OperaReservation>)ReservationResult.responseData;
@@ -6858,7 +6871,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         result = false
                     };
                 }
-                
+
 
                 new LogHelper().Debug("Checkout request : " + JsonConvert.SerializeObject(Request), Request.OperaReservation.ReservationNameID, "GuestCheckOut", "API", "OWS");
                 #region Request
@@ -6939,11 +6952,11 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 }
                 ReservationAdvancedService.CheckOutResponse COResponse = new ReservationAdvancedService.CheckOutResponse();
                 COResponse = ResAdvPortClient.CheckOut(ref OGHeader, CORequest);
-                
+
 
                 if (COResponse.Result.resultStatusFlag == ReservationAdvancedService.ResultStatusFlag.SUCCESS)
                 {
-                    
+
                     return new Models.OWS.OwsResponseModel()
                     {
                         responseMessage = "Success",
@@ -6956,7 +6969,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                     new LogHelper().Debug("GuestCheckOut Response : " + COResponse.Result != null ? (COResponse.Result.Text != null ? COResponse.Result.Text[0].Value : COResponse.Result.OperaErrorCode) : "Check out failled", Request.OperaReservation.ReservationNameID, "GuestCheckOut", "API", "OWS");
                     return new Models.OWS.OwsResponseModel()
                     {
-                        responseMessage = COResponse.Result != null ? (COResponse.Result.Text != null ? COResponse.Result.Text[0].Value : COResponse.Result.OperaErrorCode ): "Check out failled",
+                        responseMessage = COResponse.Result != null ? (COResponse.Result.Text != null ? COResponse.Result.Text[0].Value : COResponse.Result.OperaErrorCode) : "Check out failled",
                         statusCode = 4001,
                         result = false
                     };
@@ -6984,7 +6997,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
             try
             {
                 string Base64RegCard = null;
-                
+
 
                 #region Initilize Reportviewer
                 ReportViewer rv = new ReportViewer();
@@ -6999,81 +7012,81 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         #endregion
 
 
-                string noOfNights = "";
-                if (reservation.ArrivalDate != null && reservation.DepartureDate != null)
-                {
-                    System.TimeSpan timeSpan = reservation.DepartureDate.Value.Subtract(reservation.ArrivalDate.Value);
-                    noOfNights = timeSpan.Days.ToString();
-                }
-
-                string address = "";
-                if (reservation.GuestProfiles != null && reservation.GuestProfiles.Count > 0 && reservation.GuestProfiles[0].Address != null && reservation.GuestProfiles[0].Address.Count > 0)
-                {
-                    address += reservation.GuestProfiles[0].Address[0].address1 + (!string.IsNullOrEmpty(reservation.GuestProfiles[0].Address[0].address2) ?
-                                                                                                    ", " + reservation.GuestProfiles[0].Address[0].address2 : "");
-                }
-
-                string email = "";
-                if (reservation.GuestProfiles != null && reservation.GuestProfiles.Count > 0 && reservation.GuestProfiles[0].Email != null && reservation.GuestProfiles[0].Email.Count > 0)
-                {
-                    foreach (Models.OWS.Email email1 in reservation.GuestProfiles[0].Email)
-                    {
-                        if (email1.primary != null && email1.primary.Value)
+                        string noOfNights = "";
+                        if (reservation.ArrivalDate != null && reservation.DepartureDate != null)
                         {
-                            email = email1.email;
-                            break;
+                            System.TimeSpan timeSpan = reservation.DepartureDate.Value.Subtract(reservation.ArrivalDate.Value);
+                            noOfNights = timeSpan.Days.ToString();
                         }
-                    }
-                    if (string.IsNullOrEmpty(email))
-                    {
-                        email = reservation.GuestProfiles[0].Email[0].email;
-                    }
 
-                }
-
-                string phone = "";
-                if (reservation.GuestProfiles != null && reservation.GuestProfiles.Count > 0 && reservation.GuestProfiles[0].Phones != null && reservation.GuestProfiles[0].Phones.Count > 0)
-                {
-                    foreach (Models.OWS.Phone phones in reservation.GuestProfiles[0].Phones)
-                    {
-                        if (phones.primary != null && phones.primary.Value)
+                        string address = "";
+                        if (reservation.GuestProfiles != null && reservation.GuestProfiles.Count > 0 && reservation.GuestProfiles[0].Address != null && reservation.GuestProfiles[0].Address.Count > 0)
                         {
-                            phone = phones.PhoneNumber;
-                            break;
+                            address += reservation.GuestProfiles[0].Address[0].address1 + (!string.IsNullOrEmpty(reservation.GuestProfiles[0].Address[0].address2) ?
+                                                                                                            ", " + reservation.GuestProfiles[0].Address[0].address2 : "");
                         }
-                    }
-                    if (string.IsNullOrEmpty(phone))
-                    {
-                        phone = reservation.GuestProfiles[0].Phones[0].PhoneNumber;
-                    }
 
-                }
+                        string email = "";
+                        if (reservation.GuestProfiles != null && reservation.GuestProfiles.Count > 0 && reservation.GuestProfiles[0].Email != null && reservation.GuestProfiles[0].Email.Count > 0)
+                        {
+                            foreach (Models.OWS.Email email1 in reservation.GuestProfiles[0].Email)
+                            {
+                                if (email1.primary != null && email1.primary.Value)
+                                {
+                                    email = email1.email;
+                                    break;
+                                }
+                            }
+                            if (string.IsNullOrEmpty(email))
+                            {
+                                email = reservation.GuestProfiles[0].Email[0].email;
+                            }
 
-                string signatureImage = "";
-                if (!string.IsNullOrEmpty(reservation.GuestSignature))
-                {
-                    byte[] bytes = Convert.FromBase64String(reservation.GuestSignature);
-                    using (MemoryStream ms = new MemoryStream(bytes))
-                    {
-                        System.Drawing.Image.FromStream(ms).Save(System.Web.Hosting.HostingEnvironment.MapPath("~/Resources/Images/Temp/" + reservation.ReservationNumber + "_signature.jpeg"));
-                    }
-                    signatureImage = new Uri(System.Web.Hosting.HostingEnvironment.MapPath("~/Resources/Images/Temp/" + reservation.ReservationNumber + "_signature.jpeg")).AbsoluteUri;
-                }
+                        }
 
-                List<ReportParameter> reportParameters = new List<ReportParameter>();
+                        string phone = "";
+                        if (reservation.GuestProfiles != null && reservation.GuestProfiles.Count > 0 && reservation.GuestProfiles[0].Phones != null && reservation.GuestProfiles[0].Phones.Count > 0)
+                        {
+                            foreach (Models.OWS.Phone phones in reservation.GuestProfiles[0].Phones)
+                            {
+                                if (phones.primary != null && phones.primary.Value)
+                                {
+                                    phone = phones.PhoneNumber;
+                                    break;
+                                }
+                            }
+                            if (string.IsNullOrEmpty(phone))
+                            {
+                                phone = reservation.GuestProfiles[0].Phones[0].PhoneNumber;
+                            }
 
-                //ReportParameter parameter = System.IO.File.Exists(System.Web.Hosting.HostingEnvironment.MapPath("~/Resources/RDLC/hotel-logo.png")) ?
-                //                                new ReportParameter
-                //                                ("logo",
-                //                                new Uri(System.Web.Hosting.HostingEnvironment.MapPath("~/Resources/RDLC/hotel-logo.png")).AbsoluteUri) : null;
+                        }
 
-                //if (parameter != null)
-                //    reportParameters.Add(parameter);
-                ReportParameter parameter = null;
-                foreach (ReportParameterInfo reportParameterInfos in rv.LocalReport.GetParameters())
-                {
-                    switch (reportParameterInfos.Name)
-                    {
+                        string signatureImage = "";
+                        if (!string.IsNullOrEmpty(reservation.GuestSignature))
+                        {
+                            byte[] bytes = Convert.FromBase64String(reservation.GuestSignature);
+                            using (MemoryStream ms = new MemoryStream(bytes))
+                            {
+                                System.Drawing.Image.FromStream(ms).Save(System.Web.Hosting.HostingEnvironment.MapPath("~/Resources/Images/Temp/" + reservation.ReservationNumber + "_signature.jpeg"));
+                            }
+                            signatureImage = new Uri(System.Web.Hosting.HostingEnvironment.MapPath("~/Resources/Images/Temp/" + reservation.ReservationNumber + "_signature.jpeg")).AbsoluteUri;
+                        }
+
+                        List<ReportParameter> reportParameters = new List<ReportParameter>();
+
+                        //ReportParameter parameter = System.IO.File.Exists(System.Web.Hosting.HostingEnvironment.MapPath("~/Resources/RDLC/hotel-logo.png")) ?
+                        //                                new ReportParameter
+                        //                                ("logo",
+                        //                                new Uri(System.Web.Hosting.HostingEnvironment.MapPath("~/Resources/RDLC/hotel-logo.png")).AbsoluteUri) : null;
+
+                        //if (parameter != null)
+                        //    reportParameters.Add(parameter);
+                        ReportParameter parameter = null;
+                        foreach (ReportParameterInfo reportParameterInfos in rv.LocalReport.GetParameters())
+                        {
+                            switch (reportParameterInfos.Name)
+                            {
                                 case "RoomType":
                                     parameter = new ReportParameter("RoomType", (reservation.RoomDetails != null ? reservation.RoomDetails.RoomType : ""));
                                     reportParameters.Add(parameter);
@@ -7086,157 +7099,157 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                     break;
 
                                 case "Title":
-                            parameter = new ReportParameter("Title", (reservation.GuestProfiles != null && reservation.GuestProfiles.Count > 0) ? reservation.GuestProfiles[0].Title : "");
-                            reportParameters.Add(parameter);
-                            break;
+                                    parameter = new ReportParameter("Title", (reservation.GuestProfiles != null && reservation.GuestProfiles.Count > 0) ? reservation.GuestProfiles[0].Title : "");
+                                    reportParameters.Add(parameter);
+                                    break;
 
-                        case "FamilyName":
-                            parameter = new ReportParameter("FamilyName", (reservation.GuestProfiles != null && reservation.GuestProfiles.Count > 0) ? 
-                                                            (string.IsNullOrEmpty(reservation.GuestProfiles[0].LastName)?  reservation.GuestProfiles[0].FamilyName : reservation.GuestProfiles[0].LastName) : "");
-                            reportParameters.Add(parameter);
-                            break;
+                                case "FamilyName":
+                                    parameter = new ReportParameter("FamilyName", (reservation.GuestProfiles != null && reservation.GuestProfiles.Count > 0) ?
+                                                                    (string.IsNullOrEmpty(reservation.GuestProfiles[0].LastName) ? reservation.GuestProfiles[0].FamilyName : reservation.GuestProfiles[0].LastName) : "");
+                                    reportParameters.Add(parameter);
+                                    break;
 
-                        case "RoomNo":
-                            parameter = new ReportParameter("RoomNo", (reservation.RoomDetails != null) ? reservation.RoomDetails.RoomNumber : "");
-                            reportParameters.Add(parameter);
-                            break;
+                                case "RoomNo":
+                                    parameter = new ReportParameter("RoomNo", (reservation.RoomDetails != null) ? reservation.RoomDetails.RoomNumber : "");
+                                    reportParameters.Add(parameter);
+                                    break;
 
-                        case "GivenName":
-                            parameter = new ReportParameter("GivenName", (reservation.GuestProfiles != null && reservation.GuestProfiles.Count > 0) ? reservation.GuestProfiles[0].FirstName : "");
-                            reportParameters.Add(parameter);
-                            break;
+                                case "GivenName":
+                                    parameter = new ReportParameter("GivenName", (reservation.GuestProfiles != null && reservation.GuestProfiles.Count > 0) ? reservation.GuestProfiles[0].FirstName : "");
+                                    reportParameters.Add(parameter);
+                                    break;
 
-                        case "AdultCount":
-                            parameter = new ReportParameter("AdultCount", reservation.Adults != null ? reservation.Adults.Value.ToString() : "");
-                            reportParameters.Add(parameter);
-                            break;
+                                case "AdultCount":
+                                    parameter = new ReportParameter("AdultCount", reservation.Adults != null ? reservation.Adults.Value.ToString() : "");
+                                    reportParameters.Add(parameter);
+                                    break;
 
-                        case "NoOfNights":
-                            parameter = new ReportParameter("NoOfNights", noOfNights);
-                            reportParameters.Add(parameter);
-                            break;
+                                case "NoOfNights":
+                                    parameter = new ReportParameter("NoOfNights", noOfNights);
+                                    reportParameters.Add(parameter);
+                                    break;
 
-                        case "Address":
-                            parameter = new ReportParameter("Address", address);
-                            reportParameters.Add(parameter);
-                            break;
+                                case "Address":
+                                    parameter = new ReportParameter("Address", address);
+                                    reportParameters.Add(parameter);
+                                    break;
 
-                        case "ContactNumber":
-                            parameter = new ReportParameter("ContactNumber", phone);
-                            reportParameters.Add(parameter);
-                            break;
+                                case "ContactNumber":
+                                    parameter = new ReportParameter("ContactNumber", phone);
+                                    reportParameters.Add(parameter);
+                                    break;
 
-                        case "ArrivalDate":
-                            parameter = new ReportParameter("ArrivalDate", reservation.ArrivalDate != null ? reservation.ArrivalDate.Value.ToString("dd/MM/yyyy") : "");
-                            reportParameters.Add(parameter);
-                            break;
+                                case "ArrivalDate":
+                                    parameter = new ReportParameter("ArrivalDate", reservation.ArrivalDate != null ? reservation.ArrivalDate.Value.ToString("dd/MM/yyyy") : "");
+                                    reportParameters.Add(parameter);
+                                    break;
 
-                        case "DepartureDate":
-                            parameter = new ReportParameter("DepartureDate", reservation.DepartureDate != null ? reservation.DepartureDate.Value.ToString("dd/MM/yyyy") : "");
-                            reportParameters.Add(parameter);
-                            break;
+                                case "DepartureDate":
+                                    parameter = new ReportParameter("DepartureDate", reservation.DepartureDate != null ? reservation.DepartureDate.Value.ToString("dd/MM/yyyy") : "");
+                                    reportParameters.Add(parameter);
+                                    break;
 
-                        case "ReservationNumber":
-                            parameter = new ReportParameter("ReservationNumber", !string.IsNullOrEmpty(reservation.ReservationNumber) ? reservation.ReservationNumber : "");
-                            reportParameters.Add(parameter);
-                            break;
+                                case "ReservationNumber":
+                                    parameter = new ReportParameter("ReservationNumber", !string.IsNullOrEmpty(reservation.ReservationNumber) ? reservation.ReservationNumber : "");
+                                    reportParameters.Add(parameter);
+                                    break;
 
-                        case "DailyRate":
-                            parameter = new ReportParameter("DailyRate", (reservation.RateDetails != null) ? (reservation.RateDetails.RateAmount != null ? reservation.RateDetails.RateAmount.Value.ToString() : "") : "");
-                            reportParameters.Add(parameter);
-                            break;
+                                case "DailyRate":
+                                    parameter = new ReportParameter("DailyRate", (reservation.RateDetails != null) ? (reservation.RateDetails.RateAmount != null ? reservation.RateDetails.RateAmount.Value.ToString() : "") : "");
+                                    reportParameters.Add(parameter);
+                                    break;
 
-                        case "CityOrState":
-                            parameter = new ReportParameter("CityOrState", (reservation.GuestProfiles != null && reservation.GuestProfiles.Count > 0) ? (reservation.GuestProfiles[0].Address != null && reservation.GuestProfiles[0].Address.Count > 0)
-                                    ? reservation.GuestProfiles[0].Address[0].city : "" : "");
-                            reportParameters.Add(parameter);
-                            break;
+                                case "CityOrState":
+                                    parameter = new ReportParameter("CityOrState", (reservation.GuestProfiles != null && reservation.GuestProfiles.Count > 0) ? (reservation.GuestProfiles[0].Address != null && reservation.GuestProfiles[0].Address.Count > 0)
+                                            ? reservation.GuestProfiles[0].Address[0].city : "" : "");
+                                    reportParameters.Add(parameter);
+                                    break;
 
-                        case "PostalCode":
-                            parameter = new ReportParameter("PostalCode", (reservation.GuestProfiles != null && reservation.GuestProfiles.Count > 0) ? (reservation.GuestProfiles[0].Address != null && reservation.GuestProfiles[0].Address.Count > 0)
-                                    ? reservation.GuestProfiles[0].Address[0].zip : "" : "");
-                            reportParameters.Add(parameter);
-                            break;
+                                case "PostalCode":
+                                    parameter = new ReportParameter("PostalCode", (reservation.GuestProfiles != null && reservation.GuestProfiles.Count > 0) ? (reservation.GuestProfiles[0].Address != null && reservation.GuestProfiles[0].Address.Count > 0)
+                                            ? reservation.GuestProfiles[0].Address[0].zip : "" : "");
+                                    reportParameters.Add(parameter);
+                                    break;
 
-                        case "Country":
-                            parameter = new ReportParameter("Country", (reservation.GuestProfiles != null && reservation.GuestProfiles.Count > 0) ? (reservation.GuestProfiles[0].Address != null && reservation.GuestProfiles[0].Address.Count > 0)
-                                    ? reservation.GuestProfiles[0].Address[0].country : "" : "");
-                            reportParameters.Add(parameter);
-                            break;
+                                case "Country":
+                                    parameter = new ReportParameter("Country", (reservation.GuestProfiles != null && reservation.GuestProfiles.Count > 0) ? (reservation.GuestProfiles[0].Address != null && reservation.GuestProfiles[0].Address.Count > 0)
+                                            ? reservation.GuestProfiles[0].Address[0].country : "" : "");
+                                    reportParameters.Add(parameter);
+                                    break;
 
-                        case "MembershipProgram":
-                            parameter = new ReportParameter("MembershipProgram", (reservation.GuestProfiles != null && reservation.GuestProfiles.Count > 0) ? reservation.GuestProfiles[0].MembershipNumber : "");
-                            reportParameters.Add(parameter);
-                            break;
+                                case "MembershipProgram":
+                                    parameter = new ReportParameter("MembershipProgram", (reservation.GuestProfiles != null && reservation.GuestProfiles.Count > 0) ? reservation.GuestProfiles[0].MembershipNumber : "");
+                                    reportParameters.Add(parameter);
+                                    break;
 
-                        case "Email":
-                            parameter = new ReportParameter("Email", email);
-                            reportParameters.Add(parameter);
-                            break;
-                        case "Nationality":
-                            parameter = new ReportParameter("Nationality", (reservation.GuestProfiles != null && reservation.GuestProfiles.Count > 0) ? reservation.GuestProfiles[0].Nationality : "");
-                            reportParameters.Add(parameter);
-                            break;
+                                case "Email":
+                                    parameter = new ReportParameter("Email", email);
+                                    reportParameters.Add(parameter);
+                                    break;
+                                case "Nationality":
+                                    parameter = new ReportParameter("Nationality", (reservation.GuestProfiles != null && reservation.GuestProfiles.Count > 0) ? reservation.GuestProfiles[0].Nationality : "");
+                                    reportParameters.Add(parameter);
+                                    break;
 
-                        case "PassportNumber":
-                            parameter = new ReportParameter("PassportNumber", (reservation.GuestProfiles != null && reservation.GuestProfiles.Count > 0) ? reservation.GuestProfiles[0].PassportNumber : "");
-                            reportParameters.Add(parameter);
-                            break;
+                                case "PassportNumber":
+                                    parameter = new ReportParameter("PassportNumber", (reservation.GuestProfiles != null && reservation.GuestProfiles.Count > 0) ? reservation.GuestProfiles[0].PassportNumber : "");
+                                    reportParameters.Add(parameter);
+                                    break;
 
-                        case "DateOfBirth":
-                            parameter = new ReportParameter("DateOfBirth", (reservation.GuestProfiles != null && reservation.GuestProfiles.Count > 0) ? "xx/xx/xxxx" : "xx/xx/xxxx");
-                            reportParameters.Add(parameter);
-                            break;
+                                case "DateOfBirth":
+                                    parameter = new ReportParameter("DateOfBirth", (reservation.GuestProfiles != null && reservation.GuestProfiles.Count > 0) ? "xx/xx/xxxx" : "xx/xx/xxxx");
+                                    reportParameters.Add(parameter);
+                                    break;
 
-                        case "ModeOfPayment":
-                            parameter = new ReportParameter("ModeOfPayment", (reservation.PaymentMethod != null) ? reservation.PaymentMethod.PaymentType : "");
-                            reportParameters.Add(parameter);
-                            break;
+                                case "ModeOfPayment":
+                                    parameter = new ReportParameter("ModeOfPayment", (reservation.PaymentMethod != null) ? reservation.PaymentMethod.PaymentType : "");
+                                    reportParameters.Add(parameter);
+                                    break;
 
-                        case "GuestSignature":
-                            parameter = new ReportParameter("GuestSignature", reservation.GuestSignature);
-                            reportParameters.Add(parameter);
-                            break;
+                                case "GuestSignature":
+                                    parameter = new ReportParameter("GuestSignature", reservation.GuestSignature);
+                                    reportParameters.Add(parameter);
+                                    break;
                                 case "ChildCount":
                                     parameter = new ReportParameter("ChildCount", reservation.Child != null ? reservation.Child.Value.ToString() : "");
                                     reportParameters.Add(parameter);
                                     break;
 
                             }
-                }
+                        }
 
 
 
-                rv.LocalReport.SetParameters(reportParameters);
+                        rv.LocalReport.SetParameters(reportParameters);
 
-                rv.LocalReport.Refresh();
+                        rv.LocalReport.Refresh();
 
 
-                #region Private Members
-                byte[] streamBytes = null;
-                string mimeType = "";
-                string encoding = "";
-                string filenameExtension = "";
-                string[] streamids = null;
-                Warning[] warnings = null;
-                #endregion
+                        #region Private Members
+                        byte[] streamBytes = null;
+                        string mimeType = "";
+                        string encoding = "";
+                        string filenameExtension = "";
+                        string[] streamids = null;
+                        Warning[] warnings = null;
+                        #endregion
 
-                streamBytes = rv.LocalReport.Render("PDF", null, out mimeType, out encoding, out filenameExtension, out streamids, out warnings);
-                Base64RegCard = Convert.ToBase64String(streamBytes);
-                rv.LocalReport.Refresh();
+                        streamBytes = rv.LocalReport.Render("PDF", null, out mimeType, out encoding, out filenameExtension, out streamids, out warnings);
+                        Base64RegCard = Convert.ToBase64String(streamBytes);
+                        rv.LocalReport.Refresh();
                     }
                 }
 
                 rv.LocalReport.Dispose();
-                
+
                 return new Models.OWS.OwsResponseModel()
                 {
                     result = true,
                     responseData = Base64RegCard
                 };
-                
+
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 new LogHelper().Error(ex, "", "GetRegcarBase64", "API", "OWS");
                 return new Models.OWS.OwsResponseModel()
@@ -7255,7 +7268,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 new LogHelper().Debug("Assignroom request : " + JsonConvert.SerializeObject(Request), Request.AssignRoomRequest.ReservationNameID, "AssignRoomToReservation", "API", "OWS");
                 ReservationService.AssignRoomRequest assignRoomReq = new ReservationService.AssignRoomRequest();
                 ReservationService.AssignRoomResponse assignRoomRes = new ReservationService.AssignRoomResponse();
-                
+
                 #region Request Header
 
                 string temp = Helper.Helper.Get8Digits();
@@ -7313,7 +7326,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
 
                 assignRoomRes = ResSoapCLient.AssignRoom(ref OGHeader, assignRoomReq);
                 ReservationService.GDSResultStatus status = assignRoomRes.Result;
-                
+
                 if (status.resultStatusFlag.Equals(ReservationService.ResultStatusFlag.SUCCESS))
                 {
                     return new Models.OWS.OwsResponseModel
@@ -7433,12 +7446,12 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                     {
                         result = false,
                         responseData = null,
-                        responseMessage = (LOVRes.Result.Text != null && LOVRes.Result.Text.Length > 0) ? string.Join(" ",LOVRes.Result.Text.Select(x => x.Value).ToArray()) : LOVRes.Result.OperaErrorCode
+                        responseMessage = (LOVRes.Result.Text != null && LOVRes.Result.Text.Length > 0) ? string.Join(" ", LOVRes.Result.Text.Select(x => x.Value).ToArray()) : LOVRes.Result.OperaErrorCode
                     };
                 }
 
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return new OwsResponseModel()
                 {
@@ -7456,8 +7469,8 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
 
                 new LogHelper().Debug("MakePayment request : " + JsonConvert.SerializeObject(Request), Request.MakePaymentRequest.ReservationNameID, "MakePayment", "API", "OWS");
                 DateTime? PostingDate = null;
-                
-                
+
+
                 #region Getting BusinessDate
                 try
                 {
@@ -7527,8 +7540,9 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                     }
 
                 }
-                catch (Exception ex) { //System.IO.File.AppendAllText(System.Web.Hosting.HostingEnvironment.MapPath(@"~\Error.txt"), ex.Message);
-                                       }
+                catch (Exception ex)
+                { //System.IO.File.AppendAllText(System.Web.Hosting.HostingEnvironment.MapPath(@"~\Error.txt"), ex.Message);
+                }
                 #endregion
 
 
@@ -7589,7 +7603,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 MPRequest.Posting = PaymentPosting;
 
                 ReservationAdvancedService.CreditCardInfo CCInfo = new ReservationAdvancedService.CreditCardInfo();
-                
+
                 ReservationAdvancedService.CreditCard CC = new ReservationAdvancedService.CreditCard();
 
                 //ReservationAdvancedService.cred
@@ -7598,12 +7612,12 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                     bool isOPIEnabled = false;
                     isOPIEnabled = (ConfigurationManager.AppSettings["OPIEnabled"] != null
                                     && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["OPIEnabled"].ToString())
-                                    && bool.TryParse(ConfigurationManager.AppSettings["OPIEnabled"].ToString()  , out isOPIEnabled)) ? isOPIEnabled : false;
+                                    && bool.TryParse(ConfigurationManager.AppSettings["OPIEnabled"].ToString(), out isOPIEnabled)) ? isOPIEnabled : false;
                     CC.chipAndPin = false;
                     CC.chipAndPinSpecified = true;
                     CC.cardType = Request.MakePaymentRequest.PaymentTypeCode;//"WEB";
-                    
-                    if(isOPIEnabled)
+
+                    if (isOPIEnabled)
                     {
                         CC.Item = new ReservationAdvancedService.VaultedCardType()
                         {
@@ -7652,7 +7666,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 //ResAdvPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour("Test USE", "Request.WSSEPassword", "Request.KioskUserName", "Request.KioskPassword", "Request.HotelDomain"));
                 RSResponse = ResAdvPortClient.MakePayment(ref OGHeader, MPRequest);
 
-                
+
 
                 if (RSResponse.Result.resultStatusFlag == ReservationAdvancedService.ResultStatusFlag.SUCCESS)
                 {
@@ -7668,8 +7682,8 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 {
                     //System.IO.File.WriteAllText(System.Web.Hosting.HostingEnvironment.MapPath(@"~\Log.txt"), Newtonsoft.Json.JsonConvert.SerializeObject(RSResponse));
                     return new Models.OWS.OwsResponseModel()
-                    {                        
-                        responseMessage = RSResponse.Result != null ? RSResponse.Result.Text != null ? string.Join(" ", RSResponse.Result.Text.Select(x=> x.Value).ToArray()) : "Failled" : "Failled",
+                    {
+                        responseMessage = RSResponse.Result != null ? RSResponse.Result.Text != null ? string.Join(" ", RSResponse.Result.Text.Select(x => x.Value).ToArray()) : "Failled" : "Failled",
                         statusCode = -1,
                         result = false
                     };
@@ -7683,7 +7697,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                     statusCode = -1,
                     result = false
                 };
-                
+
             }
         }
 
@@ -7691,10 +7705,10 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
         {
             try
             {
-                
+
                 new LogHelper().Debug("AddPayment request : " + JsonConvert.SerializeObject(Request), Request.MakePaymentRequest.ReservationNameID, "AddPayment", "API", "OWS");
                 DateTime? PostingDate = null;
-               
+
                 #region Request Header
                 string temp = Helper.Helper.Get8Digits();
                 ReservationAdvancedService.OGHeader OGHeader = new ReservationAdvancedService.OGHeader();
@@ -7745,13 +7759,13 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 uID.Value = Request.MakePaymentRequest.ReservationNameID;
                 APRequest.ResvNameID = uID;
 
-                APRequest.TerminalCode =Request.MakePaymentRequest.PaymentTerminalID;
+                APRequest.TerminalCode = Request.MakePaymentRequest.PaymentTerminalID;
 
                 APRequest.Window = Request.MakePaymentRequest.WindowNumber.Value;
 
                 APRequest.AuthorizationRule = new ReservationAdvancedService.AuthorizationInfo()
                 {
-                    Rule = string.IsNullOrEmpty(Request.MakePaymentRequest.Rule)?"5": Request.MakePaymentRequest.Rule,
+                    Rule = string.IsNullOrEmpty(Request.MakePaymentRequest.Rule) ? "5" : Request.MakePaymentRequest.Rule,
                     Amount = new ReservationAdvancedService.Amount()
                     {
                         Value = (double)Request.MakePaymentRequest.Amount
@@ -7763,7 +7777,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
 
 
                 ReservationAdvancedService.ResvAdvancedServiceSoapClient ResAdvPortClient = new ReservationAdvancedService.ResvAdvancedServiceSoapClient();
-                
+
                 ReservationAdvancedService.AddPaymentResponse RSResponse = new ReservationAdvancedService.AddPaymentResponse();
                 #endregion
                 //ResAdvPortClient.Endpoint.Behaviors.Add(new Helper.CustomEndpointBehaviour("Test USE", "Request.WSSEPassword", "Request.KioskUserName", "Request.KioskPassword", "Request.HotelDomain"));
@@ -7822,7 +7836,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
         {
             try
             {
-                
+
                 #region Request
 
                 #region Request Header
@@ -7876,7 +7890,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 {
                     //System.IO.File.AppendAllLines(System.Web.Hosting.HostingEnvironment.MapPath(@"~\EmailList.txt"), new string[] { "Email found :- " });
                     List<Models.OWS.Email> LEmail = new List<Models.OWS.Email>();
-                    
+
 
                     foreach (NameService.NameEmail NEmail in EMailListResp.NameEmailList)
                     {
@@ -7889,7 +7903,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         LEmail.Add(Email);
 
                     }
-                    
+
 
                     return new Models.OWS.OwsResponseModel
                     {
@@ -7942,7 +7956,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 orginEndPOint.systemType = Request.SystemType;
                 OGHeader.Origin = orginEndPOint;
                 NameService.EndPoint destEndPOint = new NameService.EndPoint();
-                destEndPOint.entityID =Request.DestinationEntityID;
+                destEndPOint.entityID = Request.DestinationEntityID;
                 destEndPOint.systemType = Request.DestinationSystemType;
                 OGHeader.Destination = destEndPOint;
                 NameService.OGHeaderAuthentication Auth = new NameService.OGHeaderAuthentication();
@@ -8113,7 +8127,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                     };
                 }
                 else
-                {                    
+                {
                     return new Models.OWS.OwsResponseModel
                     {
                         responseMessage = MBookingRes.Result.GDSError.Value,
@@ -8129,7 +8143,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
             }
             catch (Exception ex)
             {
-                
+
                 return new Models.OWS.OwsResponseModel
                 {
                     responseMessage = "Generic Exception : " + ex.Message,
@@ -8143,7 +8157,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
         {
             try
             {
-                new LogHelper().Debug("Update Address request : " + JsonConvert.SerializeObject(Request), Request!=null? Request.UpdateProileRequest!=null?Request.UpdateProileRequest.ProfileID:"":"", "UpdateAddress", "API", "OWS");
+                new LogHelper().Debug("Update Address request : " + JsonConvert.SerializeObject(Request), Request != null ? Request.UpdateProileRequest != null ? Request.UpdateProileRequest.ProfileID : "" : "", "UpdateAddress", "API", "OWS");
                 #region Request Header
                 string temp = Helper.Helper.Get8Digits();
                 NameService.OGHeader OGHeader = new NameService.OGHeader();
@@ -8308,7 +8322,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         responseMessage = "Empty Address passed",
                         statusCode = -1
                     };
-                    
+
                 }
             }
             catch (Exception ex)
@@ -8355,7 +8369,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                    (Request.UpdateProileRequest.isFieldMandatory == null || Request.UpdateProileRequest.isFieldMandatory.Value ||
                   Request.UpdateProileRequest.Emails.Count > 0 && !string.IsNullOrEmpty(Request.UpdateProileRequest.Emails.First().email)))
 
-                    
+
                 {
                     NameService.UpdateEmailResponse EMailResponse = new NameService.UpdateEmailResponse();
                     foreach (Models.OWS.Email email in Request.UpdateProileRequest.Emails)
@@ -8427,7 +8441,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                 NEmail.displaySequenceSpecified = email.displaySequence != null ? true : false;
                                 EmailRequest.NameID = UId;
                                 EmailRequest.NameEmail = NEmail;
-                            
+
 
 
                                 #region Response
@@ -8540,12 +8554,12 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 OGHeader.Authentication = Auth;
                 #endregion
 
-                if (Request.UpdateProileRequest != null && Request.UpdateProileRequest.Phones != null && 
+                if (Request.UpdateProileRequest != null && Request.UpdateProileRequest.Phones != null &&
                     (Request.UpdateProileRequest.isFieldMandatory == null || Request.UpdateProileRequest.isFieldMandatory.Value ||
                     Request.UpdateProileRequest.Phones.Count > 0 && !string.IsNullOrEmpty(Request.UpdateProileRequest.Phones.First().PhoneNumber)))
                 {
-                    
-                    
+
+
                     NameService.UpdatePhoneResponse PhoneResponse = new NameService.UpdatePhoneResponse();
                     NameService.InsertPhoneResponse InsertPhoneResponse = new NameService.InsertPhoneResponse();
                     foreach (Models.OWS.Phone phone in Request.UpdateProileRequest.Phones)
@@ -8592,7 +8606,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                                 }
                                 #endregion
                             }
-                            else 
+                            else
                             {
                                 return new Models.OWS.OwsResponseModel()
                                 {
@@ -8662,8 +8676,8 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         result = true,
                         responseMessage = "Success"
                     };
-                    
-                    
+
+
                 }
                 else if (Request.UpdateProileRequest.isFieldMandatory != null && !Request.UpdateProileRequest.isFieldMandatory.Value)
                 {
@@ -8685,7 +8699,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                 }
                 else
                 {
-                   
+
                     return new Models.OWS.OwsResponseModel()
                     {
                         result = false,
@@ -8887,7 +8901,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         }
                     }
                 }
-              //  if (creditlist.Count > 0)
+                //  if (creditlist.Count > 0)
                 {
 
                     try
@@ -8917,7 +8931,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         string[] streamids = null;
                         Warning[] warnings = null;
                         #endregion
-                        
+
                         streamBytes = rv.LocalReport.Render("PDF", null, out mimeType, out encoding, out filenameExtension, out streamids, out warnings);
                         string Base64RegCard = "";
                         Base64RegCard = Convert.ToBase64String(streamBytes);
@@ -8925,7 +8939,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                         {
                             result = false,
                             responseData = Base64RegCard,
-                            responseMessage ="success",
+                            responseMessage = "success",
                             statusCode = 8002
                         };
                         // return File(streamBytes, "application/pdf", "CreditLimitReport.pdf");
@@ -8941,7 +8955,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
                     }
 
                 }
-              
+
 
 
             }
@@ -8961,7 +8975,7 @@ namespace CheckinPortalCloudAPI.ServiceLib.OWS
             try
             {
                 //System.IO.File.AppendAllLines(System.Web.Hosting.HostingEnvironment.MapPath(@"~\GuestCheckin.txt"), new string[] { JsonConvert.SerializeObject(Request) });
-                new LogHelper().Debug("UpdateMethodOfPayment request : " + JsonConvert.SerializeObject(Request), Request.OperaReservation.ReservationNameID, "UpdateMethodOfPayment", "API", "OWS");
+                new LogHelper().Debug("UpdateMethodOfPayment request : " + JsonConvert.SerializeObject(Request), Request.modifyBookingRequest.ReservationNameID, "UpdateMethodOfPayment", "API", "OWS");
                 DateTime? PostingDate = null;
                 #region Request
                 #region Request Header
