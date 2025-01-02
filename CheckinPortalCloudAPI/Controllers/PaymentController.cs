@@ -32,7 +32,7 @@ namespace CheckinPortalCloudAPI.Controllers
                 Models.AdyenPayment.MakePaymentRequest request = JsonConvert.DeserializeObject<Models.AdyenPayment.MakePaymentRequest>(paymentRequest.RequestObject.ToString());
 
                 #region Nlog variable validation
-                if(String.IsNullOrEmpty(request.MerchantReference) || request.MerchantReference.Split('-').Length == 0)
+                if (String.IsNullOrEmpty(request.MerchantReference) || request.MerchantReference.Split('-').Length == 0)
                 {
                     new LogHelper().Debug("Merchant reference is Null or wrong format", paymentRequest.RequestIdentifier, "POIMakePayment", "API", "Payment");
                     return new Models.AdyenPayment.AdyenEcomResponse()
@@ -45,7 +45,7 @@ namespace CheckinPortalCloudAPI.Controllers
 
                 new LogHelper().Debug("Processing make payment request", paymentRequest.RequestIdentifier, "POIMakePayment", "API", "Payment");
 
-                new LogHelper().Log("Raw Payment request : "+ JsonConvert.SerializeObject(paymentRequest), paymentRequest.RequestIdentifier, "POIMakePayment", "API", "Payment");
+                new LogHelper().Log("Raw Payment request : " + JsonConvert.SerializeObject(paymentRequest), paymentRequest.RequestIdentifier, "POIMakePayment", "API", "Payment");
                 //if(request.PaymentTypes != null && request.PaymentTypes.Value.to)
                 Models.AdyenPayment.TerminalRequest saleToPOIRequest = new Models.AdyenPayment.TerminalRequest()
                 {
@@ -71,14 +71,14 @@ namespace CheckinPortalCloudAPI.Controllers
                                 },
                                 TokenRequestedType = request.PaymentTypes != null && ((request.PaymentTypes.Value.ToString().Equals("wechatpay_pos"))
                                 || (request.PaymentTypes.Value.ToString().Equals("alipay"))
-                                ) 
+                                )
                                 ? null : TokenRequestedType.Customer.ToString(),
 
                                 SaleToAcquirerData = request.PaymentTypes != null && ((request.PaymentTypes.Value.ToString().Equals("wechatpay_pos"))
                                 || (request.PaymentTypes.Value.ToString().Equals("alipay"))
-                                ) ? 
-                                                            null : 
-                                                        request.TransactionType.Equals(Models.AdyenPayment.TransactionType.PreAuth) ? "authorisationType=PreAuth&shopperReference=" + (string.IsNullOrEmpty(request.ReservationNameID) ? request.MerchantReference.Replace("-", "") : request.ReservationNameID) + "&recurringContract=RECURRING,ONECLICK" :
+                                ) ?
+                                                            null :
+                                                        request.TransactionType.Equals(Models.AdyenPayment.TransactionType.PreAuth) ? "authorisationType=PreAuth&manualCapture=true&shopperReference=" + (string.IsNullOrEmpty(request.ReservationNameID) ? request.MerchantReference.Replace("-", "") : request.ReservationNameID) + "&recurringContract=RECURRING,ONECLICK" :
                                                        "captureDelayHours=0&shopperReference=" + (string.IsNullOrEmpty(request.ReservationNameID) ? request.MerchantReference.Replace("-", "") : request.ReservationNameID) + "&recurringContract=RECURRING,ONECLICK"
 
                             },
@@ -89,10 +89,10 @@ namespace CheckinPortalCloudAPI.Controllers
                                     Currency = ConfigurationManager.AppSettings["PaymentCurrency"].ToString(),
                                     RequestedAmount = request.Amount.Value
                                 },
-                                TransactionConditions = request.PaymentTypes != null && ((request.PaymentTypes.Value.ToString().Equals("wechatpay_pos")) || (request.PaymentTypes.Value.ToString().Equals("alipay"))) ?  new Models.AdyenPayment.TransactionConditions()
+                                TransactionConditions = request.PaymentTypes != null && ((request.PaymentTypes.Value.ToString().Equals("wechatpay_pos")) || (request.PaymentTypes.Value.ToString().Equals("alipay"))) ? new Models.AdyenPayment.TransactionConditions()
                                 {
                                     AllowedPaymentBrand = new string[] { request.PaymentTypes.Value.ToString() }
-                                } :null
+                                } : null
 
                             },
                             PaymentData = request.PaymentTypes != null && ((request.PaymentTypes.Value.ToString().Equals("wechatpay_pos"))
@@ -105,7 +105,7 @@ namespace CheckinPortalCloudAPI.Controllers
                                     TimeStamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")
                                 } : null
                             }
-                            
+
                         }
                     }
                 };
@@ -119,8 +119,8 @@ namespace CheckinPortalCloudAPI.Controllers
                 //    CloudApiEndPoint = ConfigurationManager.AppSettings["AdyenPOIPaymentURL"]
                 //};
                 //Adyen.Client client = new Adyen.Client(Config);
-                
-                var temp1 = JsonConvert.SerializeObject(saleToPOIRequest,Formatting.None, new JsonSerializerSettings
+
+                var temp1 = JsonConvert.SerializeObject(saleToPOIRequest, Formatting.None, new JsonSerializerSettings
                 {
                     NullValueHandling = NullValueHandling.Ignore
                 });
@@ -145,7 +145,7 @@ namespace CheckinPortalCloudAPI.Controllers
                 {
                     NullValueHandling = NullValueHandling.Ignore
                 }), Encoding.UTF8, "application/json");
-                HttpResponseMessage response = await httpClient.PostAsync(ConfigurationManager.AppSettings["AdyenPOIPaymentURL"] , requestContent);
+                HttpResponseMessage response = await httpClient.PostAsync(ConfigurationManager.AppSettings["AdyenPOIPaymentURL"], requestContent);
                 Models.AdyenPayment.PaymentResponse paymentResponseObject = new Models.AdyenPayment.PaymentResponse();
                 Models.AdyenPayment.AdyenSaleToPOIResponse saleToPoiResponse = null;
                 if (response != null)
@@ -154,7 +154,7 @@ namespace CheckinPortalCloudAPI.Controllers
                     {
                         var responsestr = await response.Content.ReadAsStringAsync();
                         new LogHelper().Debug("Make payment response : " + responsestr, paymentRequest.RequestIdentifier, "POIMakePayment", "API", "Payment");
-                        
+
                         responsestr = responsestr.Replace("PaymentResponse", "MessagePayload");
                         saleToPoiResponse = JsonConvert.DeserializeObject<Models.AdyenPayment.AdyenSaleToPOIResponse>(responsestr);
                     }
@@ -176,7 +176,7 @@ namespace CheckinPortalCloudAPI.Controllers
                 else
                 {
                     new LogHelper().Log("Make payment failled with reason : - Payment gateway returned blank", paymentRequest.RequestIdentifier, "POIMakePayment", "API", "Payment");
-                    
+
                     return new Models.AdyenPayment.AdyenEcomResponse()
                     {
                         Result = false,
@@ -273,8 +273,8 @@ namespace CheckinPortalCloudAPI.Controllers
                         paymentResponseObject.Amount = PaymentResp.PaymentResult.AmountsResp != null ? PaymentResp.PaymentResult.AmountsResp.AuthorizedAmount : null;
                         paymentResponseObject.AuthCode = PaymentResp.PaymentResult.PaymentAcquirerData != null ? PaymentResp.PaymentResult.PaymentAcquirerData.ApprovalCode : null;
                         paymentResponseObject.MaskCardNumber = PaymentResp.PaymentResult.PaymentInstrumentData != null ? (PaymentResp.PaymentResult.PaymentInstrumentData.CardData != null ? PaymentResp.PaymentResult.PaymentInstrumentData.CardData.MaskedPAN : null) : null;
-                        paymentResponseObject.MaskCardNumber = paymentResponseObject.CardType != null && ((paymentResponseObject.CardType.Equals("wechatpay_pos"))|| (paymentResponseObject.CardType.Equals("alipay"))) ? paymentResponseObject.PspReference : paymentResponseObject.MaskCardNumber;
-                        paymentResponseObject.FundingSource = paymentResponseObject.CardType != null && ((paymentResponseObject.CardType.Equals("wechatpay_pos"))|| (paymentResponseObject.CardType.Equals("alipay"))) ? "DEBIT" : null;
+                        paymentResponseObject.MaskCardNumber = paymentResponseObject.CardType != null && ((paymentResponseObject.CardType.Equals("wechatpay_pos")) || (paymentResponseObject.CardType.Equals("alipay"))) ? paymentResponseObject.PspReference : paymentResponseObject.MaskCardNumber;
+                        paymentResponseObject.FundingSource = paymentResponseObject.CardType != null && ((paymentResponseObject.CardType.Equals("wechatpay_pos")) || (paymentResponseObject.CardType.Equals("alipay"))) ? "DEBIT" : null;
                         new LogHelper().Debug("Payment response : " + JsonConvert.SerializeObject(paymentResponseObject), paymentRequest.RequestIdentifier, "POIMakePayment", "API", "Payment");
                         new LogHelper().Debug("Make Payment response completed", paymentRequest.RequestIdentifier, "POIMakePayment", "API", "Payment");
                         return new Models.AdyenPayment.AdyenEcomResponse()
@@ -285,7 +285,7 @@ namespace CheckinPortalCloudAPI.Controllers
                     }
                     else
                     {
-                        new LogHelper().Log("Make Payment failled with response "+ (!string.IsNullOrEmpty(PaymentResp.Response.AdditionalResponse) ? HttpUtility.UrlDecode(PaymentResp.Response.AdditionalResponse) : "Failled"), paymentRequest.RequestIdentifier, "POIMakePayment", "API", "Payment");
+                        new LogHelper().Log("Make Payment failled with response " + (!string.IsNullOrEmpty(PaymentResp.Response.AdditionalResponse) ? HttpUtility.UrlDecode(PaymentResp.Response.AdditionalResponse) : "Failled"), paymentRequest.RequestIdentifier, "POIMakePayment", "API", "Payment");
                         new LogHelper().Log("Adyen Payment response : " + JsonConvert.SerializeObject(saleToPoiResponse), paymentRequest.RequestIdentifier, "POIMakePayment", "API", "Payment");
                         return new Models.AdyenPayment.AdyenEcomResponse()
                         {
@@ -442,7 +442,7 @@ namespace CheckinPortalCloudAPI.Controllers
                     var responsestr = await response.Content.ReadAsStringAsync();
                     if (response.IsSuccessStatusCode)
                     {
-                        
+
                         new LogHelper().Debug("Raw card aquesition response : " + responsestr, paymentRequest.RequestIdentifier, "CardAcquisition", "API", "Payment");
                         responsestr = responsestr.Replace("CardAcquisitionResponse", "MessagePayload");
                         saleToPoiResponse = JsonConvert.DeserializeObject<Models.AdyenPayment.AdyenSaleToPOIResponse>(responsestr);
@@ -531,15 +531,15 @@ namespace CheckinPortalCloudAPI.Controllers
                                     new LogHelper().Debug("Processing funding source based on schema returned null from the DB", paymentRequest.RequestIdentifier, "CardAcquisition", "API", "Payment");
                                 }
                             }
-                            else if(!string.IsNullOrEmpty(paymentResponseObject.CardType))
+                            else if (!string.IsNullOrEmpty(paymentResponseObject.CardType))
                             {
-                                if(paymentResponseObject.CardType.ToUpper().Equals("CUP") || paymentResponseObject.CardType.ToUpper().Equals("JCB"))
+                                if (paymentResponseObject.CardType.ToUpper().Equals("CUP") || paymentResponseObject.CardType.ToUpper().Equals("JCB"))
                                 {
                                     paymentResponseObject.FundingSource = "DEBIT";
                                 }
                             }
                         }
-                        catch(Exception ex)
+                        catch (Exception ex)
                         {
                             new LogHelper().Error(ex, paymentRequest.RequestIdentifier, "CardAcquisition", "API", "Payment");
                         }
@@ -555,7 +555,7 @@ namespace CheckinPortalCloudAPI.Controllers
                     }
                     else
                     {
-                        new LogHelper().Log("Card Acquesition failled with reason "+(!string.IsNullOrEmpty(CardAcquisitionResp.Response.AdditionalResponse) ? HttpUtility.UrlDecode(CardAcquisitionResp.Response.AdditionalResponse) : "Failled"), paymentRequest.RequestIdentifier, "CardAcquisition", "API", "Payment");
+                        new LogHelper().Log("Card Acquesition failled with reason " + (!string.IsNullOrEmpty(CardAcquisitionResp.Response.AdditionalResponse) ? HttpUtility.UrlDecode(CardAcquisitionResp.Response.AdditionalResponse) : "Failled"), paymentRequest.RequestIdentifier, "CardAcquisition", "API", "Payment");
                         new LogHelper().Log("Adyen Card Acquesition response : " + JsonConvert.SerializeObject(saleToPoiResponse), paymentRequest.RequestIdentifier, "CardAcquisition", "API", "Payment");
                         return new Models.AdyenPayment.AdyenEcomResponse()
                         {
@@ -577,7 +577,7 @@ namespace CheckinPortalCloudAPI.Controllers
             }
             catch (Exception ex)
             {
-                new LogHelper().Log("Card Acquesition failled with reason "+ ex.Message , paymentRequest.RequestIdentifier, "CardAcquisition", "API", "Payment");
+                new LogHelper().Log("Card Acquesition failled with reason " + ex.Message, paymentRequest.RequestIdentifier, "CardAcquisition", "API", "Payment");
                 return new Models.AdyenPayment.AdyenEcomResponse()
                 {
 
@@ -669,7 +669,7 @@ namespace CheckinPortalCloudAPI.Controllers
         {
             try
             {
-                
+
 
                 new LogHelper().Debug("Processing Get payment method request", paymentRequest.RequestIdentifier, "GetPaymentmethods", "API", "Payment");
 
@@ -697,17 +697,17 @@ namespace CheckinPortalCloudAPI.Controllers
                     Adyen.Model.Checkout.PaymentMethodsResponse paymentMethodsResponse = JsonConvert.DeserializeObject<Adyen.Model.Checkout.PaymentMethodsResponse>(await response.Content.ReadAsStringAsync());
                     if (response.IsSuccessStatusCode)
                     {
-                        
+
                         new LogHelper().Debug("Adyen Get payment response : " + JsonConvert.SerializeObject(paymentMethodsResponse), paymentRequest.RequestIdentifier, "GetPaymentmethods", "API", "Payment");
-                        new LogHelper().Debug("Get payment request processed successfully " , paymentRequest.RequestIdentifier, "GetPaymentmethods", "API", "Payment");
+                        new LogHelper().Debug("Get payment request processed successfully ", paymentRequest.RequestIdentifier, "GetPaymentmethods", "API", "Payment");
                         List<Adyen.Model.Checkout.PaymentMethodsGroup> paymentMethodsList = new List<Adyen.Model.Checkout.PaymentMethodsGroup>();
-                        if (paymentMethodsResponse.Groups != null && paymentMethodsResponse.Groups.Count > 0 )
+                        if (paymentMethodsResponse.Groups != null && paymentMethodsResponse.Groups.Count > 0)
                         {
-                            
+
                             foreach (Adyen.Model.Checkout.PaymentMethodsGroup paymentMethodsGroup in paymentMethodsResponse.Groups)
                             {
                                 Adyen.Model.Checkout.PaymentMethodsGroup paymentMethods = new Adyen.Model.Checkout.PaymentMethodsGroup();
-                                if(!string.IsNullOrEmpty(paymentMethodsGroup.Name) && paymentMethodsGroup.Name.ToLower().Contains("wechatpay")
+                                if (!string.IsNullOrEmpty(paymentMethodsGroup.Name) && paymentMethodsGroup.Name.ToLower().Contains("wechatpay")
                                     && paymentMethodsGroup.Types != null && paymentMethodsGroup.Types.Count > 0)
                                 {
                                     paymentMethods.Name = paymentMethodsGroup.Name;
@@ -723,8 +723,8 @@ namespace CheckinPortalCloudAPI.Controllers
                         List<Adyen.Model.Checkout.PaymentMethod> PaymentMethodsDetailsList = new List<Adyen.Model.Checkout.PaymentMethod>();
                         if (paymentMethodsResponse.PaymentMethods != null && paymentMethodsResponse.PaymentMethods.Count > 0)
                         {
-                           foreach(Adyen.Model.Checkout.PaymentMethod paymentMethod in paymentMethodsResponse.PaymentMethods)
-                           {
+                            foreach (Adyen.Model.Checkout.PaymentMethod paymentMethod in paymentMethodsResponse.PaymentMethods)
+                            {
                                 if (!string.IsNullOrEmpty(paymentMethod.Name) && paymentMethod.Name.ToLower().Contains("wechat"))
                                 {
                                     if (!string.IsNullOrEmpty(paymentMethod.Type) && paymentMethod.Type.ToLower().Contains("wechatpayqr"))
@@ -760,7 +760,7 @@ namespace CheckinPortalCloudAPI.Controllers
                 }
                 else
                 {
-                    new LogHelper().Log("Get payment request failled : - Payment gateway returned blank" , paymentRequest.RequestIdentifier, "GetPaymentmethods", "API", "Payment");
+                    new LogHelper().Log("Get payment request failled : - Payment gateway returned blank", paymentRequest.RequestIdentifier, "GetPaymentmethods", "API", "Payment");
                     return new Models.AdyenPayment.AdyenEcomResponse()
                     {
 
@@ -771,7 +771,7 @@ namespace CheckinPortalCloudAPI.Controllers
             }
             catch (Exception ex)
             {
-                new LogHelper().Log("Get payment request failled : - "+ex.Message, paymentRequest.RequestIdentifier, "GetPaymentmethods", "API", "Payment");
+                new LogHelper().Log("Get payment request failled : - " + ex.Message, paymentRequest.RequestIdentifier, "GetPaymentmethods", "API", "Payment");
                 return new Models.AdyenPayment.AdyenEcomResponse()
                 {
 
@@ -794,7 +794,7 @@ namespace CheckinPortalCloudAPI.Controllers
 
                 new LogHelper().Log("Get payment details processing the request", paymentRequest.RequestIdentifier, "GetPaymentDetails", "API", "Payment");
                 new LogHelper().Debug("Raw Get payment details request : " + JsonConvert.SerializeObject(paymentRequest), paymentRequest.RequestIdentifier, "GetPaymentDetails", "API", "Payment");
-                
+
                 HttpClient httpClient = null;
                 if (!string.IsNullOrEmpty(ConfigurationManager.AppSettings["IsPaymentProxyEnabled"]) && (Convert.ToBoolean(ConfigurationManager.AppSettings["IsPaymentProxyEnabled"])))
                 {
@@ -949,7 +949,7 @@ namespace CheckinPortalCloudAPI.Controllers
                                     paymentResponseObject.MaskCardNumber = temp_card_bin + "xxxxxx" + temp_card_summary;
                                 }
                                 new LogHelper().Debug("Get payment details response : " + JsonConvert.SerializeObject(paymentResponseObject), paymentRequest.RequestIdentifier, "GetPaymentDetails", "API", "Payment");
-                                new LogHelper().Log("Get payment details failled with reason : "+paymentsResponse.ResultCode, paymentRequest.RequestIdentifier, "GetPaymentDetails", "API", "Payment");
+                                new LogHelper().Log("Get payment details failled with reason : " + paymentsResponse.ResultCode, paymentRequest.RequestIdentifier, "GetPaymentDetails", "API", "Payment");
                                 return new Models.AdyenPayment.AdyenEcomResponse()
                                 {
                                     ResponseObject = paymentResponseObject,
@@ -972,7 +972,7 @@ namespace CheckinPortalCloudAPI.Controllers
                     }
                     else
                     {
-                        new LogHelper().Log("Get payment details failled with reason : "+response.ReasonPhrase, paymentRequest.RequestIdentifier, "GetPaymentDetails", "API", "Payment");
+                        new LogHelper().Log("Get payment details failled with reason : " + response.ReasonPhrase, paymentRequest.RequestIdentifier, "GetPaymentDetails", "API", "Payment");
                         return new Models.AdyenPayment.AdyenEcomResponse()
                         {
                             Result = false,
@@ -1079,7 +1079,7 @@ namespace CheckinPortalCloudAPI.Controllers
                             {
                                 new LogHelper().Debug("Processing funding source based on schema", paymentRequest.RequestIdentifier, "GetCostEstimater", "API", "Payment");
                                 string tempResponse = Helper.Cloud.DBHelper.Instance.FetchCardTypeInfo(ConfigurationManager.AppSettings["ConnectionString"], costEstimateResponse.CardBin.PaymentMethod);
-                                if(!string.IsNullOrEmpty(tempResponse))
+                                if (!string.IsNullOrEmpty(tempResponse))
                                 {
                                     costEstimateResponse.CardBin.FundingSource = tempResponse.ToUpper();
                                 }
@@ -1087,10 +1087,10 @@ namespace CheckinPortalCloudAPI.Controllers
                                 {
                                     new LogHelper().Debug("Processing funding source based on schema returned null from the DB", paymentRequest.RequestIdentifier, "GetCostEstimater", "API", "Payment");
                                     //costEstimateResponse.CardBin.FundingSource = "DEBIT";
-                                }    
+                                }
                             }
                         }
-                        catch(Exception ex)
+                        catch (Exception ex)
                         {
                             new LogHelper().Log("Error while processing schema based funding source conversion", paymentRequest.RequestIdentifier, "GetCostEstimater", "API", "Payment");
                             new LogHelper().Error(ex, paymentRequest.RequestIdentifier, "GetCostEstimater", "API", "Payment");
@@ -1105,7 +1105,7 @@ namespace CheckinPortalCloudAPI.Controllers
                     }
                     else
                     {
-                        new LogHelper().Log("Get cost estimator failled with reason : - "+response.ReasonPhrase, paymentRequest.RequestIdentifier, "GetCostEstimater", "API", "Payment");
+                        new LogHelper().Log("Get cost estimator failled with reason : - " + response.ReasonPhrase, paymentRequest.RequestIdentifier, "GetCostEstimater", "API", "Payment");
                         return new Models.AdyenPayment.AdyenEcomResponse()
                         {
 
@@ -1117,7 +1117,7 @@ namespace CheckinPortalCloudAPI.Controllers
                 }
                 else
                 {
-                    new LogHelper().Log("Get cost estimator failled with reason : - Payment gateway returned blank" , paymentRequest.RequestIdentifier, "GetCostEstimater", "API", "Payment");
+                    new LogHelper().Log("Get cost estimator failled with reason : - Payment gateway returned blank", paymentRequest.RequestIdentifier, "GetCostEstimater", "API", "Payment");
                     return new Models.AdyenPayment.AdyenEcomResponse()
                     {
                         Result = false,
@@ -1127,7 +1127,7 @@ namespace CheckinPortalCloudAPI.Controllers
             }
             catch (Exception ex)
             {
-                new LogHelper().Log("Get cost estimator failled with reason : - "+ex.Message, paymentRequest.RequestIdentifier, "GetCostEstimater", "API", "Payment");
+                new LogHelper().Log("Get cost estimator failled with reason : - " + ex.Message, paymentRequest.RequestIdentifier, "GetCostEstimater", "API", "Payment");
                 return new Models.AdyenPayment.AdyenEcomResponse()
                 {
 
@@ -1136,7 +1136,7 @@ namespace CheckinPortalCloudAPI.Controllers
                 };
             }
         }
-        
+
         [HttpPost]
         [ActionName("GetOrginKey")]
         public async Task<Models.AdyenPayment.AdyenEcomResponse> GetOrginKey(Models.AdyenPayment.PaymentRequest paymentRequest)
@@ -1183,7 +1183,7 @@ namespace CheckinPortalCloudAPI.Controllers
                     }
                     else
                     {
-                        new LogHelper().Log("Get orgin key failled with reason :- "+response.ReasonPhrase, paymentRequest.RequestIdentifier, "GetOrginKey", "API", "Payment");
+                        new LogHelper().Log("Get orgin key failled with reason :- " + response.ReasonPhrase, paymentRequest.RequestIdentifier, "GetOrginKey", "API", "Payment");
                         return new Models.AdyenPayment.AdyenEcomResponse()
                         {
 
@@ -1205,7 +1205,7 @@ namespace CheckinPortalCloudAPI.Controllers
             }
             catch (Exception ex)
             {
-                new LogHelper().Log("Get orgin key failled with reason :- "+ex.Message, paymentRequest.RequestIdentifier, "GetOrginKey", "API", "Payment");
+                new LogHelper().Log("Get orgin key failled with reason :- " + ex.Message, paymentRequest.RequestIdentifier, "GetOrginKey", "API", "Payment");
                 return new Models.AdyenPayment.AdyenEcomResponse()
                 {
 
@@ -1317,7 +1317,7 @@ namespace CheckinPortalCloudAPI.Controllers
                                 }
                                 paymentResponseObject.additionalInfos = additionalInfos;
                             }
-                            
+
                             new LogHelper().Debug("Payment capture response : " + JsonConvert.SerializeObject(new Models.AdyenPayment.AdyenEcomResponse()
                             {
                                 ResponseObject = paymentResponseObject,
@@ -1332,14 +1332,14 @@ namespace CheckinPortalCloudAPI.Controllers
                         }
                         else
                         {
-                            
+
 
                             new LogHelper().Debug("Payment capture response : " + JsonConvert.SerializeObject(new Models.AdyenPayment.AdyenEcomResponse()
                             {
                                 ResponseMessage = modificationResult.Message,
                                 Result = false
                             }), paymentRequest.RequestIdentifier, "PaymentCapture", "API", "Payment");
-                            new LogHelper().Log("Processing Payment capture failled with reason "+ modificationResult.Message, paymentRequest.RequestIdentifier, "PaymentCapture", "API", "Payment");
+                            new LogHelper().Log("Processing Payment capture failled with reason " + modificationResult.Message, paymentRequest.RequestIdentifier, "PaymentCapture", "API", "Payment");
                             return new Models.AdyenPayment.AdyenEcomResponse()
                             {
                                 ResponseObject = modificationResult.Message,
@@ -1548,8 +1548,8 @@ namespace CheckinPortalCloudAPI.Controllers
 
                         else
                         {
-                           
-                            new LogHelper().Log("Adyen cancel payment request failled with reason : - "+ modificationResult.Message, paymentRequest.RequestIdentifier, "CancelPayment", "API", "Payment");
+
+                            new LogHelper().Log("Adyen cancel payment request failled with reason : - " + modificationResult.Message, paymentRequest.RequestIdentifier, "CancelPayment", "API", "Payment");
                             new LogHelper().Debug("cancel payment response : " + JsonConvert.SerializeObject(new Models.AdyenPayment.AdyenEcomResponse()
                             {
                                 ResponseMessage = modificationResult.Message,
@@ -1603,7 +1603,7 @@ namespace CheckinPortalCloudAPI.Controllers
                     ResponseMessage = "Generic Exception : " + ex.Message
                 }));
 
-                new LogHelper().Log("Adyen cancel payment request failled with reason : -"+ JsonConvert.SerializeObject(new Models.AdyenPayment.AdyenEcomResponse()
+                new LogHelper().Log("Adyen cancel payment request failled with reason : -" + JsonConvert.SerializeObject(new Models.AdyenPayment.AdyenEcomResponse()
                 {
 
                     Result = false,
@@ -1671,7 +1671,7 @@ namespace CheckinPortalCloudAPI.Controllers
                         }
                         else
                         {
-                            new LogHelper().Log("Get connected terminal list request failled with the reason :- "+ getDeviceListResponse.Message, paymentRequest.RequestIdentifier, "GetConnectedTerminalList", "API", "Payment");
+                            new LogHelper().Log("Get connected terminal list request failled with the reason :- " + getDeviceListResponse.Message, paymentRequest.RequestIdentifier, "GetConnectedTerminalList", "API", "Payment");
                             new LogHelper().Debug("Get connected terminal list response : " + JsonConvert.SerializeObject(new Models.AdyenPayment.AdyenEcomResponse()
                             {
                                 ResponseMessage = getDeviceListResponse.Message,
@@ -1703,7 +1703,7 @@ namespace CheckinPortalCloudAPI.Controllers
                 }
                 else
                 {
-                    new LogHelper().Log("Get connected terminal list request failled with the reason :- Payment gateway returned blank" , paymentRequest.RequestIdentifier, "GetConnectedTerminalList", "API", "Payment");
+                    new LogHelper().Log("Get connected terminal list request failled with the reason :- Payment gateway returned blank", paymentRequest.RequestIdentifier, "GetConnectedTerminalList", "API", "Payment");
                     new LogHelper().Debug("Get connected terminal list response : " + JsonConvert.SerializeObject(new Models.AdyenPayment.AdyenEcomResponse()
                     {
                         Result = false,
@@ -1718,7 +1718,7 @@ namespace CheckinPortalCloudAPI.Controllers
             }
             catch (Exception ex)
             {
-                new LogHelper().Log("Get connected terminal list request failled with the reason :- "+ex.ToString(), paymentRequest.RequestIdentifier, "GetConnectedTerminalList", "API", "Payment");
+                new LogHelper().Log("Get connected terminal list request failled with the reason :- " + ex.ToString(), paymentRequest.RequestIdentifier, "GetConnectedTerminalList", "API", "Payment");
                 return new Models.AdyenPayment.AdyenEcomResponse()
                 {
 
@@ -1767,7 +1767,7 @@ namespace CheckinPortalCloudAPI.Controllers
                 }
                 else
                     amnt = Int64.Parse(request.Amount.ToString() + "00");
-                
+
                 if (string.IsNullOrEmpty(request.adjustAuthorisationData))
                 {
 
@@ -1776,7 +1776,7 @@ namespace CheckinPortalCloudAPI.Controllers
                         MerchantAccount = paymentRequest.merchantAccount,
                         OriginalReference = request.OrginalPSPRefernce,
                         ModificationAmount = new Adyen.Model.Amount(ConfigurationManager.AppSettings["PaymentCurrency"].ToString(), amnt),
-                        
+
                     };
 
                     new LogHelper().Debug("Adyen Get payment top up request : " + JsonConvert.SerializeObject(adjustAuthorizationRequest), paymentRequest.RequestIdentifier, "PaymentTopUp", "API", "Payment");
@@ -1834,8 +1834,8 @@ namespace CheckinPortalCloudAPI.Controllers
                                     }
                                     paymentResponseObject.additionalInfos = additionalInfos;
                                 }
-                                
-                                new LogHelper().Log("payment top up completed successfully" , paymentRequest.RequestIdentifier, "PaymentTopUp", "API", "Payment");
+
+                                new LogHelper().Log("payment top up completed successfully", paymentRequest.RequestIdentifier, "PaymentTopUp", "API", "Payment");
                                 new LogHelper().Debug("Get payment top up response : " + JsonConvert.SerializeObject(new Models.AdyenPayment.AdyenEcomResponse()
                                 {
                                     ResponseObject = paymentResponseObject,
@@ -1849,7 +1849,7 @@ namespace CheckinPortalCloudAPI.Controllers
                             }
                             else
                             {
-                                new LogHelper().Log("payment top up completed failled with reason :- "+ modificationResult.Message, paymentRequest.RequestIdentifier, "PaymentTopUp", "API", "Payment");
+                                new LogHelper().Log("payment top up completed failled with reason :- " + modificationResult.Message, paymentRequest.RequestIdentifier, "PaymentTopUp", "API", "Payment");
                                 new LogHelper().Debug("Get payment top up response : " + JsonConvert.SerializeObject(new Models.AdyenPayment.AdyenEcomResponse()
                                 {
                                     ResponseMessage = modificationResult.Message,
@@ -1864,7 +1864,7 @@ namespace CheckinPortalCloudAPI.Controllers
                         }
                         else
                         {
-                            
+
                             new LogHelper().Log("payment top up completed failled with reason :- " + response.ReasonPhrase, paymentRequest.RequestIdentifier, "PaymentTopUp", "API", "Payment");
                             new LogHelper().Debug("Get payment top up response : " + JsonConvert.SerializeObject(new Models.AdyenPayment.AdyenEcomResponse()
                             {
@@ -1988,8 +1988,8 @@ namespace CheckinPortalCloudAPI.Controllers
                             }
                             else
                             {
-                                
-                                new LogHelper().Log("payment top up completed failled with reason :- "+modificationResult.Message, paymentRequest.RequestIdentifier, "PaymentTopUp", "API", "Payment");
+
+                                new LogHelper().Log("payment top up completed failled with reason :- " + modificationResult.Message, paymentRequest.RequestIdentifier, "PaymentTopUp", "API", "Payment");
                                 new LogHelper().Debug("Get payment top up response : " + JsonConvert.SerializeObject(new Models.AdyenPayment.AdyenEcomResponse()
                                 {
                                     ResponseMessage = modificationResult.Message,
@@ -2004,7 +2004,7 @@ namespace CheckinPortalCloudAPI.Controllers
                         }
                         else
                         {
-                            new LogHelper().Log("payment top up completed failled with reason :- "+response.ReasonPhrase, paymentRequest.RequestIdentifier, "PaymentTopUp", "API", "Payment");
+                            new LogHelper().Log("payment top up completed failled with reason :- " + response.ReasonPhrase, paymentRequest.RequestIdentifier, "PaymentTopUp", "API", "Payment");
                             new LogHelper().Debug("Get payment top up response : " + JsonConvert.SerializeObject(new Models.AdyenPayment.AdyenEcomResponse()
                             {
                                 ResponseMessage = response.ReasonPhrase,
@@ -2020,7 +2020,7 @@ namespace CheckinPortalCloudAPI.Controllers
                     }
                     else
                     {
-                        new LogHelper().Log("payment top up completed failled with reason :- Payment gateway returned blank" , paymentRequest.RequestIdentifier, "PaymentTopUp", "API", "Payment");
+                        new LogHelper().Log("payment top up completed failled with reason :- Payment gateway returned blank", paymentRequest.RequestIdentifier, "PaymentTopUp", "API", "Payment");
                         new LogHelper().Debug("Get payment top up response : " + JsonConvert.SerializeObject(new Models.AdyenPayment.AdyenEcomResponse()
                         {
                             ResponseMessage = "Payment gateway returned blank",
@@ -2036,12 +2036,12 @@ namespace CheckinPortalCloudAPI.Controllers
                     }
                 }
 
-                
+
             }
             catch (Exception ex)
             {
-                
-                new LogHelper().Log("payment top up completed failled with reason :- "+ex.ToString(), paymentRequest.RequestIdentifier, "PaymentTopUp", "API", "Payment");
+
+                new LogHelper().Log("payment top up completed failled with reason :- " + ex.ToString(), paymentRequest.RequestIdentifier, "PaymentTopUp", "API", "Payment");
                 new LogHelper().Debug("Get payment top up response : " + JsonConvert.SerializeObject(new Models.AdyenPayment.AdyenEcomResponse()
                 {
                     Result = false,
@@ -2097,14 +2097,14 @@ namespace CheckinPortalCloudAPI.Controllers
                 else
                     amnt = Int64.Parse(makePayment.Amount.ToString() + "00");//(long)PaymentReq.Amount;
                 Adyen.Model.Checkout.Amount amount;
-                
+
                 if (!string.IsNullOrEmpty(ConfigurationManager.AppSettings["PaymentCurrency"]))
                 {
                     amount = new Adyen.Model.Checkout.Amount(ConfigurationManager.AppSettings["PaymentCurrency"], amnt);
                 }
                 else
                     amount = new Adyen.Model.Checkout.Amount(ConfigurationManager.AppSettings["PaymentCurrency"].ToString(), amnt);
-              
+
 
 
 
@@ -2112,7 +2112,7 @@ namespace CheckinPortalCloudAPI.Controllers
                 {
                     Amount = amount,
 
-                    BrowserInfo = makePayment.BrowserInfo != null ?  new Adyen.Model.Checkout.BrowserInfo(makePayment.BrowserInfo.acceptHeader, makePayment.BrowserInfo.colorDepth, makePayment.BrowserInfo.javaEnabled
+                    BrowserInfo = makePayment.BrowserInfo != null ? new Adyen.Model.Checkout.BrowserInfo(makePayment.BrowserInfo.acceptHeader, makePayment.BrowserInfo.colorDepth, makePayment.BrowserInfo.javaEnabled
                     , makePayment.BrowserInfo.language, makePayment.BrowserInfo.screenHeight, makePayment.BrowserInfo.screenWidth, makePayment.BrowserInfo.timeZoneOffset, makePayment.BrowserInfo.userAgent, null) : null,
                     MerchantAccount = paymentRequest.merchantAccount,
                     //CountryCode = "SG",
@@ -2125,8 +2125,8 @@ namespace CheckinPortalCloudAPI.Controllers
 
                     AdditionalData = new Dictionary<string, string>()
                     {
-                        { "authorisationType", "PreAuth" }
-
+                        { "authorisationType", "PreAuth" },
+                        { "manualCapture", "true" }
                     },
                     PaymentMethod = makePayment.PaymentMethod,
                     RecurringProcessingModel = Adyen.Model.Checkout.PaymentRequest.RecurringProcessingModelEnum.CardOnFile,
@@ -2135,7 +2135,7 @@ namespace CheckinPortalCloudAPI.Controllers
                     ReturnUrl = makePayment.ReturnUrl,
                     ShopperInteraction = Adyen.Model.Checkout.PaymentRequest.ShopperInteractionEnum.Ecommerce,
                     ShopperReference = makePayment.ReservationNameID
-                    
+
                 };
                 if (makePayment.PaymentMethod.Type.ToLower().Contains("wechat"))
                 {
@@ -2222,7 +2222,7 @@ namespace CheckinPortalCloudAPI.Controllers
                                 paymentResponseObject.additionalInfos = additionalInfos;
                                 paymentResponseObject.MaskCardNumber = temp_card_bin + "xxxxxx" + temp_card_summary;
                             }
-                            
+
                             new LogHelper().Log("Make payment completed successfully", paymentRequest.RequestIdentifier, "MakePayment", "API", "Payment");
                             new LogHelper().Debug("Make payment response : " + JsonConvert.SerializeObject(new Models.AdyenPayment.AdyenEcomResponse()
                             {
@@ -2306,8 +2306,8 @@ namespace CheckinPortalCloudAPI.Controllers
                                     paymentResponseObject.MaskCardNumber = temp_card_bin + "xxxxxx" + temp_card_summary;
 
                                 }
-                                
-                                new LogHelper().Log("Make payment completed failled with reason : - "+ paymentResponseObject.ResultCode, paymentRequest.RequestIdentifier, "MakePayment", "API", "Payment");
+
+                                new LogHelper().Log("Make payment completed failled with reason : - " + paymentResponseObject.ResultCode, paymentRequest.RequestIdentifier, "MakePayment", "API", "Payment");
                                 new LogHelper().Debug("Make payment response : " + JsonConvert.SerializeObject(new Models.AdyenPayment.AdyenEcomResponse()
                                 {
                                     ResponseObject = paymentResponseObject,
@@ -2322,9 +2322,9 @@ namespace CheckinPortalCloudAPI.Controllers
                             }
                             else
                             {
-                                
 
-                                new LogHelper().Log("Make payment completed failled with reason : - PG Responded NULL" , paymentRequest.RequestIdentifier, "MakePayment", "API", "Payment");
+
+                                new LogHelper().Log("Make payment completed failled with reason : - PG Responded NULL", paymentRequest.RequestIdentifier, "MakePayment", "API", "Payment");
                                 new LogHelper().Debug("Make payment response : " + JsonConvert.SerializeObject(new Models.AdyenPayment.AdyenEcomResponse()
                                 {
                                     ResponseObject = null,
@@ -2342,7 +2342,7 @@ namespace CheckinPortalCloudAPI.Controllers
                     }
                     else
                     {
-                        new LogHelper().Log("Make payment completed failled with reason : - "+response.ReasonPhrase, paymentRequest.RequestIdentifier, "MakePayment", "API", "Payment");
+                        new LogHelper().Log("Make payment completed failled with reason : - " + response.ReasonPhrase, paymentRequest.RequestIdentifier, "MakePayment", "API", "Payment");
                         new LogHelper().Debug("Make payment response : " + JsonConvert.SerializeObject(new Models.AdyenPayment.AdyenEcomResponse()
                         {
                             ResponseMessage = response.ReasonPhrase,
@@ -2357,8 +2357,8 @@ namespace CheckinPortalCloudAPI.Controllers
                 }
                 else
                 {
-                    
-                    new LogHelper().Log("Make payment completed failled with reason : - Payment gateway returned blank" , paymentRequest.RequestIdentifier, "MakePayment", "API", "Payment");
+
+                    new LogHelper().Log("Make payment completed failled with reason : - Payment gateway returned blank", paymentRequest.RequestIdentifier, "MakePayment", "API", "Payment");
                     new LogHelper().Debug("Make payment response : " + JsonConvert.SerializeObject(new Models.AdyenPayment.AdyenEcomResponse()
                     {
                         ResponseMessage = "Payment gateway returned blank",
@@ -2373,7 +2373,7 @@ namespace CheckinPortalCloudAPI.Controllers
             }
             catch (Exception ex)
             {
-                new LogHelper().Log("Make payment completed failled with reason : - "+ex.ToString(), paymentRequest.RequestIdentifier, "MakePayment", "API", "Payment");
+                new LogHelper().Log("Make payment completed failled with reason : - " + ex.ToString(), paymentRequest.RequestIdentifier, "MakePayment", "API", "Payment");
                 new LogHelper().Debug("Make payment response : " + JsonConvert.SerializeObject(new Models.AdyenPayment.AdyenEcomResponse()
                 {
                     ResponseMessage = ex.ToString(),
@@ -2434,7 +2434,7 @@ namespace CheckinPortalCloudAPI.Controllers
                 else
                     amount1 = new Adyen.Model.Checkout.Amount(ConfigurationManager.AppSettings["PaymentCurrency"].ToString(), amnt);
 
-                
+
 
                 Adyen.Model.Checkout.PaymentRequest PaymentWithTokenRequest = new Adyen.Model.Checkout.PaymentRequest()
                 {
@@ -2451,7 +2451,7 @@ namespace CheckinPortalCloudAPI.Controllers
                     },
                     ShopperInteraction = Adyen.Model.Checkout.PaymentRequest.ShopperInteractionEnum.ContAuth,
                     Reference = request.MerchantReference, //+ " - Incidental charge",//"Payment with out card present",
-                                                          //mer
+                                                           //mer
                     MerchantAccount = paymentRequest.merchantAccount,
                     RecurringProcessingModel = Adyen.Model.Checkout.PaymentRequest.RecurringProcessingModelEnum.UnscheduledCardOnFile,
                     ReturnUrl = request.ReturnUrl,//"https://changiairport.crowneplaza.com/",
@@ -2515,7 +2515,7 @@ namespace CheckinPortalCloudAPI.Controllers
                                 }
                                 paymentResponseObject.additionalInfos = additionalInfos;
                             }
-                            
+
                             new LogHelper().Log("Make payment with token completed successfully", paymentRequest.RequestIdentifier, "PaymentWithToken", "API", "Payment");
                             new LogHelper().Debug("Make payment with token response : " + JsonConvert.SerializeObject(new Models.AdyenPayment.AdyenEcomResponse()
                             {
@@ -2530,7 +2530,7 @@ namespace CheckinPortalCloudAPI.Controllers
                         }
                         else
                         {
-                            new LogHelper().Log("Make payment with token failled with reason :- "+paymentResult.RefusalReason, paymentRequest.RequestIdentifier, "PaymentWithToken", "API", "Payment");
+                            new LogHelper().Log("Make payment with token failled with reason :- " + paymentResult.RefusalReason, paymentRequest.RequestIdentifier, "PaymentWithToken", "API", "Payment");
                             new LogHelper().Debug("Make payment with token response : " + JsonConvert.SerializeObject(new Models.AdyenPayment.AdyenEcomResponse()
                             {
                                 ResponseMessage = paymentResult.RefusalReason,
@@ -2577,8 +2577,8 @@ namespace CheckinPortalCloudAPI.Controllers
             }
             catch (Exception ex)
             {
-                
-                new LogHelper().Log("Make payment with token failled with reason :- "+ex.ToString(), paymentRequest.RequestIdentifier, "PaymentWithToken", "API", "Payment");
+
+                new LogHelper().Log("Make payment with token failled with reason :- " + ex.ToString(), paymentRequest.RequestIdentifier, "PaymentWithToken", "API", "Payment");
                 new LogHelper().Debug("Make payment with token response : " + JsonConvert.SerializeObject(new Models.AdyenPayment.AdyenEcomResponse()
                 {
                     ResponseMessage = ex.ToString(),
@@ -2604,9 +2604,9 @@ namespace CheckinPortalCloudAPI.Controllers
                 new LogHelper().Debug("Raw notification request : " + JsonConvert.SerializeObject(NotificationObject), null, "GetPaymentNotifications", "API", "Payment");
                 if (NotificationObject != null)
                 {
-                    if(NotificationObject.NotificationItemContainers != null)
+                    if (NotificationObject.NotificationItemContainers != null)
                     {
-                        foreach( Adyen.Model.Notification.NotificationRequestItemContainer notification in NotificationObject.NotificationItemContainers)
+                        foreach (Adyen.Model.Notification.NotificationRequestItemContainer notification in NotificationObject.NotificationItemContainers)
                         {
                             if (notification.NotificationItem != null)
                             {
@@ -2619,7 +2619,7 @@ namespace CheckinPortalCloudAPI.Controllers
                                 {
                                     //File.AppendAllLines(System.Web.HttpContext.Current.Request.MapPath("~\\Resources\\GetPaymentNotifications.txt"), new string[] { "Notification : " + JsonConvert.SerializeObject(NotificationObject) });
                                     new Helper.LogHelper().Log("Pushing Notification to DB failled ", null, "GetPaymentNotifications", "API", Helper.NlogGroupName.Payment.ToString());
-                                    new Helper.LogHelper().Log("Notification ; "+ JsonConvert.SerializeObject(NotificationObject), null, "GetPaymentNotifications", "Cloud API", Helper.NlogGroupName.Payment.ToString());
+                                    new Helper.LogHelper().Log("Notification ; " + JsonConvert.SerializeObject(NotificationObject), null, "GetPaymentNotifications", "Cloud API", Helper.NlogGroupName.Payment.ToString());
                                 }
                             }
                             else
@@ -2640,7 +2640,7 @@ namespace CheckinPortalCloudAPI.Controllers
                 new Helper.LogHelper().Debug("Notification is blank ", null, "GetPaymentNotifications", "API", Helper.NlogGroupName.Payment.ToString());
                 return Request.CreateResponse(HttpStatusCode.OK, "[accepted]");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 new Helper.LogHelper().Error(ex, null, "GetPaymentNotifications", "API", Helper.NlogGroupName.Payment.ToString());
                 return Request.CreateResponse(HttpStatusCode.OK, "[accepted]");
@@ -2707,7 +2707,7 @@ namespace CheckinPortalCloudAPI.Controllers
 
         //    httpClient.DefaultRequestHeaders.Clear();
         //    httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            
+
         //    httpClient.DefaultRequestHeaders.Add("Client-Request-Id", ClientRequestId.ToString());
         //    httpClient.DefaultRequestHeaders.Add("Api-Key", apiKey);
         //    httpClient.DefaultRequestHeaders.Add("Timestamp", time.ToString());
